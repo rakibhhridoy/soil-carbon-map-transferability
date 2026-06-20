@@ -22,7 +22,10 @@ from sklearn.metrics import r2_score
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "features"))
 from sample_covariates import LAKE
-WOSIS = Path("/Volumes/SSD Ex/PEDOFLUX_data/processed/pedoflux_profiles.parquet")
+# WoSIS terrestrial SOC lives alongside the driver lake (LAKE = .../PEDOFLUX_data/raw);
+# honour the MDBC_LAKE override, with an env-var fallback for non-standard layouts.
+WOSIS = Path(os.environ.get(
+    "MDBC_WOSIS", LAKE.parent / "processed" / "pedoflux_profiles.parquet"))
 SEED = 0
 rng = np.random.default_rng(SEED)
 N_SUB = 25000          # subsample profiles for tractable model fits
