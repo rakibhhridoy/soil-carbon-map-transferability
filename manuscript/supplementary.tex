@@ -9,6 +9,7 @@
 \usepackage{lmodern}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{graphicx}
+\graphicspath{{figures/}}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -170,6 +171,15 @@ holdout designs. Auto-generated from \texttt{aoa\_validity.json}.}
 \label{tab:aoavalidity}
 \input{tables/tab_aoavalidity}
 \end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_aoa.pdf}
+\caption{Per-delta leave-one-delta-out results: (a) RMSE and (b) fraction of each delta
+inside the area of applicability. Errors are large and every delta lies entirely outside
+the AOA, complementing the per-delta table in the main text.}
+\label{fig:aoa}
+\end{figure}
 
 % ---------------------------------------------------------------------
 \section{GSOC prior sensitivity}

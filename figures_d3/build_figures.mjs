@@ -34,6 +34,19 @@ function save(dom, name) {
   writeFileSync(`${OUT}/${name}.svg`, dom.window.document.body.innerHTML);
   console.log("  wrote", `${OUT}/${name}.svg`);
 }
+// hatched fill: light colour tint background + diagonal colour strokes (print/grayscale
+// robust). Returns url(#id) for use as a fill.
+function hatch(defs, id, color, angle, { spacing = 6, width = 1.3 } = {}) {
+  const tint = d3.interpolateRgb(color, "white")(0.74);
+  const p = defs.append("pattern").attr("id", id).attr("patternUnits", "userSpaceOnUse")
+    .attr("width", spacing).attr("height", spacing)
+    .attr("patternTransform", `rotate(${angle})`);
+  p.append("rect").attr("width", spacing).attr("height", spacing).attr("fill", tint);
+  p.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", spacing)
+    .attr("stroke", color).attr("stroke-width", width);
+  return `url(#${id})`;
+}
+
 function axisStyle(g) {
   g.selectAll("path,line").attr("stroke", AXIS).attr("stroke-width", 0.7);
   g.selectAll("text").attr("fill", INK).attr("font-size", 11);
@@ -120,9 +133,12 @@ function figMap() {
 function figTiers() {
   const W = 440, H = 320, m = { t: 36, r: 14, b: 56, l: 50 };
   const { dom, svg } = svgRoot(W, H);
+  const defs = svg.append("defs");
   title(svg, m.l - 34, 22, "Skill collapses out-of-distribution");
   const tiers = [["t1", "Random\nk-fold"], ["t2", "Spatial\nblock"], ["t3", "LODO\n(median)"]];
   const models = [["ridge", OI.blue], ["histgb", OI.vermillion]];
+  const fill = { ridge: hatch(defs, "h-ridge", OI.blue, 45),
+                 histgb: hatch(defs, "h-histgb", OI.vermillion, -45) };
   const x0 = d3.scaleBand().domain(tiers.map(t => t[0])).range([m.l, W - m.r]).padding(0.3);
   const x1 = d3.scaleBand().domain(models.map(d => d[0])).range([0, x0.bandwidth()]).padding(0.12);
   const vals = models.flatMap(([mm]) => tiers.map(([t]) => DATA.tiers[mm][t]));
@@ -145,7 +161,8 @@ function figTiers() {
       const v = DATA.tiers[mm][t];
       const xx = x0(t) + x1(mm), yy = v >= 0 ? y(v) : y(0);
       svg.append("rect").attr("x", xx).attr("y", yy).attr("width", x1.bandwidth())
-         .attr("height", Math.abs(y(v) - y(0))).attr("fill", col).attr("opacity", 0.9);
+         .attr("height", Math.abs(y(v) - y(0))).attr("fill", fill[mm])
+         .attr("stroke", col).attr("stroke-width", 0.8);
     });
     lab.split("\n").forEach((ln, i) =>
       svg.append("text").attr("x", x0(t) + x0.bandwidth() / 2).attr("y", H - m.b + 16 + i * 12)
@@ -154,7 +171,8 @@ function figTiers() {
   // legend
   models.forEach(([mm, col], i) => {
     const lx = W - m.r - 96, ly = m.t + 4 + i * 16;
-    svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("fill", col);
+    svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11)
+       .attr("fill", fill[mm]).attr("stroke", col).attr("stroke-width", 0.8);
     svg.append("text").attr("x", lx + 16).attr("y", ly).attr("font-size", 11).attr("fill", INK)
        .text(mm === "histgb" ? "gradient boosting" : "ridge");
   });
@@ -165,6 +183,9 @@ function figTiers() {
 function figAoa() {
   const W = 860, H = 330, m = { t: 36, r: 18, b: 46, l: 130 };
   const { dom, svg } = svgRoot(W, H);
+  const defs = svg.append("defs");
+  const fRmse = hatch(defs, "h-rmse", OI.vermillion, 45);
+  const fAoa = hatch(defs, "h-aoa", OI.green, -45);
   const pd = DATA.perdelta.slice().sort((a, b) => a.rmse - b.rmse);
   const panelW = (W - m.l - m.r - 60) / 2;
   const y = d3.scaleBand().domain(pd.map(d => d.name)).range([m.t, H - m.b]).padding(0.28);
@@ -175,7 +196,7 @@ function figAoa() {
   const ax = m.l, x1 = d3.scaleLinear().domain([0, d3.max(pd, d => d.rmse)]).nice().range([ax, ax + panelW]);
   pd.forEach(d => svg.append("rect").attr("x", ax).attr("y", y(d.name))
      .attr("width", x1(d.rmse) - ax).attr("height", y.bandwidth())
-     .attr("fill", OI.vermillion).attr("opacity", 0.9));
+     .attr("fill", fRmse).attr("stroke", OI.vermillion).attr("stroke-width", 0.7));
   svg.append("g").attr("transform", `translate(0,${H - m.b})`)
      .call(d3.axisBottom(x1).ticks(5)).call(axisStyle);
   svg.append("g").attr("transform", `translate(${ax},0)`).call(d3.axisLeft(y)).call(axisStyle)
@@ -193,7 +214,7 @@ function figAoa() {
   pd.forEach(d => {
     const w = Math.max(2, x2(d.aoa) - bx);
     svg.append("rect").attr("x", bx).attr("y", y(d.name)).attr("width", w).attr("height", y.bandwidth())
-       .attr("fill", OI.green).attr("opacity", 0.9);
+       .attr("fill", w > 3 ? fAoa : OI.green).attr("stroke", OI.green).attr("stroke-width", 0.7);
   });
   svg.append("g").attr("transform", `translate(0,${H - m.b})`)
      .call(d3.axisBottom(x2).ticks(3).tickFormat(d3.format(".0%"))).call(axisStyle);
