@@ -1,0 +1,200 @@
+{
+ "deltas": [
+  {
+   "id": "amazon_amapa",
+   "name": "Amazon Amapa",
+   "lon": -47.351,
+   "lat": -0.851,
+   "area_km2": 4462.0,
+   "soc_med": 141.0,
+   "n": 69,
+   "continent": "S.America"
+  },
+  {
+   "id": "everglades",
+   "name": "Everglades",
+   "lon": -81.505,
+   "lat": 25.938,
+   "area_km2": 1845.0,
+   "soc_med": 309.0,
+   "n": 7,
+   "continent": "N.America"
+  },
+  {
+   "id": "mekong",
+   "name": "Mekong",
+   "lon": 105.116,
+   "lat": 8.647,
+   "area_km2": 1021.0,
+   "soc_med": 270.0,
+   "n": 119,
+   "continent": "Asia"
+  },
+  {
+   "id": "musi_banyuasin",
+   "name": "Musi Banyuasin",
+   "lon": 104.568,
+   "lat": -2.003,
+   "area_km2": 1637.0,
+   "soc_med": 519.0,
+   "n": 37,
+   "continent": "Asia"
+  },
+  {
+   "id": "rufiji",
+   "name": "Rufiji",
+   "lon": 39.3,
+   "lat": -7.81,
+   "area_km2": 412.0,
+   "soc_med": 158.0,
+   "n": 96,
+   "continent": "Africa"
+  },
+  {
+   "id": "saloum_gambia",
+   "name": "Saloum Gambia",
+   "lon": -16.575,
+   "lat": 14.017,
+   "area_km2": 1066.0,
+   "soc_med": 252.0,
+   "n": 36,
+   "continent": "Africa"
+  },
+  {
+   "id": "sundarbans",
+   "name": "Sundarbans",
+   "lon": 89.6,
+   "lat": 22.242,
+   "area_km2": 6052.0,
+   "soc_med": 200.0,
+   "n": 11,
+   "continent": "Asia"
+  },
+  {
+   "id": "zambezi",
+   "name": "Zambezi",
+   "lon": 36.214,
+   "lat": -18.798,
+   "area_km2": 847.0,
+   "soc_med": 61.0,
+   "n": 12,
+   "continent": "Africa"
+  }
+ ],
+ "tiers": {
+  "ridge": {
+   "t1": 0.309,
+   "t2": -0.087,
+   "t3": -2.05
+  },
+  "histgb": {
+   "t1": 0.652,
+   "t2": -0.687,
+   "t3": -1.713
+  }
+ },
+ "perdelta": [
+  {
+   "delta": "amazon_amapa",
+   "name": "Amazon Amapa",
+   "n": 69,
+   "r2": -0.082,
+   "pearson": 0.369,
+   "rmse": 55.1,
+   "bias": 2.5,
+   "aoa": 0.0
+  },
+  {
+   "delta": "everglades",
+   "name": "Everglades",
+   "n": 7,
+   "r2": -1.418,
+   "pearson": -0.145,
+   "rmse": 110.3,
+   "bias": -77.4,
+   "aoa": 0.0
+  },
+  {
+   "delta": "mekong",
+   "name": "Mekong",
+   "n": 119,
+   "r2": -1.115,
+   "pearson": 0.046,
+   "rmse": 143.9,
+   "bias": -111.5,
+   "aoa": 0.0
+  },
+  {
+   "delta": "musi_banyuasin",
+   "name": "Musi Banyuasin",
+   "n": 37,
+   "r2": -4.828,
+   "pearson": -0.026,
+   "rmse": 205.4,
+   "bias": -177.9,
+   "aoa": 0.0
+  },
+  {
+   "delta": "rufiji",
+   "name": "Rufiji",
+   "n": 96,
+   "r2": -2.008,
+   "pearson": 0.025,
+   "rmse": 116.8,
+   "bias": 90.4,
+   "aoa": 0.0
+  },
+  {
+   "delta": "saloum_gambia",
+   "name": "Saloum Gambia",
+   "n": 36,
+   "r2": -1.298,
+   "pearson": 0.191,
+   "rmse": 116.5,
+   "bias": -91.6,
+   "aoa": 0.0
+  },
+  {
+   "delta": "sundarbans",
+   "name": "Sundarbans",
+   "n": 11,
+   "r2": -33.587,
+   "pearson": 0.758,
+   "rmse": 120.7,
+   "bias": -118.7,
+   "aoa": 0.0
+  },
+  {
+   "delta": "zambezi",
+   "name": "Zambezi",
+   "n": 12,
+   "r2": -2.093,
+   "pearson": -0.516,
+   "rmse": 112.4,
+   "bias": 81.7,
+   "aoa": 0.0
+  }
+ ],
+ "fewshot": [
+  {
+   "k": 0,
+   "rmse": 75.5,
+   "pearson": 0.137
+  },
+  {
+   "k": 5,
+   "rmse": 81.6,
+   "pearson": 0.322
+  },
+  {
+   "k": 10,
+   "rmse": 70.1,
+   "pearson": 0.545
+  },
+  {
+   "k": 25,
+   "rmse": 62.4,
+   "pearson": 0.671
+  }
+ ]
+}

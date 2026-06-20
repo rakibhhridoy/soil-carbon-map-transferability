@@ -293,6 +293,39 @@ def tab_perdelta(lodo):
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def dump_figure_data(reg, lodo, soc):
+    """Single JSON consumed by the D3 figure builder (figures_d3/), so figures and
+    tables share one source of truth."""
+    core = reg[reg.role == "core"]
+    cents = delta_centroids(soc, set(core.id)).join(
+        core.set_index("id")[["mangrove_area_km2"]])
+    deltas = [dict(id=d, name=d.replace("_", " ").title(),
+                   lon=round(float(r.lon), 3), lat=round(float(r.lat), 3),
+                   area_km2=round(float(r.mangrove_area_km2), 0),
+                   soc_med=round(float(r.soc), 0), n=int(r.n),
+                   continent=CONT.get(d, ""))
+              for d, r in cents.iterrows()]
+    h = lodo["models"]["histgb"]; rg = lodo["models"]["ridge"]
+    out = {
+        "deltas": deltas,
+        "tiers": {m: {"t1": lodo["models"][m]["t1_random_r2"],
+                      "t2": lodo["models"][m]["t2_spatialblock_r2"],
+                      "t3": lodo["models"][m]["t3_lodo_median_r2"]}
+                  for m in ("ridge", "histgb")},
+        "perdelta": [dict(delta=r["delta"], name=r["delta"].replace("_", " ").title(),
+                          n=r["n"], r2=r["r2_lodo"], pearson=r.get("pearson"),
+                          rmse=r["rmse_Mgha"], bias=r["bias_Mgha"],
+                          aoa=r["aoa_inside"]) for r in h["per_delta"]],
+    }
+    fc = _opt(PROC / "fewshot_calibration.json")
+    if fc:
+        out["fewshot"] = [dict(k=k, rmse=fc["summary"][str(k)]["median_rmse"],
+                               pearson=fc["summary"][str(k)]["median_pearson"])
+                          for k in fc["ks"] if str(k) in fc["summary"]]
+    (PROC / "figure_data.json").write_text(json.dumps(out, indent=1))
+    print("figure_data ->", PROC / "figure_data.json")
+
+
 def main():
     reg, lodo, diag, soc = load()
     fig_map(reg, soc); fig_tiers(lodo); fig_aoa(lodo)
@@ -300,6 +333,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_conceptshift()
+    dump_figure_data(reg, lodo, soc)
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):

@@ -47,6 +47,15 @@ export MDBC_LAKE=/path/to/PEDOFLUX_data/raw   # external driver rasters (climate
 Driver covariate rasters (CHELSA, SoilGrids, GSOCmap, Copernicus LULC) are referenced
 in place from the **PEDOFLUX data lake** via `MDBC_LAKE` and are not redistributed here.
 
+## Figures
+Manuscript figures are rendered as vector PDF by a server-side D3 pipeline (no browser):
+```bash
+python src/manuscript_assets.py            # writes data/processed/figure_data.json (+ tables)
+cd figures_d3 && npm install && ./build.sh # D3 -> SVG -> manuscript/figures/*.pdf
+```
+`build.sh` needs `node` and `rsvg-convert`. Figures use an Okabe–Ito colorblind-safe
+palette and serif labels to match the manuscript.
+
 ## Status / caveats
 - v1 = present-day **SOC** transferability. AGB labels acquired for all 8 core deltas;
   total-carbon mapping + AGB folds are the next stage.

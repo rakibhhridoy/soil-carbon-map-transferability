@@ -32,3 +32,7 @@ manuscript/*.pdf
 
 # Generated figure PDFs (regenerate via src/manuscript_assets.py); table .tex fragments ARE tracked
 manuscript/figures/*.pdf
+
+# D3 figure builder: ignore deps and intermediate SVGs (PDFs regenerated into manuscript/figures)
+figures_d3/node_modules/
+figures_d3/svg/
