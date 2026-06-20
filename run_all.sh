@@ -33,6 +33,7 @@ python3 src/features/build_tidal.py            # + tidal range/form (EOT20)
 echo "== Stage 2: SOC transferability experiment =="
 python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json
 python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diagnostic.json
+python3 src/models/concept_shift.py            # -> data/processed/concept_shift.json
 python3 src/models/gsoc_ablation.py            # -> data/processed/gsoc_ablation.json
 python3 src/models/aoa_validity.py             # -> data/processed/aoa_validity.json
 python3 src/models/fewshot_calibration.py      # -> data/processed/fewshot_calibration.json

@@ -95,6 +95,21 @@ def tab_fewshot():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_conceptshift():
+    c = _opt(PROC / "concept_shift.json")
+    if c is None:
+        return
+    covs = c["covariates"]
+    head = "Delta & " + " & ".join(x.replace("_", "\\_") for x in covs) + " \\\\"
+    rows = []
+    for d, sl in c["per_delta_slopes"].items():
+        rows.append(f"{d.replace('_',' ').title()} & " +
+                    " & ".join(f"{sl[x]:+.2f}" for x in covs) + " \\\\")
+    (TAB / "tab_conceptshift.tex").write_text(
+        "\\begin{tabular}{l" + "r" * len(covs) + "}\n\\toprule\n"
+        + head + "\n\\midrule\n" + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_aoavalidity():
     a = _opt(PROC / "aoa_validity.json")
     if a is None:
@@ -282,7 +297,7 @@ def main():
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
-    fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity()
+    fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_conceptshift()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):

@@ -271,14 +271,20 @@ does not: across the eight folds, neither the mean dissimilarity index nor the
 multivariate energy distance correlates with LODO error in the expected direction
 (Spearman $\rho=+0.24$, $p=0.57$ for dissimilarity vs.\ $R^2$; $\rho=-0.38$, $p=0.35$
 for energy distance vs.\ RMSE). With only eight folds this test is underpowered, so we
-treat it as inconclusive rather than a true null; the robust observation is that
-\emph{every} delta lies outside the AOA, so error is governed less by how far a delta
-sits than by how the SOC--covariate relationship itself changes between deltas
-(concept shift). Consistent with a physical rather than statistical origin, the
-dominant shift axis for each delta is interpretable (Supplementary Information): tidal
-range for the macrotidal Amazon--Amap\'a, Rufiji and Musi--Banyuasin systems,
-precipitation seasonality (bio15) for the Sahelian Saloum--Gambia, and monsoon thermal
-regime (bio3, bio6, bio9) for the Sundarbans.
+treat it as inconclusive rather than a true null. Instead, the dominant failure mode is
+\emph{concept shift} --- a change in the environment--carbon relationship itself between
+deltas --- which we demonstrate directly. Fitting a simple model of SOC on four
+interpretable standardized covariates (spring tidal range, mean annual temperature,
+annual precipitation, distance-to-coast), we compared a specification with shared slopes
+and per-delta intercepts (which permits only a shifted mean) against one with per-delta
+slopes (which permits the relationship to differ). Under repeated within-delta
+cross-validation the per-delta-slope model predicts substantially better (median
+$R^2=0.67$ vs $0.43$ for shared slopes), and the fitted slopes flip sign across deltas:
+the SOC response to mean annual temperature, for example, is positive in Amazon--Amap\'a
+and Rufiji but strongly negative in the Mekong, and distance-to-coast reverses likewise
+(Supplementary Information). The environment--carbon
+relationship is therefore genuinely delta-specific, so no globally-shared model --- however
+well-resolved its covariates --- can transfer across deltas.
 
 \subsection{Aboveground biomass carbon transfers no better than soil carbon}
 To test whether the transferability limit is peculiar to soil carbon, we repeated the

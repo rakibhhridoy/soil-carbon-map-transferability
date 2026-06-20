@@ -1,0 +1,52 @@
+{
+ "deltas": [
+  "amazon_amapa",
+  "mekong",
+  "musi_banyuasin",
+  "rufiji",
+  "saloum_gambia"
+ ],
+ "n": 357,
+ "covariates": [
+  "tidal_range_spring",
+  "chelsa_bio1",
+  "chelsa_bio12",
+  "dist_coast_km"
+ ],
+ "r2_shared_slopes": 0.434,
+ "r2_local_slopes": 0.672,
+ "r2_gain": 0.238,
+ "per_delta_slopes": {
+  "amazon_amapa": {
+   "tidal_range_spring": 0.066,
+   "chelsa_bio1": 0.377,
+   "chelsa_bio12": 0.468,
+   "dist_coast_km": 0.048
+  },
+  "mekong": {
+   "tidal_range_spring": 0.213,
+   "chelsa_bio1": -0.97,
+   "chelsa_bio12": 0.072,
+   "dist_coast_km": -0.487
+  },
+  "musi_banyuasin": {
+   "tidal_range_spring": -0.026,
+   "chelsa_bio1": -0.053,
+   "chelsa_bio12": 0.017,
+   "dist_coast_km": 0.003
+  },
+  "rufiji": {
+   "tidal_range_spring": -0.002,
+   "chelsa_bio1": 0.422,
+   "chelsa_bio12": -0.096,
+   "dist_coast_km": 0.193
+  },
+  "saloum_gambia": {
+   "tidal_range_spring": 0.005,
+   "chelsa_bio1": -0.144,
+   "chelsa_bio12": -0.044,
+   "dist_coast_km": 0.405
+  }
+ },
+ "verdict": "Concept shift confirmed: allowing per-delta slopes improves held-out within-delta prediction over shared slopes, and per-delta slopes flip sign across deltas -- the environment-carbon relationship itself differs between deltas."
+}
