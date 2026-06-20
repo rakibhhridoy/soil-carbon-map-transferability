@@ -1,0 +1,23 @@
+{
+ "source": "Zenodo/6894273 (GMW v3.0)",
+ "generated": 1781916840.679745,
+ "files": {
+  "gmw_v3_2020_vec.zip": {
+   "bytes": 184557100,
+   "mtime": 1781916482.02,
+   "path": "data/raw/gmw_v3/gmw_v3_2020_vec.zip",
+   "sha256_head": "9f6babafbd44375c",
+   "url": "https://zenodo.org/records/6894273/files/gmw_v3_2020_vec.zip?download=1",
+   "extracted_to": "data/raw/gmw_v3/gmw_v3_2020_vec"
+  },
+  "gmw_v3_2020_gtiff.zip": {
+   "bytes": 66062009,
+   "mtime": 1781916834.36,
+   "path": "data/raw/gmw_v3/gmw_v3_2020_gtiff.zip",
+   "sha256_head": "97d783a0904fc977",
+   "url": "https://zenodo.org/records/6894273/files/gmw_v3_2020_gtiff.zip?download=1",
+   "extracted_to": "data/raw/gmw_v3/gmw_v3_2020_gtiff"
+  }
+ },
+ "doi": "10.5281/zenodo.6894273"
+}

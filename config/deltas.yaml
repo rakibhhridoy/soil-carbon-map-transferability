@@ -1,0 +1,124 @@
+# MDBC candidate delta registry (Stage 0)
+# bbox = [lon_min, lat_min, lon_max, lat_max]  (EPSG:4326, generous analysis window).
+# Operative mangrove footprint = GMW v3 2020 extent clipped to bbox.
+# tier1 = expected core/LODO fold; tier2 = candidate pending GMW area + label check.
+# `role` and `mangrove_area_km2` are filled by src/build_delta_registry.py.
+
+crs: EPSG:4326
+area_crs: EPSG:6933        # World Cylindrical Equal Area, for area & stock accounting
+
+deltas:
+  - id: sundarbans
+    name: Sundarbans (Ganges-Brahmaputra-Meghna)
+    country: [BD, IN]
+    continent: Asia
+    tier: 1
+    bbox: [88.00, 21.50, 89.95, 22.70]
+
+  - id: mekong
+    name: Mekong
+    country: [VN]
+    continent: Asia
+    tier: 1
+    bbox: [104.60, 8.40, 106.80, 10.40]
+
+  - id: irrawaddy
+    name: Irrawaddy (Ayeyarwady)
+    country: [MM]
+    continent: Asia
+    tier: 1
+    bbox: [94.20, 15.30, 96.50, 17.60]
+
+  - id: niger
+    name: Niger Delta
+    country: [NG]
+    continent: Africa
+    tier: 1
+    bbox: [4.80, 4.00, 7.60, 5.60]
+
+  - id: amazon_amapa
+    name: Amazon / Amapa-Para coast
+    country: [BR]
+    continent: S.America
+    tier: 1
+    bbox: [-51.50, -1.50, -46.00, 4.50]
+
+  - id: orinoco
+    name: Orinoco Delta
+    country: [VE]
+    continent: S.America
+    tier: 2
+    bbox: [-62.50, 8.40, -59.80, 10.30]
+
+  - id: mahakam
+    name: Mahakam (E. Kalimantan)
+    country: [ID]
+    continent: Asia
+    tier: 1
+    bbox: [117.10, -1.20, 117.95, 0.10]
+
+  - id: musi_banyuasin
+    name: Musi / Banyuasin (Sumatra)
+    country: [ID]
+    continent: Asia
+    tier: 2
+    bbox: [104.20, -2.70, 105.50, -1.70]
+
+  - id: rajang_sarawak
+    name: Rajang / Sarawak (Borneo)
+    country: [MY]
+    continent: Asia
+    tier: 1
+    bbox: [110.70, 1.70, 112.20, 3.30]
+
+  - id: fly
+    name: Fly River
+    country: [PG]
+    continent: Oceania
+    tier: 1
+    bbox: [142.30, -9.10, 144.20, -7.70]
+
+  - id: zambezi
+    name: Zambezi Delta
+    country: [MZ]
+    continent: Africa
+    tier: 1
+    bbox: [35.30, -19.70, 37.20, -18.00]
+
+  - id: rufiji
+    name: Rufiji Delta
+    country: [TZ]
+    continent: Africa
+    tier: 2
+    bbox: [38.70, -8.40, 39.70, -7.50]
+
+  - id: indus
+    name: Indus Delta
+    country: [PK]
+    continent: Asia
+    tier: 1
+    bbox: [66.90, 23.60, 68.50, 24.90]
+
+  - id: saloum_gambia
+    name: Saloum / Gambia
+    country: [SN, GM]
+    continent: Africa
+    tier: 2
+    bbox: [-16.90, 13.20, -15.90, 14.40]
+
+  # --- estuarine mangrove systems added in Stage 0 for continent coverage (C4) ---
+  - id: everglades
+    name: Everglades / SW Florida (estuarine)
+    country: [US]
+    continent: N.America
+    tier: 2
+    setting: estuarine
+    bbox: [-82.30, 24.50, -80.40, 26.10]
+
+  - id: nsw_estuaries
+    name: NSW estuaries Sydney-Hunter (estuarine, temperate)
+    country: [AU]
+    continent: Oceania
+    tier: 2
+    setting: estuarine
+    bbox: [150.40, -34.70, 152.10, -33.10]

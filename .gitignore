@@ -1,0 +1,22 @@
+# Raw data (~8.5 GB) — regenerate via src/acquire/*. Provenance kept in manifests/.
+data/raw/
+
+# Logs and partial downloads
+logs/
+*.part
+*.log
+
+# macOS metadata
+._*
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Large intermediates (kept out; small processed/ artifacts ARE tracked)
+data/interim/
+data/tensors/

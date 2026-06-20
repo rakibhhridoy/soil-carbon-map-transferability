@@ -1,0 +1,35 @@
+{
+ "source": "SEANOE EOT20 (Hart-Davis 2021)",
+ "generated": 1781956046.590537,
+ "files": {
+  "M2_ocean_eot20.nc": {
+   "bytes": 132895314,
+   "mtime": 1781956043.1,
+   "path": "data/raw/eot20/ocean_tides/M2_ocean_eot20.nc",
+   "sha256_head": "7a227f19a0399dd2",
+   "url": "https://www.seanoe.org/data/00683/79489/data/85762.zip"
+  },
+  "K1_ocean_eot20.nc": {
+   "bytes": 132895314,
+   "mtime": 1781956044.2,
+   "path": "data/raw/eot20/ocean_tides/K1_ocean_eot20.nc",
+   "sha256_head": "81505182bfb8ea6c",
+   "url": "https://www.seanoe.org/data/00683/79489/data/85762.zip"
+  },
+  "O1_ocean_eot20.nc": {
+   "bytes": 132895314,
+   "mtime": 1781956045.27,
+   "path": "data/raw/eot20/ocean_tides/O1_ocean_eot20.nc",
+   "sha256_head": "0c49e42d93daed7e",
+   "url": "https://www.seanoe.org/data/00683/79489/data/85762.zip"
+  },
+  "S2_ocean_eot20.nc": {
+   "bytes": 132895314,
+   "mtime": 1781956046.41,
+   "path": "data/raw/eot20/ocean_tides/S2_ocean_eot20.nc",
+   "sha256_head": "4eaf58d8f73bb674",
+   "url": "https://www.seanoe.org/data/00683/79489/data/85762.zip"
+  }
+ },
+ "doi": "10.17882/79489"
+}

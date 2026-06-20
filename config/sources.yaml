@@ -1,0 +1,53 @@
+# MDBC data source catalog (Stage 0).
+# auth: none | earthdata | aviso   (earthdata creds present in ~/.netrc)
+# role: label | extent | driver
+# Drivers already on /Volumes/SSD Ex/PEDOFLUX_data are referenced in place (not copied).
+
+sources:
+  gmw_v3:
+    title: Global Mangrove Watch v3.0 (1996-2020)
+    role: extent
+    auth: none
+    license: CC-BY-4.0
+    doi: 10.5281/zenodo.6894273
+    zenodo_record: "6894273"
+    files:
+      gmw_v3_2020_vec.zip:   https://zenodo.org/records/6894273/files/gmw_v3_2020_vec.zip?download=1
+      gmw_v3_2020_gtiff.zip: https://zenodo.org/records/6894273/files/gmw_v3_2020_gtiff.zip?download=1
+      gmw_v3_union_vec.zip:  https://zenodo.org/records/6894273/files/gmw_v3_union_vec.zip?download=1   # for change module (deferred)
+    dest: data/raw/gmw_v3
+
+  ccn_library:
+    title: Coastal Carbon Network Data Library v1.6.0 (SOC labels)
+    role: label
+    auth: none
+    license: CC-BY (per-study citations in CCN_study_citations)
+    doi: 10.25573/serc.21565671
+    repo: Smithsonian/CCN-Data-Library
+    branch: main
+    base_url: https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis
+    files: [CCN_cores.csv, CCN_depthseries.csv, CCN_sites.csv, CCN_methods.csv, CCN_species.csv, CCN_impacts.csv]
+    dest: data/raw/ccn_library
+
+  simard2019_agb:
+    title: Simard 2019 Global Mangrove AGB & Canopy Height (30 m, yr2000)
+    role: label
+    auth: earthdata
+    license: NASA Earthdata open
+    doi: 10.3334/ORNLDAAC/1665
+    ornl_ds_id: "1665"
+    access: earthaccess (granules clipped to delta bboxes)
+    dest: data/raw/simard2019_agb
+
+  # ---- deferred / needs new credentials ----
+  fes2014_tide:
+    title: FES2014 global tidal model (tidal range driver)
+    role: driver
+    auth: aviso            # requires AVISO registration -- NOT yet available
+    status: BLOCKED_NEEDS_CREDENTIALS
+    note: Consider open alternative (e.g. GTSM / TPXO) if AVISO access is delayed.
+
+# Drivers referenced in place from the PEDOFLUX lake:
+pedoflux_lake_root: /Volumes/SSD Ex/PEDOFLUX_data
+pedoflux_drivers: [chelsa, worldclim, merit_hydro, soilgrids_isric, gsocmap, openlandmap,
+                   hwsd_v2, copernicus_lulc, smap, esacci_sm, gldas_noah, era5_land]

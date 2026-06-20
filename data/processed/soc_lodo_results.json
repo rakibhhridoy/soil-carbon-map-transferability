@@ -1,0 +1,196 @@
+{
+ "n_cores": 2489,
+ "n_features": 28,
+ "features": [
+  "chelsa_bio1",
+  "chelsa_bio2",
+  "chelsa_bio3",
+  "chelsa_bio4",
+  "chelsa_bio5",
+  "chelsa_bio6",
+  "chelsa_bio7",
+  "chelsa_bio8",
+  "chelsa_bio9",
+  "chelsa_bio10",
+  "chelsa_bio11",
+  "chelsa_bio12",
+  "chelsa_bio13",
+  "chelsa_bio14",
+  "chelsa_bio15",
+  "chelsa_bio16",
+  "chelsa_bio17",
+  "chelsa_bio18",
+  "chelsa_bio19",
+  "gsoc_stock",
+  "lulc_class",
+  "sg_bdod_0_5",
+  "sg_cec_0_5",
+  "dist_coast_km",
+  "dist_river_km",
+  "tidal_range_mean",
+  "tidal_range_spring",
+  "tidal_form_factor"
+ ],
+ "models": {
+  "ridge": {
+   "t1_random_r2": 0.309,
+   "t2_spatialblock_r2": -0.087,
+   "t3_lodo_mean_r2": -2.43,
+   "transfer_gap": 2.74,
+   "per_delta": [
+    {
+     "delta": "amazon_amapa",
+     "n": 69,
+     "r2_lodo": -2.358,
+     "rmse_Mgha": 100.9,
+     "bias_Mgha": 85.9,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.91
+    },
+    {
+     "delta": "everglades",
+     "n": 7,
+     "r2_lodo": -3.835,
+     "rmse_Mgha": 138.3,
+     "bias_Mgha": -125.1,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.86
+    },
+    {
+     "delta": "mekong",
+     "n": 119,
+     "r2_lodo": -0.947,
+     "rmse_Mgha": 134.0,
+     "bias_Mgha": -85.1,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.94
+    },
+    {
+     "delta": "musi_banyuasin",
+     "n": 37,
+     "r2_lodo": -5.21,
+     "rmse_Mgha": 211.9,
+     "bias_Mgha": -182.0,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.97
+    },
+    {
+     "delta": "rufiji",
+     "n": 96,
+     "r2_lodo": -0.022,
+     "rmse_Mgha": 61.0,
+     "bias_Mgha": -13.9,
+     "aoa_inside": 0.0,
+     "conformal_cov": 1.0
+    },
+    {
+     "delta": "saloum_gambia",
+     "n": 36,
+     "r2_lodo": -4.769,
+     "rmse_Mgha": 159.2,
+     "bias_Mgha": -138.7,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.58
+    },
+    {
+     "delta": "sundarbans",
+     "n": 11,
+     "r2_lodo": -0.559,
+     "rmse_Mgha": 40.4,
+     "bias_Mgha": 8.9,
+     "aoa_inside": 0.0,
+     "conformal_cov": 1.0
+    },
+    {
+     "delta": "zambezi",
+     "n": 12,
+     "r2_lodo": -1.741,
+     "rmse_Mgha": 97.7,
+     "bias_Mgha": 85.5,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.5
+    }
+   ]
+  },
+  "histgb": {
+   "t1_random_r2": 0.652,
+   "t2_spatialblock_r2": -0.687,
+   "t3_lodo_mean_r2": -5.804,
+   "transfer_gap": 6.456,
+   "per_delta": [
+    {
+     "delta": "amazon_amapa",
+     "n": 69,
+     "r2_lodo": -0.082,
+     "rmse_Mgha": 55.1,
+     "bias_Mgha": 2.5,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.9
+    },
+    {
+     "delta": "everglades",
+     "n": 7,
+     "r2_lodo": -1.418,
+     "rmse_Mgha": 110.3,
+     "bias_Mgha": -77.4,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.86
+    },
+    {
+     "delta": "mekong",
+     "n": 119,
+     "r2_lodo": -1.115,
+     "rmse_Mgha": 143.9,
+     "bias_Mgha": -111.5,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.6
+    },
+    {
+     "delta": "musi_banyuasin",
+     "n": 37,
+     "r2_lodo": -4.828,
+     "rmse_Mgha": 205.4,
+     "bias_Mgha": -177.9,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.86
+    },
+    {
+     "delta": "rufiji",
+     "n": 96,
+     "r2_lodo": -2.008,
+     "rmse_Mgha": 116.8,
+     "bias_Mgha": 90.4,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.71
+    },
+    {
+     "delta": "saloum_gambia",
+     "n": 36,
+     "r2_lodo": -1.298,
+     "rmse_Mgha": 116.5,
+     "bias_Mgha": -91.6,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.69
+    },
+    {
+     "delta": "sundarbans",
+     "n": 11,
+     "r2_lodo": -33.587,
+     "rmse_Mgha": 120.7,
+     "bias_Mgha": -118.7,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.0
+    },
+    {
+     "delta": "zambezi",
+     "n": 12,
+     "r2_lodo": -2.093,
+     "rmse_Mgha": 112.4,
+     "bias_Mgha": 81.7,
+     "aoa_inside": 0.0,
+     "conformal_cov": 0.42
+    }
+   ]
+  }
+ }
+}

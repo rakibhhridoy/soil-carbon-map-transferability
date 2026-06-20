@@ -1,0 +1,50 @@
+{
+ "source": "Smithsonian/CCN-Data-Library@main",
+ "generated": 1781916107.672338,
+ "files": {
+  "CCN_cores.csv": {
+   "bytes": 5111526,
+   "mtime": 1781916094.66,
+   "path": "data/raw/ccn_library/CCN_cores.csv",
+   "sha256_head": "491ab5747138911c",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_cores.csv"
+  },
+  "CCN_depthseries.csv": {
+   "bytes": 30303567,
+   "mtime": 1781916104.33,
+   "path": "data/raw/ccn_library/CCN_depthseries.csv",
+   "sha256_head": "cc37159d1bc21fd3",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_depthseries.csv"
+  },
+  "CCN_sites.csv": {
+   "bytes": 139788,
+   "mtime": 1781916104.71,
+   "path": "data/raw/ccn_library/CCN_sites.csv",
+   "sha256_head": "1ecf47586dda4cb2",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_sites.csv"
+  },
+  "CCN_methods.csv": {
+   "bytes": 82613,
+   "mtime": 1781916105.15,
+   "path": "data/raw/ccn_library/CCN_methods.csv",
+   "sha256_head": "169d446ed92f4c1e",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_methods.csv"
+  },
+  "CCN_species.csv": {
+   "bytes": 1011350,
+   "mtime": 1781916107.24,
+   "path": "data/raw/ccn_library/CCN_species.csv",
+   "sha256_head": "c2a3cd8c344430c9",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_species.csv"
+  },
+  "CCN_impacts.csv": {
+   "bytes": 155120,
+   "mtime": 1781916107.66,
+   "path": "data/raw/ccn_library/CCN_impacts.csv",
+   "sha256_head": "d14bda3d23b2d571",
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_impacts.csv"
+  }
+ },
+ "doi": "10.25573/serc.21565671",
+ "version": "v1.6.0"
+}

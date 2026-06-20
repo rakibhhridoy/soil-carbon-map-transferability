@@ -1,0 +1,314 @@
+{
+ "source": "ORNL DAAC 10.3334/ORNLDAAC/1665",
+ "generated": 1781950586.7985642,
+ "files": {
+  "zambezi/Mangrove_hba95_Mozambique.tif": {
+   "bytes": 67493328,
+   "mtime": 1781950466.18,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_hba95_Mozambique.tif",
+   "sha256_head": "a0f0bec6812ed783",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/Mangrove_hba95_Mozambique.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950428.58,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_hba95_Mozambique.tif.sha256",
+   "sha256_head": "4b5a1855071b711f",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/Mangrove_hmax95_Mozambique.tif": {
+   "bytes": 67504225,
+   "mtime": 1781950453.38,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_hmax95_Mozambique.tif",
+   "sha256_head": "07027da3ef8b9f26",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/Mangrove_hmax95_Mozambique.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950423.77,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_hmax95_Mozambique.tif.sha256",
+   "sha256_head": "5d97ee6f26184bb2",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/Mangrove_agb_Mozambique.tif": {
+   "bytes": 67959892,
+   "mtime": 1781950502.71,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_agb_Mozambique.tif",
+   "sha256_head": "1db020cfd543fe04",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/Mangrove_agb_Mozambique.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950430.68,
+   "path": "data/raw/simard2019_agb/zambezi/Mangrove_agb_Mozambique.tif.sha256",
+   "sha256_head": "3e0697cbc48c9330",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/North_South_America_tree_measurements.csv": {
+   "bytes": 873472,
+   "mtime": 1781950427.24,
+   "path": "data/raw/simard2019_agb/zambezi/North_South_America_tree_measurements.csv",
+   "sha256_head": "1372a739d2b5e319",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "zambezi/North_South_America_tree_measurements.csv.sha256": {
+   "bytes": 64,
+   "mtime": 1781950424.95,
+   "path": "data/raw/simard2019_agb/zambezi/North_South_America_tree_measurements.csv.sha256",
+   "sha256_head": "9e6f05530ba7bb56",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_hmax95_Tanzania.tif": {
+   "bytes": 12018974,
+   "mtime": 1781950518.36,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_hmax95_Tanzania.tif",
+   "sha256_head": "2353eb47fcb42e18",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_hmax95_Tanzania.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950511.68,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_hmax95_Tanzania.tif.sha256",
+   "sha256_head": "ffe435e84fe9fabd",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_agb_Tanzania.tif": {
+   "bytes": 12189516,
+   "mtime": 1781950519.94,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_agb_Tanzania.tif",
+   "sha256_head": "4a577e872f980160",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_agb_Tanzania.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950511.8,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_agb_Tanzania.tif.sha256",
+   "sha256_head": "18937feabcfa7781",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_hba95_Tanzania.tif": {
+   "bytes": 12027836,
+   "mtime": 1781950518.38,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_hba95_Tanzania.tif",
+   "sha256_head": "9aeafe7fd195cf5a",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/Mangrove_hba95_Tanzania.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950511.63,
+   "path": "data/raw/simard2019_agb/rufiji/Mangrove_hba95_Tanzania.tif.sha256",
+   "sha256_head": "836c4cc31baf1e57",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/North_South_America_tree_measurements.csv": {
+   "bytes": 873472,
+   "mtime": 1781950513.14,
+   "path": "data/raw/simard2019_agb/rufiji/North_South_America_tree_measurements.csv",
+   "sha256_head": "1372a739d2b5e319",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "rufiji/North_South_America_tree_measurements.csv.sha256": {
+   "bytes": 64,
+   "mtime": 1781950512.4,
+   "path": "data/raw/simard2019_agb/rufiji/North_South_America_tree_measurements.csv.sha256",
+   "sha256_head": "9e6f05530ba7bb56",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_agb_Gambia.tif": {
+   "bytes": 2173092,
+   "mtime": 1781950529.11,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_agb_Gambia.tif",
+   "sha256_head": "bcefea00865b2ff8",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_agb_Gambia.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950524.81,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_agb_Gambia.tif.sha256",
+   "sha256_head": "a133558afe65ae89",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hmax95_Gambia.tif": {
+   "bytes": 2108269,
+   "mtime": 1781950526.52,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hmax95_Gambia.tif",
+   "sha256_head": "5984d3bd5b95af32",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hmax95_Gambia.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950524.96,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hmax95_Gambia.tif.sha256",
+   "sha256_head": "e1635fd1a176aee9",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hba95_Senegal.tif": {
+   "bytes": 7881274,
+   "mtime": 1781950529.28,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hba95_Senegal.tif",
+   "sha256_head": "4c2eea45176d6d7d",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hba95_Senegal.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950525.76,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hba95_Senegal.tif.sha256",
+   "sha256_head": "cfd2e8e617438a9f",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hmax95_Senegal.tif": {
+   "bytes": 7908966,
+   "mtime": 1781950528.94,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hmax95_Senegal.tif",
+   "sha256_head": "c29ae2c6f1e54dee",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hmax95_Senegal.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950525.05,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hmax95_Senegal.tif.sha256",
+   "sha256_head": "735fb1700414c9fc",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_agb_Senegal.tif": {
+   "bytes": 8079371,
+   "mtime": 1781950531.33,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_agb_Senegal.tif",
+   "sha256_head": "11ecdc7c6cfbe51d",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_agb_Senegal.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950526.62,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_agb_Senegal.tif.sha256",
+   "sha256_head": "d9f42a66a8ee45be",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hba95_Gambia.tif": {
+   "bytes": 2099483,
+   "mtime": 1781950528.78,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hba95_Gambia.tif",
+   "sha256_head": "9baa1d41b1219e44",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/Mangrove_hba95_Gambia.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950527.12,
+   "path": "data/raw/simard2019_agb/saloum_gambia/Mangrove_hba95_Gambia.tif.sha256",
+   "sha256_head": "078a760c9fe435a4",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/North_South_America_tree_measurements.csv": {
+   "bytes": 873472,
+   "mtime": 1781950528.54,
+   "path": "data/raw/simard2019_agb/saloum_gambia/North_South_America_tree_measurements.csv",
+   "sha256_head": "1372a739d2b5e319",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "saloum_gambia/North_South_America_tree_measurements.csv.sha256": {
+   "bytes": 64,
+   "mtime": 1781950528.18,
+   "path": "data/raw/simard2019_agb/saloum_gambia/North_South_America_tree_measurements.csv.sha256",
+   "sha256_head": "9e6f05530ba7bb56",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hba95_UnitedStates.tif": {
+   "bytes": 31897795,
+   "mtime": 1781950580.24,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hba95_UnitedStates.tif",
+   "sha256_head": "f46349e35ba4ac41",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hba95_UnitedStates.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950535.9,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hba95_UnitedStates.tif.sha256",
+   "sha256_head": "e2863f242720099a",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hmax95_Bahamas.tif": {
+   "bytes": 24925653,
+   "mtime": 1781950558.11,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hmax95_Bahamas.tif",
+   "sha256_head": "5e0ba6898044a1c0",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hmax95_Bahamas.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950535.67,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hmax95_Bahamas.tif.sha256",
+   "sha256_head": "e3b03c5cb5b3668c",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_agb_Bahamas.tif": {
+   "bytes": 25127483,
+   "mtime": 1781950568.65,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_agb_Bahamas.tif",
+   "sha256_head": "2b1a470eaeab5aec",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_agb_Bahamas.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950535.74,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_agb_Bahamas.tif.sha256",
+   "sha256_head": "a101d29b638f9618",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hmax95_UnitedStates.tif": {
+   "bytes": 31908855,
+   "mtime": 1781950586.24,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hmax95_UnitedStates.tif",
+   "sha256_head": "ff9b208d689cbeb8",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hmax95_UnitedStates.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950536.74,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hmax95_UnitedStates.tif.sha256",
+   "sha256_head": "069630328c89a6ba",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_agb_UnitedStates.tif": {
+   "bytes": 32247271,
+   "mtime": 1781950585.28,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_agb_UnitedStates.tif",
+   "sha256_head": "1e4bfe7ad0dee648",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_agb_UnitedStates.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950538.36,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_agb_UnitedStates.tif.sha256",
+   "sha256_head": "6b291dbd8c2e1b24",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hba95_Bahamas.tif": {
+   "bytes": 24904466,
+   "mtime": 1781950564.15,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hba95_Bahamas.tif",
+   "sha256_head": "7cda5edc66d43f2a",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/Mangrove_hba95_Bahamas.tif.sha256": {
+   "bytes": 64,
+   "mtime": 1781950539.26,
+   "path": "data/raw/simard2019_agb/everglades/Mangrove_hba95_Bahamas.tif.sha256",
+   "sha256_head": "4bd8bca250687a1e",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/North_South_America_tree_measurements.csv": {
+   "bytes": 873472,
+   "mtime": 1781950542.63,
+   "path": "data/raw/simard2019_agb/everglades/North_South_America_tree_measurements.csv",
+   "sha256_head": "1372a739d2b5e319",
+   "url": "10.3334/ORNLDAAC/1665"
+  },
+  "everglades/North_South_America_tree_measurements.csv.sha256": {
+   "bytes": 64,
+   "mtime": 1781950540.67,
+   "path": "data/raw/simard2019_agb/everglades/North_South_America_tree_measurements.csv.sha256",
+   "sha256_head": "9e6f05530ba7bb56",
+   "url": "10.3334/ORNLDAAC/1665"
+  }
+ }
+}
