@@ -1,0 +1,89 @@
+\documentclass[11pt]{letter}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,top=2.4cm,bottom=2.4cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=black}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{flushright}
+Md Rakib Hasan\\
+Fermium Systems, Dhaka 1207, Bangladesh\\
+Department of Soil, Water and Environment, University of Dhaka\\
+\href{mailto:rakibhhridoy@fermium.systems}{rakibhhridoy@fermium.systems}\\
+\today
+\end{flushright}
+
+To the Editors,\\
+\textit{Communications Earth \& Environment}
+
+\textbf{Re: Submission of an original research manuscript}
+
+Dear Editors,
+
+We are pleased to submit our manuscript, \textbf{``Cross-delta transferability limits of
+mangrove blue-carbon stock models: a multi-delta benchmark with area-of-applicability and
+conformal uncertainty,''} for consideration as an original research article in
+\textit{Communications Earth \& Environment}.
+
+Global maps of mangrove soil and biomass carbon are now used to set baselines for
+blue-carbon credits and to prioritise conservation, yet their accuracy is validated
+almost exclusively with random or spatially-pooled cross-validation. Such validation is
+inflated by spatial autocorrelation and is silent on the question that actually matters
+for a carbon buyer or a newly-surveyed coastline: can a model trained on some deltas
+predict an \emph{unsampled} one? We pose and answer this question with a reproducible
+multi-delta benchmark spanning eight major mangrove systems across four continents.
+
+We believe the study fits the scope of \textit{Communications Earth \& Environment} for
+three reasons:
+
+\begin{itemize}
+  \item \textbf{A quantified, operationally relevant limit.} Under leave-one-delta-out
+  evaluation a model scoring $R^2=0.65$ in random cross-validation captures essentially
+  no within-delta variation (median within-delta correlation $r\approx0$) and is biased
+  by 100--200~Mg\,ha$^{-1}$; every held-out delta falls entirely outside the model's area
+  of applicability. The same per-delta failure appears when we test a widely-used
+  published soil-carbon product directly against in-situ cores, so the caution applies to
+  maps already in use, not only to our re-implementation.
+  \item \textbf{A mechanism and a constructive remedy.} We show the failure is driven by
+  concept shift --- the environment--carbon relationship itself differs between deltas,
+  with covariate slopes that reverse sign --- rather than by missing predictors, which
+  adding tidal and geomorphic forcing does not remedy. We then quantify the data cost of
+  fixing it: on the order of ten to twenty-five local cores recover most of the lost
+  within-delta skill, defining a practical middle path between an untrustworthy global
+  prediction and a full local inventory.
+  \item \textbf{A reusable, uncertainty-aware framework.} We release a frozen multi-delta
+  benchmark with leave-one-delta-out splits, a three-tier validation protocol, and
+  area-of-applicability and conformal-prediction layers that tell a practitioner where a
+  global model can be trusted --- portable to any coastal system by a bounding box.
+\end{itemize}
+
+We have been deliberately conservative in interpretation. We report median alongside mean
+skill because small folds dominate the latter; we separate level error from pattern error
+rather than leaning on a single composite metric; and we state explicitly the limitations
+of sparse in-situ labels, the partial circularity of the biomass product, and the fact
+that version~1 is soil-carbon-led. The complete pipeline, pinned environment, and all
+derived data are openly archived to ensure full reproducibility.
+
+\textbf{Declarations.} This manuscript is original, has not been published previously, and
+is not under consideration elsewhere. The study involved no human participants or animals.
+All primary datasets are public, and our code and derived data are archived to ensure
+reproducibility. The author declares no competing interests.
+
+Suitable reviewers may be drawn from the fields of blue-carbon biogeochemistry, spatial
+machine learning for ecological mapping, and mangrove remote sensing; we are happy to
+provide names on request.
+
+Thank you for considering our manuscript. We look forward to your response.
+
+Sincerely,
+
+Md Rakib Hasan
+
+\end{document}

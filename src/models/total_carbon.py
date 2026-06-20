@@ -33,6 +33,23 @@ def main():
     agb_d = agb.groupby("delta_id").agbc_Mgha.mean()
     deltas = sorted(set(soc_d.index) & set(agb_d.index))
 
+    # bootstrap CI on per-delta density and the benchmark total stock by resampling the
+    # SOC and AGB core samples within each delta (1000 reps).
+    rng = np.random.default_rng(0)
+    NB = 1000
+    boot_total = np.zeros(NB)
+    delta_ci = {}
+    for d in deltas:
+        sv = soc[soc.delta_id == d].soc_0_100_Mgha.dropna().to_numpy()
+        av = agb[agb.delta_id == d].agbc_Mgha.dropna().to_numpy()
+        area = float(reg.loc[d, "mangrove_area_km2"])
+        bt = np.array([
+            (np.median(rng.choice(sv, len(sv))) + np.mean(rng.choice(av, len(av)))) * area * 100 / 1e6
+            for _ in range(NB)])
+        delta_ci[d] = (float(np.percentile(bt, 2.5)), float(np.percentile(bt, 97.5)))
+        boot_total += bt
+    total_lo, total_hi = float(np.percentile(boot_total, 2.5)), float(np.percentile(boot_total, 97.5))
+
     rows = []
     for d in deltas:
         socv, agbv = float(soc_d[d]), float(agb_d[d])
@@ -42,12 +59,14 @@ def main():
         rows.append(dict(delta=d, agbc_Mgha=round(agbv, 1), soc_Mgha=round(socv, 1),
                          total_Mgha=round(total, 1), area_km2=round(area, 0),
                          total_stock_TgC=round(stock_Tg, 2),
+                         stock_ci=[round(delta_ci[d][0], 2), round(delta_ci[d][1], 2)],
                          soc_frac=round(socv / total, 2)))
     tab = pd.DataFrame(rows)
 
     summary = dict(
         n_deltas=len(deltas),
         total_stock_TgC=round(float(tab.total_stock_TgC.sum()), 1),
+        total_stock_ci95=[round(total_lo, 1), round(total_hi, 1)],
         soc_fraction_mean=round(float(tab.soc_frac.mean()), 2),
         soc_lodo_median_r2=socL["models"]["histgb"]["per_delta"] and
             round(float(np.median([r["r2_lodo"] for r in socL["models"]["histgb"]["per_delta"]])), 2),

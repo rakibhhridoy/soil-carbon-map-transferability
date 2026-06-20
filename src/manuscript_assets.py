@@ -49,9 +49,11 @@ def tab_totalcarbon():
             f"{r['soc_Mgha']:.0f} & {r['total_Mgha']:.0f} & {r['soc_frac']:.2f} & "
             f"{r['total_stock_TgC']:.1f} \\\\" for r in tc["per_delta"]]
     s = tc["summary"]
+    ci = s.get("total_stock_ci95", [None, None])
     rows.append("\\midrule")
-    rows.append(f"\\textbf{{Total}} & & & & {s['soc_fraction_mean']:.2f} & "
-                f"{s['total_stock_TgC']:.0f} \\\\")
+    tot = (f"{s['total_stock_TgC']:.0f} ({ci[0]:.0f}--{ci[1]:.0f})"
+           if ci[0] is not None else f"{s['total_stock_TgC']:.0f}")
+    rows.append(f"\\textbf{{Total}} & & & & {s['soc_fraction_mean']:.2f} & {tot} \\\\")
     (TAB / "tab_totalcarbon.tex").write_text(
         "\\begin{tabular}{lrrrrr}\n\\toprule\n"
         "Delta & AGB-C & SOC & Total & SOC frac. & Stock (Tg\\,C) \\\\\n"
