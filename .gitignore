@@ -36,3 +36,6 @@ manuscript/figures/*.pdf
 # D3 figure builder: ignore deps and intermediate SVGs (PDFs regenerated into manuscript/figures)
 figures_d3/node_modules/
 figures_d3/svg/
+
+# Fetched public driver lake (regenerate via fetch_lake.sh)
+data/lake/

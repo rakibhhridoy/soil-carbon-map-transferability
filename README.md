@@ -44,8 +44,16 @@ export MDBC_LAKE=/path/to/PEDOFLUX_data/raw   # external driver rasters (climate
 | Natural Earth 10m | distance-to-coast/river | none |
 
 ## External dependency
-Driver covariate rasters (CHELSA, SoilGrids, GSOCmap, Copernicus LULC) are referenced
-in place from the **PEDOFLUX data lake** via `MDBC_LAKE` and are not redistributed here.
+Driver covariate rasters (CHELSA, SoilGrids, GSOCmap, Copernicus LULC) are referenced in
+place via `MDBC_LAKE` and are not redistributed here. For a bare clone, fetch them from
+their public sources:
+```bash
+./fetch_lake.sh                 # ~5-7 GB into data/lake/raw (or $MDBC_LAKE if set)
+export MDBC_LAKE="$PWD/data/lake/raw"
+```
+The terrestrial specificity control additionally needs a harmonised WoSIS SOC table
+(`$MDBC_LAKE/../processed/pedoflux_profiles.parquet`, or set `MDBC_WOSIS`), derived from
+the ISRIC WoSIS snapshot; the core mangrove results do not require it.
 
 ## Figures
 Manuscript figures are rendered as vector PDF by a server-side D3 pipeline (no browser):
