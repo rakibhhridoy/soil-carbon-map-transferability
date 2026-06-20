@@ -1,0 +1,35 @@
+{
+ "with_gsoc": {
+  "ridge": {
+   "t1_random_r2": 0.309,
+   "t2_spatialblock_r2": -0.087,
+   "t3_lodo_median_r2": -2.05,
+   "transfer_gap": 2.359
+  },
+  "histgb": {
+   "t1_random_r2": 0.652,
+   "t2_spatialblock_r2": -0.687,
+   "t3_lodo_median_r2": -1.713,
+   "transfer_gap": 2.365
+  }
+ },
+ "without_gsoc": {
+  "ridge": {
+   "t1_random_r2": 0.306,
+   "t2_spatialblock_r2": -0.076,
+   "t3_lodo_median_r2": -2.723,
+   "transfer_gap": 3.028
+  },
+  "histgb": {
+   "t1_random_r2": 0.652,
+   "t2_spatialblock_r2": -0.415,
+   "t3_lodo_median_r2": -1.526,
+   "transfer_gap": 2.177
+  }
+ },
+ "delta_histgb": {
+  "t1_drop": 0.0,
+  "t3_drop": -0.187
+ },
+ "verdict": "Transfer gap is robust to removing the GSOC prior; the prior does not manufacture the failure."
+}

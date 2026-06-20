@@ -215,7 +215,10 @@ unchanged across the three feature sets (gradient-boosting LODO $R^2_{\text{mean
 $-7.0$, $-5.7$ and $-5.8$ for climate, $+$geomorphic and $+$tidal respectively), and
 the AOA-inside fraction remains zero for every delta throughout. The transferability
 limit is therefore not an artifact of an incomplete covariate stack along the major
-physical axes.
+physical axes. Nor is the in-distribution skill an artifact of the GSOCmap prior:
+removing it leaves the random-CV $R^2$ unchanged ($<0.005$) and the median LODO $R^2$
+nearly so ($<0.2$; Supplementary Information), so the transfer gap does not depend on
+that potentially circular feature.
 
 \subsection{Covariate shift does not fully explain which deltas fail}
 If transfer failed simply because held-out deltas were environmentally distant, the

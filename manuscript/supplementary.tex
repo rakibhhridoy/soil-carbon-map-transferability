@@ -38,77 +38,143 @@
 
 % ---------------------------------------------------------------------
 \section{Delta selection and the frozen benchmark}
-\PLACE{Full pre-registered criteria (C1--C5), candidate windows, the GMW-clip
-procedure, the usable-SOC-core gate, and the change log (estuarine systems added
-for continental coverage; the Oceania data-gap decision). Mirror
-\texttt{docs/stage0\_delta\_selection\_criteria.md}.}
+Candidate deltas were drawn from the major mangrove systems of the global tropics and
+defined by generous geographic windows (bounding boxes). Inclusion rules were fixed
+before any modelling. A system enters the benchmark as a soil-carbon leave-one-delta-out
+(LODO) fold if (C1) its mangrove area within the window, computed from Global Mangrove
+Watch v3 (2020) in the World Cylindrical Equal Area projection (EPSG:6933), is at least
+40~km$^2$; (C2) it represents a coherent deltaic or estuarine mangrove setting; (C3) it
+carries at least five \emph{usable} mangrove soil cores---cores that pass the
+harmonization in Section~\ref{si:soc} rather than merely falling in the window; (C4) the
+fold set spans at least four continents; and (C5) windows do not overlap, so no pixel is
+shared between a training and a held-out delta. Systems passing the area but not the
+label criterion were retained as prediction-only deltas; the remainder were excluded.
 
-\begin{longtable}{llrrrl}
-\caption{Full candidate delta registry: mangrove area (GMW v3, 2020, equal-area),
-usable SOC cores, raw in-window cores, and assigned role.
-\PLACE{regenerate from \texttt{data/processed/delta\_registry.csv}.}}\\
-\toprule
-Delta & Country & Area (km$^2$) & SOC cores & Raw cores & Role \\
-\midrule
-\endfirsthead
-\toprule
-Delta & Country & Area (km$^2$) & SOC cores & Raw cores & Role \\
-\midrule
-\endhead
-\PLACE{populate all 16 windows} & & & & & \\
-\bottomrule
-\end{longtable}
-
-% ---------------------------------------------------------------------
-\section{SOC label harmonization}
-\PLACE{Detail Eq.~\ref{eq:soc-si}: layer cleaning bounds (BD, $f_C$ ranges),
-OM$\to$C ratio derivation ($\approx0.427$ over $\sim$12k paired CCN samples),
-$\geq$80~cm coverage requirement, deepest-layer extrapolation to 100~cm and its
-flag, 0.5/99.5 percentile outlier trim. Report final $n$, median and range.}
-\begin{equation}
-\mathrm{SOC}_{0\text{--}100} = 100 \sum_i \mathrm{BD}_i\, f_{C,i}\, \Delta z_i,
-\qquad f_{C,i} = \begin{cases} f_{C,i}^{\text{meas}} \\ 0.427\, f_{OM,i} \end{cases}
-\label{eq:soc-si}
-\end{equation}
-
-% ---------------------------------------------------------------------
-\section{Covariate stack}
-\PLACE{Full covariate list with source, native resolution, CRS and sampling
-method (nearest finite cell). Note the PEDOFLUX-lake layers that were truncated
-and excluded (SoilGrids texture, OpenLandMap, MERIT terrain) and why GSOCmap is
-treated cautiously (circular prior). EOT20 constituents (M2, S2, K1, O1) and the
-tidal-range / form-factor definitions.}
+A key design choice is that C3 is evaluated on \emph{usable} cores, not the raw in-window
+count: many windows contain marsh, seagrass or shallow cores that do not yield a
+0--100~cm mangrove SOC stock. This distinction is large (Table~\ref{tab:registry}): for
+example the Everglades window holds 276 raw cores but only 7 usable mangrove SOC cores,
+and Zambezi 280 versus 12. The first registry pass yielded only three continents, failing
+C4; we therefore added two estuarine systems with ample usable cores---the Everglades
+(North America) and an Australian estuary (Oceania). The Australian fold was subsequently
+excluded because its mangrove area (18~km$^2$) fell below the C1 floor, and no large
+Australian or Papua New Guinean delta carried usable deep SOC cores in the source
+database. The final v1 soil-carbon benchmark therefore comprises eight core deltas across
+four continents; Oceania remains a documented data gap.
 
 \begin{table}[h]
 \centering
-\caption{Covariates used in the v1 SOC model and per-core coverage.
-\PLACE{from the \texttt{sample\_covariates.py} coverage report.}}
+\caption{Full candidate delta registry: mangrove area (GMW v3, 2020, equal-area), usable
+mangrove SOC cores, raw in-window cores (any habitat), and assigned role. Auto-generated
+from \texttt{data/processed/delta\_registry.csv}.}
+\label{tab:registry}
+\input{tables/tab_registry_full}
+\end{table}
+
+% ---------------------------------------------------------------------
+\section{SOC label harmonization}
+\label{si:soc}
+Soil cores from the Coastal Carbon Network Data Library v1.6.0 classified as mangrove
+habitat with valid coordinates were integrated to a standardized 0--100~cm areal carbon
+stock by Eq.~\ref{eq:soc-si}, where $\mathrm{BD}_i$ is dry bulk density
+(g\,cm$^{-3}$), $f_{C,i}$ the organic carbon mass fraction, and $\Delta z_i$ the layer
+thickness (cm) truncated at 100~cm.
+\begin{equation}
+\mathrm{SOC}_{0\text{--}100} = 100 \sum_i \mathrm{BD}_i\, f_{C,i}\, \Delta z_i,
+\qquad f_{C,i} = \begin{cases} f_{C,i}^{\text{meas}} & \text{if measured} \\
+0.427\, f_{OM,i} & \text{otherwise} \end{cases}
+\label{eq:soc-si}
+\end{equation}
+Where carbon fraction was unreported it was estimated from loss-on-ignition organic
+matter using the factor 0.427, the median $f_C/f_{OM}$ ratio across $\sim$12{,}000
+paired CCN samples. Layers with physically implausible values were removed (bulk density
+outside $0.02$--$1.8$~g\,cm$^{-3}$ or carbon fraction outside $0.001$--$0.60$). Cores
+were required to reach at least 80~cm; the residual gap to 100~cm was filled with the
+deepest valid layer's carbon density and flagged as extrapolated. After a 0.5/99.5
+percentile trim, the procedure produced 2{,}489 usable mangrove SOC cores (median
+278~Mg\,ha$^{-1}$, range 15--844~Mg\,ha$^{-1}$; 4\% of cores extrapolated to 100~cm and
+7\% with carbon inferred from organic matter).
+
+% ---------------------------------------------------------------------
+\section{Covariate stack}
+Each covariate was sampled at every label point in the layer's native coordinate
+reference system; nodata values were masked per layer, and tidal constituents---which
+are masked on land---were sampled by nearest valid ocean cell within a small search
+radius. Climate is represented by the 19 CHELSA v2.1 bioclimatic variables; a global
+soil-carbon prior by GSOCmap; soil context by SoilGrids bulk density and cation-exchange
+capacity; land cover by the Copernicus Global Land Service 2015 classification;
+geomorphic position by distance-to-coast and distance-to-river computed from Natural
+Earth in equal-area projection; and tidal forcing by the mean and spring tidal range and
+the tidal form factor derived from the M2, S2, K1 and O1 constituents of the EOT20 ocean
+tide model. Several archived driver layers in the source data lake were corrupt or
+truncated on read---SoilGrids texture, OpenLandMap soil-carbon, and the fine terrain and
+hydrology tiles---and were excluded; the sampler tolerates and logs such failures rather
+than aborting. GSOCmap is itself a soil-carbon model, so it is retained but treated
+cautiously to avoid circularity; a sensitivity analysis removing it is reported in
+Section~\ref{si:gsoc}. Coverage (fraction of cores with a finite value) is given in
+Table~\ref{tab:covcoverage}.
+
+\begin{table}[h]
+\centering
+\caption{Covariate groups in the v1 SOC model and per-core coverage.}
+\label{tab:covcoverage}
 \begin{tabular}{lllr}
 \toprule
 Covariate group & Source & Variables & Coverage \\
 \midrule
-Climate    & CHELSA v2.1   & bio1--19            & \PLACE{100\%} \\
-SOC prior  & GSOCmap        & stock               & \PLACE{77\%} \\
-Soil       & SoilGrids      & bdod, cec (0--5 cm) & \PLACE{58\%} \\
-Land cover & Copernicus LULC& class (2015)        & \PLACE{100\%} \\
-Geomorphic & Natural Earth  & dist.\ coast/river  & \PLACE{100\%} \\
-Tidal      & EOT20          & range mean/spring, form & \PLACE{100\%} \\
+Climate    & CHELSA v2.1    & bio1--19                & 100\% \\
+SOC prior  & GSOCmap        & stock                   & 77\% \\
+Soil       & SoilGrids      & bdod, cec (0--5 cm)     & 58\% \\
+Land cover & Copernicus LULC& class (2015)            & 100\% \\
+Geomorphic & Natural Earth  & dist.\ coast/river      & 100\% \\
+Tidal      & EOT20          & range mean/spring, form & 100\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 % ---------------------------------------------------------------------
 \section{Validation, AOA and conformal details}
-\PLACE{Spatial-block size relative to the SOC autocorrelation range; LODO fold
-definition and leakage control; AOA dissimilarity-index formula and threshold
-choice; split-conformal construction and the $\alpha=0.1$ target. Sensitivity of
-the AOA threshold.}
+Tier~1 is standard random five-fold cross-validation. Tier~2 is spatial-block
+cross-validation: points are assigned to $5^{\circ}$ latitude--longitude blocks and whole
+blocks are held out across five folds, so that training and validation points are
+spatially separated and the autocorrelation leakage that inflates random validation is
+suppressed. Tier~3 is leave-one-delta-out: one delta is held out entirely while the model
+trains on all others; because windows are non-overlapping (criterion C5) no pixel is
+shared, eliminating leakage between train and test deltas. The area of applicability is
+computed by standardizing features, weighting them by model importance, and taking each
+test point's importance-weighted distance to its nearest training point normalised by the
+mean within-training nearest-neighbour distance; the applicability threshold is the
+outlier-aware upper quantile of training dissimilarity values, and we report the fraction
+of each held-out delta below it. Split-conformal intervals withhold a calibration subset
+(20\%, minimum 50 cores) from each LODO training set and set the interval half-width to
+the $(1-\alpha)$ quantile of absolute calibration residuals with $\alpha=0.1$; we report
+the empirical coverage realised on each held-out delta.
+
+% ---------------------------------------------------------------------
+\section{GSOC prior sensitivity}
+\label{si:gsoc}
+Because GSOCmap is itself a soil-carbon model, its inclusion as a covariate could inflate
+in-distribution skill. Removing it changes the gradient-boosting random-CV $R^2$ by less
+than $0.005$ and the median LODO $R^2$ by less than $0.2$ (Table~\ref{tab:gsoc}), and the
+transfer gap is essentially unchanged. The transferability failure is therefore not an
+artifact of the prior.
+
+\begin{table}[h]
+\centering
+\caption{SOC model skill with and without the GSOCmap prior (gradient boosting).
+Auto-generated from \texttt{gsoc\_ablation.json}.}
+\label{tab:gsoc}
+\input{tables/tab_gsoc_ablation}
+\end{table}
 
 % ---------------------------------------------------------------------
 \section{Full per-delta transfer results}
-\PLACE{Per-delta LODO $R^2$, RMSE, bias, AOA-inside fraction and conformal
-coverage for both models and all three feature sets (climate; +geomorphic;
-+tidal). Mirror \texttt{soc\_lodo\_results.json}.}
+Per-delta leave-one-delta-out results for the full-covariate gradient-boosting model are
+given in the corresponding main-text table (sample size, $R^2$, RMSE, AOA-inside fraction
+and conformal coverage). The complete set of metrics for both estimators (ridge and gradient
+boosting) and all three feature sets (climate; $+$geomorphic; $+$tidal), including bias,
+is provided in machine-readable form in \texttt{soc\_lodo\_results.json} accompanying the
+code release.
 
 \begin{table}[h]
 \centering
@@ -119,17 +185,31 @@ set). Auto-generated from \texttt{soc\_lodo\_results.json}.}
 
 % ---------------------------------------------------------------------
 \section{Transfer diagnostic}
-\PLACE{Energy-distance and dissimilarity-index methodology; the full per-delta
-shift table; Spearman correlations with the small-$n$ power caveat; the
-standardized-mean-difference ranking that names each delta's dominant shift axis.
-Mirror \texttt{docs/stage2\_diagnostic.md}.}
+For each held-out delta we measured covariate shift two ways: the mean
+importance-weighted dissimilarity index used for the AOA, and the multivariate energy
+distance between the delta and the pooled remaining deltas on standardized features
+(subsampled to at most 400 points per side for tractability). Each shift measure was
+correlated with the corresponding LODO error across the eight folds (Spearman $\rho$).
+Across folds, neither correlation reached significance and both carried the unexpected
+sign (dissimilarity vs.\ $R^2$: $\rho=+0.24$, $p=0.57$; energy distance vs.\ RMSE:
+$\rho=-0.38$, $p=0.35$); with only eight folds the test is underpowered, so this is
+reported as inconclusive rather than a null result. To name the dominant axis of
+difference for each delta we ranked covariates by the standardized mean difference
+between the delta and the remaining deltas. These axes are physically interpretable:
+tidal range for the macrotidal Amazon--Amap\'a, Rufiji and Musi--Banyuasin; precipitation
+seasonality (bio15) for the Sahelian Saloum--Gambia; and monsoon thermal regime (bio3,
+bio6, bio9) for the Sundarbans, consistent with concept shift---a change in the
+environment--carbon relationship itself---rather than mere distance in feature space.
 
 % ---------------------------------------------------------------------
 \section{Aboveground biomass and total ecosystem carbon}
-\PLACE{AGB-C labels were sampled from the 30~m Simard product within each delta's
-mangrove mask (500 points per delta; AGB$\to$C $\times0.47$) and run through the
-identical models, validation tiers, AOA and conformal machinery as SOC. Report the
-full per-delta AGB LODO table and the per-delta total-carbon breakdown.}
+Aboveground biomass carbon labels were generated by sampling the 30~m Simard et al.\
+(2019) mangrove biomass product within each delta's mangrove mask (the product is masked
+to mangrove extent, so positive-valued pixels are mangrove), drawing 500 random valid
+pixels per delta and converting biomass to carbon with a factor of 0.47. These points
+were passed through the identical covariate stack, models, validation tiers, AOA and
+conformal machinery used for SOC. The per-pool transferability comparison appears in the main text; the per-delta
+total ecosystem carbon is given below.
 
 \begin{table}[h]
 \centering
@@ -145,9 +225,16 @@ pool summaries rather than per-pixel sums.
 
 % ---------------------------------------------------------------------
 \section{Reproducibility}
-\PLACE{Pinned environment (\texttt{requirements.txt}), single-command runner
-(\texttt{run\_all.sh}), the \texttt{MDBC\_LAKE} external-driver convention, and
-the provenance manifests. Frozen LODO splits released with the benchmark.}
+The full pipeline is released with a pinned software environment
+(\texttt{requirements.txt}) and a single-command runner (\texttt{run\_all.sh}) that
+executes data acquisition through analysis in order. Primary datasets are downloaded by
+versioned acquisition scripts that write per-source provenance manifests recording source
+URLs, file sizes and checksums; the external climate and soil driver archive is referenced
+through a configurable path (\texttt{MDBC\_LAKE}) and not redistributed. Random seeds are
+fixed, and the frozen leave-one-delta-out delta registry is released with the benchmark so
+that the splits, figures and every reported number regenerate deterministically. All
+manuscript figures and numerical tables are produced directly from the results files by a
+single script, eliminating hand-transcribed values.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

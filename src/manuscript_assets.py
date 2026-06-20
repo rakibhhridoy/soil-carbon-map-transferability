@@ -59,6 +59,33 @@ def tab_totalcarbon():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_registry_full(reg):
+    r = reg.sort_values(["role", "mangrove_area_km2"], ascending=[True, False])
+    rows = [f"{x.id.replace('_',' ').title()} & {x.mangrove_area_km2:.0f} & "
+            f"{int(x.n_soc_cores)} & {int(x.n_raw_cores)} & "
+            f"{x.role.replace('_',' ')} \\\\" for x in r.itertuples()]
+    (TAB / "tab_registry_full.tex").write_text(
+        "\\begin{tabular}{lrrrl}\n\\toprule\n"
+        "Delta & Area (km$^2$) & SOC cores & Raw cores & Role \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_gsoc_ablation():
+    g = _opt(PROC / "gsoc_ablation.json")
+    if g is None:
+        return
+    def row(name, key):
+        return (f"{name} & {g['with_gsoc']['histgb'][key]:+.2f} & "
+                f"{g['without_gsoc']['histgb'][key]:+.2f} \\\\")
+    body = "\n".join([row("Random $k$-fold", "t1_random_r2"),
+                      row("LODO (median)", "t3_lodo_median_r2"),
+                      row("Transfer gap", "transfer_gap")])
+    (TAB / "tab_gsoc_ablation.tex").write_text(
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        "Gradient boosting & With GSOC & Without GSOC \\\\\n\\midrule\n"
+        + body + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_pooltransfer():
     agb = _opt(PROC / "agb_lodo_results.json")
     soc = json.loads((PROC / "soc_lodo_results.json").read_text())
@@ -182,6 +209,7 @@ def main():
     fig_map(reg, soc); fig_tiers(lodo); fig_aoa(lodo)
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
+    tab_registry_full(reg); tab_gsoc_ablation()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):
