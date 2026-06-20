@@ -95,6 +95,19 @@ def tab_fewshot():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_aoavalidity():
+    a = _opt(PROC / "aoa_validity.json")
+    if a is None:
+        return
+    rows = [f"Random 20\\% (seen deltas) & {a['random_holdout']:.2f} \\\\",
+            f"Spatial-block & {a['spatial_block_holdout']:.2f} \\\\",
+            f"Leave-one-delta-out & {a['lodo_holdout']:.2f} \\\\"]
+    (TAB / "tab_aoavalidity.tex").write_text(
+        "\\begin{tabular}{lr}\n\\toprule\n"
+        "Holdout design & Fraction inside AOA \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_publishedmap():
     pm = _opt(PROC / "published_map_test.json")
     if pm is None:
@@ -269,7 +282,7 @@ def main():
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
-    fig_fewshot(); tab_fewshot(); tab_publishedmap()
+    fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):

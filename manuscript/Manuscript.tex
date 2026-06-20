@@ -194,6 +194,14 @@ that the finite-sample coverage guarantee --- which assumes calibration and test
 are exchangeable --- breaks under cross-delta shift. The AOA result is model-agnostic
 and unchanged across the climate, geomorphic, and tidal feature sets.
 
+This zero-coverage result is not a mechanical consequence of having few training deltas.
+When instead we hold out a random 20\% of cores drawn from across the (still-seen)
+training deltas, 96\% of them fall \emph{inside} the AOA, whereas both spatial-block and
+whole-delta holdouts give 0\% (Supplementary Information). The applicability threshold
+therefore correctly recognises familiar environment and flags only genuinely novel
+locations; that whole deltas are uniformly outside it reflects real separation of deltas
+in covariate space, not an artifact of the leave-one-out design.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{fig_aoa.pdf}

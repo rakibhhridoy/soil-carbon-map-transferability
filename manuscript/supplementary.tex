@@ -151,6 +151,27 @@ the $(1-\alpha)$ quantile of absolute calibration residuals with $\alpha=0.1$; w
 the empirical coverage realised on each held-out delta.
 
 % ---------------------------------------------------------------------
+\section{Is the zero AOA coverage an artifact?}
+\label{si:aoa}
+A potential concern is that every held-out delta falls outside the area of applicability
+simply because leaving one delta out leaves few environmental clusters in the training
+set, making any held-out group look novel. We tested this by computing the AOA-inside
+fraction of held-out cores under three holdout designs of increasing separation
+(Table~\ref{tab:aoavalidity}). Random cores drawn from across the training deltas land
+overwhelmingly inside the AOA (96\%), confirming that the threshold is not pathologically
+small; spatial-block and whole-delta holdouts both give 0\%. The applicability threshold
+thus discriminates familiar from novel environment as intended, and the zero coverage of
+held-out deltas reflects genuine separation in covariate space.
+
+\begin{table}[h]
+\centering
+\caption{Mean fraction of held-out cores inside the area of applicability under three
+holdout designs. Auto-generated from \texttt{aoa\_validity.json}.}
+\label{tab:aoavalidity}
+\input{tables/tab_aoavalidity}
+\end{table}
+
+% ---------------------------------------------------------------------
 \section{GSOC prior sensitivity}
 \label{si:gsoc}
 Because GSOCmap is itself a soil-carbon model, its inclusion as a covariate could inflate
