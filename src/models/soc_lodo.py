@@ -147,7 +147,18 @@ def t3_lodo(df, feats, m, alpha=0.1):
         r2 = r2_score(yte, yp)
         rmse = np.sqrt(mean_squared_error(np.expm1(yte), np.expm1(yp)))
         bias = float(np.mean(np.expm1(yp) - np.expm1(yte)))
+        # honest within-delta metrics: correlation + mean-centered R2 separate the
+        # *pattern* the model captures from the *level* offset that dominates global R2.
+        if yte.std() > 0 and yp.std() > 0:
+            pear = float(np.corrcoef(yte, yp)[0, 1])
+            r2_centered = r2_score(yte - yte.mean(), yp - yp.mean())
+        else:
+            pear, r2_centered = float("nan"), float("nan")
+        from scipy.stats import spearmanr as _sp
+        spear = float(_sp(yte, yp)[0]) if yte.std() > 0 else float("nan")
         rows.append(dict(delta=d, n=int(te.sum()), r2_lodo=round(r2, 3),
+                         r2_centered=round(r2_centered, 3),
+                         pearson=round(pear, 3), spearman=round(spear, 3),
                          rmse_Mgha=round(rmse, 1), bias_Mgha=round(bias, 1),
                          aoa_inside=round(inside, 2),
                          conformal_cov=round(cov, 2)))
@@ -164,10 +175,16 @@ def main():
         lodo = t3_lodo(df, feats, m)
         t3_mean = float(np.mean([r["r2_lodo"] for r in lodo])) if lodo else float("nan")
         t3_med = float(np.median([r["r2_lodo"] for r in lodo])) if lodo else float("nan")
+        def _med(k):
+            vals = [r[k] for r in lodo if r.get(k) == r.get(k)]  # drop nan
+            return round(float(np.median(vals)), 3) if vals else float("nan")
         out["models"][m] = dict(t1_random_r2=round(t1, 3),
                                 t2_spatialblock_r2=round(t2, 3),
                                 t3_lodo_mean_r2=round(t3_mean, 3),
                                 t3_lodo_median_r2=round(t3_med, 3),
+                                t3_lodo_median_r2_centered=_med("r2_centered"),
+                                t3_lodo_median_pearson=_med("pearson"),
+                                t3_lodo_median_spearman=_med("spearman"),
                                 transfer_gap=round(t1 - t3_mean, 3),
                                 per_delta=lodo)
         print(f"\n=== {m} ===")

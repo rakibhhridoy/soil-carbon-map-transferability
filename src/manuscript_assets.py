@@ -59,6 +59,42 @@ def tab_totalcarbon():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def fig_fewshot():
+    fc = _opt(PROC / "fewshot_calibration.json")
+    if fc is None:
+        return
+    ks = [k for k in fc["ks"] if str(k) in fc["summary"]]
+    rmse = [fc["summary"][str(k)]["median_rmse"] for k in ks]
+    r = [fc["summary"][str(k)]["median_pearson"] for k in ks]
+    fig, ax1 = plt.subplots(figsize=(5, 3.4))
+    ax1.plot(ks, rmse, "o-", color="#C44E52", label="RMSE")
+    ax1.set_xlabel("local calibration cores $k$")
+    ax1.set_ylabel("median RMSE (Mg ha$^{-1}$)", color="#C44E52")
+    ax1.tick_params(axis="y", labelcolor="#C44E52")
+    ax2 = ax1.twinx()
+    ax2.plot(ks, r, "s--", color="#4C72B0", label="within-delta $r$")
+    ax2.set_ylabel("median within-delta $r$", color="#4C72B0")
+    ax2.tick_params(axis="y", labelcolor="#4C72B0")
+    ax1.set_title("Few-shot calibration of an unsampled delta")
+    fig.tight_layout(); fig.savefig(FIG / "fig_fewshot.pdf"); plt.close(fig)
+
+
+def tab_fewshot():
+    fc = _opt(PROC / "fewshot_calibration.json")
+    if fc is None:
+        return
+    rows = []
+    for k in fc["ks"]:
+        if str(k) in fc["summary"]:
+            s = fc["summary"][str(k)]
+            rows.append(f"{k} & {s['median_rmse']:.0f} & {s['median_pearson']:+.2f} & "
+                        f"{s['n_deltas']} \\\\")
+    (TAB / "tab_fewshot.tex").write_text(
+        "\\begin{tabular}{rrrr}\n\\toprule\n"
+        "Local cores $k$ & Median RMSE & Within-delta $r$ & Deltas \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_registry_full(reg):
     r = reg.sort_values(["role", "mangrove_area_km2"], ascending=[True, False])
     rows = [f"{x.id.replace('_',' ').title()} & {x.mangrove_area_km2:.0f} & "
@@ -196,11 +232,13 @@ def tab_tiers(lodo):
 def tab_perdelta(lodo):
     pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
     rows = [f"{r.delta.replace('_',' ').title()} & {int(r.n)} & {r.r2_lodo:+.2f} & "
-            f"{r.rmse_Mgha:.0f} & {r.aoa_inside:.2f} & {r.conformal_cov:.2f} \\\\"
+            f"{r.get('pearson', float('nan')):+.2f} & {r.rmse_Mgha:.0f} & "
+            f"{r.bias_Mgha:+.0f} & {r.aoa_inside:.2f} \\\\"
             for _, r in pd_.iterrows()]
     (TAB / "tab_perdelta.tex").write_text(
-        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
-        "Delta & $n$ & $R^2$ & RMSE & AOA in & Conf.\\ cov. \\\\\n\\midrule\n"
+        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
+        "Delta & $n$ & $R^2$ & $r$ & RMSE & Bias & AOA in \\\\\n"
+        " & & global & within & \\multicolumn{2}{c}{(Mg\\,ha$^{-1}$)} & \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -210,6 +248,7 @@ def main():
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
+    fig_fewshot(); tab_fewshot()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):

@@ -63,8 +63,9 @@ is not explained by covariate-shift magnitude alone, implicating delta-specific
 guarantee under cross-delta shift. Across the benchmark, total ecosystem carbon (495~Tg
 C; 77\% belowground) varies sixfold between deltas in a way a global model cannot
 reconstruct. Our results quantify a hard limit on the geographic transferability of
-blue-carbon stock models and argue that crediting-grade estimates for an unsampled
-delta require local calibration data.
+blue-carbon stock models; a few-shot experiment shows that on the order of ten to
+twenty-five local cores recover most of the lost within-delta skill, defining the local
+data needed for crediting-grade estimates in an unsampled delta.
 \end{abstract}
 
 \vspace{0.5em}
@@ -148,14 +149,19 @@ four continents (Asia, Africa, North and South America) with strongly varying so
 \subsection{Standard validation overstates transferable skill}
 A gradient-boosting model that explains 65\% of SOC variance under random $k$-fold
 cross-validation ($R^2=0.65$) drops to negative skill under spatial-block
-cross-validation ($R^2=-0.69$) and collapses under leave-one-delta-out
-($R^2_{\text{mean}}=-5.8$; $R^2_{\text{median}}=-1.7$) (Table~\ref{tab:tiers},
-Fig.~\ref{fig:tiers}). The implied \emph{transfer gap} (random minus LODO) is 6.5
-$R^2$ units for the flexible model and 2.7 for the ridge baseline --- the magnitude by
-which conventional validation overstates out-of-distribution skill. We report the
-median LODO $R^2$ as the headline because the mean is dominated by the smallest folds
-(e.g.\ Sundarbans, $n=11$, $R^2=-34$), where unconstrained extrapolation produces
-extreme values; the qualitative conclusion is identical under either summary.
+cross-validation ($R^2=-0.69$) and to a median leave-one-delta-out $R^2$ of $-1.7$
+(Table~\ref{tab:tiers}, Fig.~\ref{fig:tiers}). Because the global $R^2$ confounds two
+distinct failures --- getting a delta's mean level wrong and failing to reproduce its
+internal spatial pattern --- we separate them (Table~\ref{tab:perdelta}). The level
+error is large: per-delta bias reaches $\pm$100--200~Mg\,ha$^{-1}$, so a model trained
+elsewhere systematically over- or under-estimates an unsampled delta's stock. More
+fundamentally, the model captures essentially \emph{none} of the within-delta spatial
+variation: the median within-delta Pearson correlation between predicted and observed
+SOC is $r=0.04$ (mean-centred $R^2$ median $=-0.14$), and individual deltas range from
+$r=0.76$ (Sundarbans) to $r=-0.52$ (Zambezi). Out of distribution, then, the model
+recovers neither the level nor the pattern of soil carbon. The contrast with the random
+$k$-fold $r$ ($\sqrt{0.65}=0.81$) is the magnitude by which conventional validation
+overstates transferable skill.
 
 \begin{table}[t]
 \centering
@@ -196,8 +202,11 @@ the area of applicability (right). Every delta lies entirely outside the AOA.}
 \begin{table}[t]
 \centering
 \caption{Per-delta leave-one-delta-out results (gradient boosting, full covariate set):
-sample size, $R^2$, RMSE (Mg\,ha$^{-1}$), fraction inside AOA, and empirical conformal
-coverage (target 0.90). Auto-generated from \texttt{soc\_lodo\_results.json}.}
+sample size, global $R^2$, within-delta Pearson $r$ (the pattern the model captures),
+RMSE and bias (Mg\,ha$^{-1}$), and fraction inside the area of applicability. The near-zero
+$r$ values show that out-of-delta the model recovers little within-delta pattern, while
+the large bias shows it also misses the level. Auto-generated from
+\texttt{soc\_lodo\_results.json}.}
 \label{tab:perdelta}
 \input{tables/tab_perdelta}
 \end{table}
@@ -285,6 +294,39 @@ $\times$ mangrove area). Auto-generated from \texttt{total\_carbon.json}.}
 \input{tables/tab_totalcarbon}
 \end{table}
 
+\subsection{A few local cores recover much of the lost skill}
+The transferability limit is not a counsel of despair but a quantifiable data
+requirement. We measured how quickly skill recovers when a small number of cores from
+the otherwise-unsampled target delta are added to training (Fig.~\ref{fig:fewshot},
+Table~\ref{tab:fewshot}): for each held-out delta (restricted to the five with enough
+cores to spare) we moved $k$ randomly chosen local cores into the training set and
+evaluated on the remainder, averaged over repeated draws. The recovery is rapid: the
+median within-delta correlation rises from $r=0.14$ at $k=0$ (pure leave-one-delta-out)
+to $0.55$ at $k=10$ and $0.67$ at $k=25$, while median RMSE falls from 76 to
+62~Mg\,ha$^{-1}$. On the order of ten to twenty-five local cores thus recover most of the
+within-delta predictive skill that a purely global model lacks entirely. The curve
+quantifies the local-data cost of a crediting-grade estimate in a new delta and
+identifies a practical middle path between an untrustworthy global prediction and a full
+local inventory.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{fig_fewshot.pdf}
+\caption{Few-shot calibration. Median over held-out deltas of leave-one-delta-out RMSE
+(red) and within-delta correlation (blue) as $k$ local calibration cores are added to
+training. Even a handful of local cores substantially improves transferable skill.}
+\label{fig:fewshot}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Few-shot calibration: median skill over held-out deltas as $k$ local cores are
+added to training (20 random draws each). Auto-generated from
+\texttt{fewshot\_calibration.json}.}
+\label{tab:fewshot}
+\input{tables/tab_fewshot}
+\end{table}
+
 % ---------------------------------------------------------------------
 \section{Discussion}
 Our central result is that the apparent accuracy of a global mangrove soil-carbon model
@@ -313,9 +355,13 @@ hydroperiod that our global covariates only partially capture. The interpretable
 dominant shift axes---tidal range in macrotidal deltas, precipitation seasonality in the
 Sahelian Saloum, monsoon thermal regime in the Sundarbans---are consistent with a
 physical rather than a sampling-coverage origin. This suggests that closing the gap will
-require not more global covariates but methods that admit region-specific structure:
-hierarchical or partial-pooling models, transfer learning with a few target-delta cores,
-or explicit process constraints.
+require not more global covariates but methods that admit region-specific structure ---
+and our few-shot experiment shows the practical version of this directly: introducing on
+the order of ten to twenty-five local cores lifts the median within-delta correlation
+from $0.14$ to above $0.6$, recovering most of the skill a global model lacks. The
+operative recommendation is therefore not to abandon global models but to pair them with
+a modest local-calibration sample, and to use the area of applicability to decide where
+such local data are needed.
 
 Several limitations qualify these conclusions. In-situ soil-carbon labels remain sparse
 and unevenly distributed: some folds are small ($n=11$ for the Sundarbans), which

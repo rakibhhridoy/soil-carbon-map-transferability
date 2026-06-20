@@ -1,0 +1,123 @@
+{
+ "ks": [
+  0,
+  5,
+  10,
+  25
+ ],
+ "n_rep": 10,
+ "summary": {
+  "0": {
+   "median_rmse": 75.5,
+   "median_pearson": 0.137,
+   "n_deltas": 5
+  },
+  "5": {
+   "median_rmse": 81.6,
+   "median_pearson": 0.322,
+   "n_deltas": 5
+  },
+  "10": {
+   "median_rmse": 70.1,
+   "median_pearson": 0.545,
+   "n_deltas": 5
+  },
+  "25": {
+   "median_rmse": 62.4,
+   "median_pearson": 0.671,
+   "n_deltas": 5
+  }
+ },
+ "per_delta": {
+  "amazon_amapa": {
+   "0": {
+    "rmse": 55.5,
+    "pearson": 0.57
+   },
+   "5": {
+    "rmse": 54.4,
+    "pearson": 0.585
+   },
+   "10": {
+    "rmse": 45.3,
+    "pearson": 0.629
+   },
+   "25": {
+    "rmse": 39.1,
+    "pearson": 0.671
+   }
+  },
+  "mekong": {
+   "0": {
+    "rmse": 166.2,
+    "pearson": -0.217
+   },
+   "5": {
+    "rmse": 86.0,
+    "pearson": 0.712
+   },
+   "10": {
+    "rmse": 80.2,
+    "pearson": 0.734
+   },
+   "25": {
+    "rmse": 76.4,
+    "pearson": 0.702
+   }
+  },
+  "musi_banyuasin": {
+   "0": {
+    "rmse": 204.6,
+    "pearson": -0.32
+   },
+   "5": {
+    "rmse": 125.4,
+    "pearson": 0.149
+   },
+   "10": {
+    "rmse": 110.9,
+    "pearson": 0.223
+   },
+   "25": {
+    "rmse": 110.7,
+    "pearson": 0.33
+   }
+  },
+  "rufiji": {
+   "0": {
+    "rmse": 75.5,
+    "pearson": 0.254
+   },
+   "5": {
+    "rmse": 64.4,
+    "pearson": 0.242
+   },
+   "10": {
+    "rmse": 65.5,
+    "pearson": 0.179
+   },
+   "25": {
+    "rmse": 62.4,
+    "pearson": 0.264
+   }
+  },
+  "saloum_gambia": {
+   "0": {
+    "rmse": 75.5,
+    "pearson": 0.137
+   },
+   "5": {
+    "rmse": 81.6,
+    "pearson": 0.322
+   },
+   "10": {
+    "rmse": 70.1,
+    "pearson": 0.545
+   },
+   "25": {
+    "rmse": 57.0,
+    "pearson": 0.695
+   }
+  }
+ }
+}
