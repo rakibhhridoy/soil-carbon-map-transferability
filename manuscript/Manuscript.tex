@@ -302,6 +302,15 @@ predicting AGB-C from bioclimatic covariates is partially circular, so the AGB r
 is best read as a companion to, rather than an independent replicate of, the SOC
 result.
 
+\begin{table}[t]
+\centering
+\caption{Transferability of the two carbon pools under the same gradient-boosting
+model and validation tiers. Both collapse from strong random-CV skill to negative
+leave-one-delta-out skill, with zero area-of-applicability coverage.}
+\label{tab:pooltransfer}
+\input{tables/tab_pooltransfer}
+\end{table}
+
 \subsection{The failure is specific to blue carbon}
 A sceptic might ask whether any global carbon map fails out-of-region, making the result
 unremarkable. It does not. We applied the identical protocol to terrestrial soil organic
@@ -326,15 +335,6 @@ terrestrial soil organic carbon under the same out-of-region protocol: the opera
 maps (Sanderman; GSOCmap) and our own held-out models.}
 \label{tab:terrestrial}
 \input{tables/tab_terrestrial}
-\end{table}
-
-\begin{table}[t]
-\centering
-\caption{Transferability of the two carbon pools under the same gradient-boosting
-model and validation tiers. Both collapse from strong random-CV skill to negative
-leave-one-delta-out skill, with zero area-of-applicability coverage.}
-\label{tab:pooltransfer}
-\input{tables/tab_pooltransfer}
 \end{table}
 
 \subsection{Total ecosystem carbon and the cost of mis-transfer}
