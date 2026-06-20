@@ -36,7 +36,7 @@ conformal uncertainty}}
 \affil[2]{Department of Soil, Water and Environment, University of Dhaka,
 Dhaka 1000, Bangladesh}
 
-\date{\today}
+\date{}
 
 \begin{document}
 \maketitle
@@ -135,7 +135,7 @@ delta-specific control.
 \centering
 \caption{Core (leave-one-delta-out) deltas in the v1 SOC benchmark: mangrove area
 (GMW v3, 2020, equal-area), usable in-situ SOC cores, and median 0--100~cm SOC stock
-(Mg\,ha$^{-1}$). Auto-generated from \texttt{data/processed/delta\_registry.csv}.}
+(Mg\,ha$^{-1}$).}
 \label{tab:deltas}
 \input{tables/tab_deltas}
 \end{table}
@@ -170,7 +170,7 @@ overstates transferable skill.
 \centering
 \caption{Three-tier validation of the SOC model. Random $k$-fold is inflated by
 spatial autocorrelation \citep{ploton2020}; leave-one-delta-out (LODO) is the
-out-of-distribution test. Auto-generated from \texttt{soc\_lodo\_results.json}.}
+out-of-distribution test.}
 \label{tab:tiers}
 \input{tables/tab_tiers}
 \end{table}
@@ -209,8 +209,7 @@ in covariate space, not an artifact of the leave-one-out design.
 sample size, global $R^2$, within-delta Pearson $r$ (the pattern the model captures),
 RMSE and bias (Mg\,ha$^{-1}$), and fraction inside the area of applicability. The near-zero
 $r$ values show that out-of-delta the model recovers little within-delta pattern, while
-the large bias shows it also misses the level. Auto-generated from
-\texttt{soc\_lodo\_results.json}.}
+the large bias shows it also misses the level.}
 \label{tab:perdelta}
 \input{tables/tab_perdelta}
 \end{table}
@@ -234,7 +233,7 @@ forcefully.
 \centering
 \caption{The published Sanderman et al.\ mangrove SOC map evaluated against in-situ cores
 per delta: number of cores resolved, median observed and mapped SOC, mean bias, and
-within-delta correlation. Auto-generated from \texttt{published\_map\_test.json}.}
+within-delta correlation.}
 \label{tab:publishedmap}
 \input{tables/tab_publishedmap}
 \end{table}
@@ -299,8 +298,7 @@ result.
 \centering
 \caption{Transferability of the two carbon pools under the same gradient-boosting
 model and validation tiers. Both collapse from strong random-CV skill to negative
-leave-one-delta-out skill, with zero area-of-applicability coverage. Auto-generated
-from the LODO results.}
+leave-one-delta-out skill, with zero area-of-applicability coverage.}
 \label{tab:pooltransfer}
 \input{tables/tab_pooltransfer}
 \end{table}
@@ -324,7 +322,7 @@ crediting or accounting.
 \centering
 \caption{Total ecosystem carbon per core delta: mean AGB-C, median SOC, their sum
 (Mg\,ha$^{-1}$), the soil-carbon fraction, and the delta stock (Tg\,C $=$ density
-$\times$ mangrove area). Auto-generated from \texttt{total\_carbon.json}.}
+$\times$ mangrove area).}
 \label{tab:totalcarbon}
 \input{tables/tab_totalcarbon}
 \end{table}
@@ -356,8 +354,7 @@ training. Even a handful of local cores substantially improves transferable skil
 \begin{table}[t]
 \centering
 \caption{Few-shot calibration: median skill over held-out deltas as $k$ local cores are
-added to training (20 random draws each). Auto-generated from
-\texttt{fewshot\_calibration.json}.}
+added to training (20 random draws each).}
 \label{tab:fewshot}
 \input{tables/tab_fewshot}
 \end{table}
@@ -478,11 +475,10 @@ rivers, computed from Natural Earth in equal-area projection), and tidal forcing
 and spring tidal range and the tidal form factor, derived from the M2, S2, K1 and O1
 constituents of the EOT20 ocean-tide model; \citealp{hartdavis2021eot20}). Gridded
 driver layers were sampled at each core in the layer's native coordinate reference
-system, with nodata handled per layer; the external driver archive is referenced
-through a configurable path (\texttt{MDBC\_LAKE}) and not redistributed. The GSOCmap
-prior is itself a soil-carbon model and is reported but interpreted cautiously to avoid
-circularity. Some archived layers were corrupt or unreadable (SoilGrids texture,
-OpenLandMap, fine terrain); the sampler tolerates and logs these, and they are excluded
+system, with nodata handled per layer; the external driver archive is referenced in
+place and not redistributed. The GSOCmap prior is itself a soil-carbon model and is
+reported but interpreted cautiously to avoid circularity. Some archived layers were
+corrupt or unreadable (SoilGrids texture, OpenLandMap, fine terrain) and were excluded
 from the v1 stack.
 
 \subsection{Models and three-tier validation}
@@ -536,8 +532,8 @@ Copernicus Global Land Service and Natural Earth. Per-source provenance manifest
 released with the code.
 
 \section*{Code availability}
-The full reproducible pipeline (data acquisition through analysis), a pinned software
-environment and a single-command runner are available at
+The full reproducible analysis pipeline, from data acquisition through analysis, with a
+pinned software environment, is available at
 \url{https://github.com/rakibhhridoy/mdbc-blue-carbon} and will be made public and
 archived with a Zenodo DOI on publication.
 
