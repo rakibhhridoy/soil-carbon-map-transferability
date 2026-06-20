@@ -125,10 +125,23 @@ standardized-mean-difference ranking that names each delta's dominant shift axis
 Mirror \texttt{docs/stage2\_diagnostic.md}.}
 
 % ---------------------------------------------------------------------
-\section{Aboveground and total ecosystem carbon (reserved)}
-\TODO{Simard 2019 AGB acquired for all core deltas. To add: AGB$\to$C labels,
-AGB LODO models, AGB-C + SOC total with uncertainty propagation, and per-delta
-total-carbon maps with AOA masks.}
+\section{Aboveground biomass and total ecosystem carbon}
+\PLACE{AGB-C labels were sampled from the 30~m Simard product within each delta's
+mangrove mask (500 points per delta; AGB$\to$C $\times0.47$) and run through the
+identical models, validation tiers, AOA and conformal machinery as SOC. Report the
+full per-delta AGB LODO table and the per-delta total-carbon breakdown.}
+
+\begin{table}[h]
+\centering
+\caption{Total ecosystem carbon per core delta (mean AGB-C, median SOC, total density,
+soil fraction, and delta stock). Auto-generated from \texttt{total\_carbon.json}.}
+\input{tables/tab_totalcarbon}
+\end{table}
+
+\noindent\textbf{Caveat.} The Simard biomass product embeds a canopy-height-to-biomass
+relationship with a climate dependence, so AGB-from-bioclimate transfer is partially
+circular; AGB and SOC label sets are not co-located, so total density combines per-delta
+pool summaries rather than per-pixel sums.
 
 % ---------------------------------------------------------------------
 \section{Reproducibility}

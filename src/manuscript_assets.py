@@ -37,6 +37,47 @@ def load():
     return reg, lodo, diag, soc
 
 
+def _opt(path):
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def tab_totalcarbon():
+    tc = _opt(PROC / "total_carbon.json")
+    if tc is None:
+        return
+    rows = [f"{r['delta'].replace('_',' ').title()} & {r['agbc_Mgha']:.0f} & "
+            f"{r['soc_Mgha']:.0f} & {r['total_Mgha']:.0f} & {r['soc_frac']:.2f} & "
+            f"{r['total_stock_TgC']:.1f} \\\\" for r in tc["per_delta"]]
+    s = tc["summary"]
+    rows.append("\\midrule")
+    rows.append(f"\\textbf{{Total}} & & & & {s['soc_fraction_mean']:.2f} & "
+                f"{s['total_stock_TgC']:.0f} \\\\")
+    (TAB / "tab_totalcarbon.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Delta & AGB-C & SOC & Total & SOC frac. & Stock (Tg\\,C) \\\\\n"
+        " & \\multicolumn{3}{c}{(Mg\\,ha$^{-1}$)} & & \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_pooltransfer():
+    agb = _opt(PROC / "agb_lodo_results.json")
+    soc = json.loads((PROC / "soc_lodo_results.json").read_text())
+    if agb is None:
+        return
+    def r(d): return d["models"]["histgb"]
+    s, a = r(soc), r(agb)
+    body = (
+        f"Random $k$-fold & {s['t1_random_r2']:+.2f} & {a['t1_random_r2']:+.2f} \\\\\n"
+        f"Spatial-block & {s['t2_spatialblock_r2']:+.2f} & {a['t2_spatialblock_r2']:+.2f} \\\\\n"
+        f"LODO (median) & {s.get('t3_lodo_median_r2',float('nan')):+.2f} & "
+        f"{a['t3_lodo_median_r2']:+.2f} \\\\\n"
+        f"AOA inside (all deltas) & 0.00 & 0.00 \\\\")
+    (TAB / "tab_pooltransfer.tex").write_text(
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        "Validation (grad.\\ boosting) & SOC $R^2$ & AGB-C $R^2$ \\\\\n\\midrule\n"
+        + body + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def delta_centroids(soc, core_ids):
     g = (soc.dropna(subset=["delta_id"]).groupby("delta_id")
          .agg(lon=("lon", "median"), lat=("lat", "median"),
@@ -140,6 +181,7 @@ def main():
     reg, lodo, diag, soc = load()
     fig_map(reg, soc); fig_tiers(lodo); fig_aoa(lodo)
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
+    tab_totalcarbon(); tab_pooltransfer()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):

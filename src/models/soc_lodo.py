@@ -163,9 +163,11 @@ def main():
         t2 = t2_spatial_block(df, feats, m)
         lodo = t3_lodo(df, feats, m)
         t3_mean = float(np.mean([r["r2_lodo"] for r in lodo])) if lodo else float("nan")
+        t3_med = float(np.median([r["r2_lodo"] for r in lodo])) if lodo else float("nan")
         out["models"][m] = dict(t1_random_r2=round(t1, 3),
                                 t2_spatialblock_r2=round(t2, 3),
                                 t3_lodo_mean_r2=round(t3_mean, 3),
+                                t3_lodo_median_r2=round(t3_med, 3),
                                 transfer_gap=round(t1 - t3_mean, 3),
                                 per_delta=lodo)
         print(f"\n=== {m} ===")

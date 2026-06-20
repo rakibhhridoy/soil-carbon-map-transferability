@@ -30,7 +30,17 @@ python3 src/features/sample_covariates.py      # PEDOFLUX drivers -> soc_trainin
 python3 src/features/build_geomorphic.py       # + dist_coast/dist_river (Natural Earth)
 python3 src/features/build_tidal.py            # + tidal range/form (EOT20)
 
-echo "== Stage 2: transferability experiment =="
+echo "== Stage 2: SOC transferability experiment =="
 python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json
+python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diagnostic.json
 
-echo "== DONE. See data/processed/ and docs/stage2_first_result.md =="
+echo "== Stage 3: AGB + total ecosystem carbon =="
+python3 src/labels/build_agb_labels.py         # -> data/processed/agb_labels.parquet
+python3 src/features/build_agb_features.py      # -> data/processed/agb_training.parquet
+python3 src/models/agb_lodo.py                 # -> data/processed/agb_lodo_results.json
+python3 src/models/total_carbon.py             # -> data/processed/total_carbon.json
+
+echo "== Manuscript assets (figures + tables) =="
+python3 src/manuscript_assets.py               # -> manuscript/figures + manuscript/tables
+
+echo "== DONE. See data/processed/, docs/, and manuscript/ =="

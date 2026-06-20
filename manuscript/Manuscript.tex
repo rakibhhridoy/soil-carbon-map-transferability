@@ -50,19 +50,21 @@ decisions. Yet these maps are validated almost exclusively with random or
 in-distribution cross-validation, which is inflated by spatial autocorrelation
 and silent about whether a model trained on some regions can predict an
 \emph{unsampled} delta. Here we build a multi-delta benchmark spanning eight major
-mangrove systems across four continents and evaluate soil organic carbon (SOC)
-under three validation tiers --- random, spatial-block, and leave-one-delta-out
-(LODO) --- coupled with area-of-applicability (AOA) masking and distribution-free
-conformal prediction intervals. A gradient-boosting model scoring $R^2=0.65$ under
-random cross-validation collapses to a median LODO $R^2$ of $-1.1$, every held-out
-delta falls entirely outside the AOA, and adding geomorphic position and tidal
-forcing does not restore transfer. The failure is not explained by covariate-shift
-magnitude alone, implicating delta-specific (concept-level) controls on carbon
-density, and conformal intervals lose their coverage guarantee under cross-delta
-shift. Our results quantify a hard limit on the geographic transferability of
+mangrove systems across four continents and evaluate both soil organic carbon (SOC)
+and aboveground biomass carbon (AGB-C) under three validation tiers --- random,
+spatial-block, and leave-one-delta-out (LODO) --- coupled with area-of-applicability
+(AOA) masking and distribution-free conformal prediction intervals. A gradient-boosting
+model scoring $R^2=0.65$ under random cross-validation collapses to a median LODO $R^2$
+of $-1.7$, every held-out delta falls entirely outside the AOA, and adding geomorphic
+position and tidal forcing does not restore transfer. The same collapse occurs
+independently for AGB-C, and both pools place every delta outside the AOA. The failure
+is not explained by covariate-shift magnitude alone, implicating delta-specific
+(concept-level) controls on carbon density, and conformal intervals lose their coverage
+guarantee under cross-delta shift. Across the benchmark, total ecosystem carbon (495~Tg
+C; 77\% belowground) varies sixfold between deltas in a way a global model cannot
+reconstruct. Our results quantify a hard limit on the geographic transferability of
 blue-carbon stock models and argue that crediting-grade estimates for an unsampled
-delta require local calibration data; aboveground-biomass labels are assembled for
-all benchmark deltas and reserved for a total-carbon extension.
+delta require local calibration data.
 \end{abstract}
 
 \vspace{0.5em}
@@ -147,7 +149,7 @@ four continents (Asia, Africa, North and South America) with strongly varying so
 A gradient-boosting model that explains 65\% of SOC variance under random $k$-fold
 cross-validation ($R^2=0.65$) drops to negative skill under spatial-block
 cross-validation ($R^2=-0.69$) and collapses under leave-one-delta-out
-($R^2_{\text{mean}}=-5.8$; $R^2_{\text{median}}=-1.1$) (Table~\ref{tab:tiers},
+($R^2_{\text{mean}}=-5.8$; $R^2_{\text{median}}=-1.7$) (Table~\ref{tab:tiers},
 Fig.~\ref{fig:tiers}). The implied \emph{transfer gap} (random minus LODO) is 6.5
 $R^2$ units for the flexible model and 2.7 for the ridge baseline --- the magnitude by
 which conventional validation overstates out-of-distribution skill. We report the
@@ -231,10 +233,54 @@ range for the macrotidal Amazon--Amap\'a, Rufiji and Musi--Banyuasin systems,
 precipitation seasonality (bio15) for the Sahelian Saloum--Gambia, and monsoon thermal
 regime (bio3, bio6, bio9) for the Sundarbans.
 
-\subsection{Aboveground and total ecosystem carbon}
-\TODO{AGB labels (Simard 2019) acquired for all core deltas; AGB LODO models and
-AGB-C + SOC $\to$ total ecosystem carbon with propagated uncertainty are the next
-analysis. Section reserved.}
+\subsection{Aboveground biomass carbon transfers no better than soil carbon}
+To test whether the transferability limit is peculiar to soil carbon, we repeated the
+entire analysis for aboveground biomass carbon (AGB-C), sampling the 30~m Simard
+product within each delta's mangrove mask (500 points per delta) and applying the
+identical models, validation tiers, AOA and conformal machinery. The result mirrors the
+SOC case (Table~\ref{tab:pooltransfer}): gradient-boosting skill of $R^2=0.64$ under
+random cross-validation falls to $+0.12$ under spatial-block CV and to a median of
+$-0.60$ under leave-one-delta-out, with every delta again entirely outside the AOA.
+That two carbon pools with different measurement principles and spatial structure
+fail transfer in the same way strengthens the conclusion that the limit is a property
+of the deltas, not of one variable. We note one caveat: because the Simard biomass
+product embeds a canopy-height-to-biomass relationship that itself depends on climate,
+predicting AGB-C from bioclimatic covariates is partially circular, so the AGB result
+is best read as a companion to, rather than an independent replicate of, the SOC
+result.
+
+\begin{table}[t]
+\centering
+\caption{Transferability of the two carbon pools under the same gradient-boosting
+model and validation tiers. Both collapse from strong random-CV skill to negative
+leave-one-delta-out skill, with zero area-of-applicability coverage. Auto-generated
+from the LODO results.}
+\label{tab:pooltransfer}
+\input{tables/tab_pooltransfer}
+\end{table}
+
+\subsection{Total ecosystem carbon and the cost of mis-transfer}
+Combining the pools gives the total mangrove ecosystem carbon density and stock of the
+benchmark (Table~\ref{tab:totalcarbon}). Across the eight core deltas the total stock
+is \SI{495}{\tera\gram} C, soil carbon constitutes 77\% of the total on average
+(consistent with the belowground-dominated mangrove carbon budget), and per-hectare
+densities span an order of magnitude---from \SI{106}{\mega\gram\per\hectare} (Zambezi)
+to \SI{639}{\mega\gram\per\hectare} (Musi--Banyuasin). Because both pools fail
+cross-delta transfer, this heterogeneity cannot be reconstructed for an unsampled
+delta from a globally-trained model: applying the global model's typical bias
+($\sim$100--200~Mg\,ha$^{-1}$ RMSE per pool, Table~\ref{tab:perdelta}) to a delta the
+size of the Sundarbans translates into stock errors of tens of Tg C, comparable to the
+stocks themselves. This quantifies the practical cost of assuming transferability in
+crediting or accounting.
+
+\begin{table}[t]
+\centering
+\caption{Total ecosystem carbon per core delta: mean AGB-C, median SOC, their sum
+(Mg\,ha$^{-1}$), the soil-carbon fraction, and the delta stock (Tg\,C $=$ density
+$\times$ mangrove area). Auto-generated from \texttt{total\_carbon.json}.}
+\label{tab:totalcarbon}
+\input{tables/tab_totalcarbon}
+\end{table}
 
 % ---------------------------------------------------------------------
 \section{Discussion}
@@ -275,18 +321,18 @@ distribution forced the inclusion of two estuarine systems to reach four contine
 Depth harmonisation to 0--100~cm relies on a small fraction of extrapolated and
 organic-matter-inferred values. The AOA threshold is a provisional quantile rather than
 a tuned boxplot-whisker rule, and tidal forcing is taken from an empirical tide model
-rather than a delta-resolving hydrodynamic simulation. Finally, version~1 is
-soil-carbon-led; aboveground biomass labels are in hand but the biomass and total
-ecosystem-carbon analyses are not yet complete.
+rather than a delta-resolving hydrodynamic simulation. The aboveground-biomass analysis
+inherits the Simard product's structure and its partial climate circularity, and
+because the AGB and SOC label sets are not co-located, total carbon is combined from
+per-delta pool summaries rather than per-pixel sums.
 
-These limitations also define the path forward. Aboveground biomass can be added as a
-parallel LODO target and summed with soil carbon to total ecosystem carbon with
-propagated uncertainty; the framework extends naturally to historical extent-change
-emissions and to sea-level-rise scenarios; and because every delta is specified only by
-a bounding box, the entire pipeline is portable to any coastal system. The contribution
-of this work is less a new map than a measurement of how far existing maps can be
-trusted beyond where they were trained---and a reusable, uncertainty-aware benchmark for
-improving that reach.
+These limitations also define the path forward. The framework extends naturally to
+historical extent-change emissions and to sea-level-rise scenarios; co-located
+field plots would allow per-pixel total-carbon mapping with jointly propagated
+uncertainty; and because every delta is specified only by a bounding box, the entire
+pipeline is portable to any coastal system. The contribution of this work is less a new
+map than a measurement of how far existing maps can be trusted beyond where they were
+trained---and a reusable, uncertainty-aware benchmark for improving that reach.
 
 % ---------------------------------------------------------------------
 \section{Methods}

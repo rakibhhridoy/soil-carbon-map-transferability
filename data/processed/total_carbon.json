@@ -1,0 +1,86 @@
+{
+ "summary": {
+  "n_deltas": 8,
+  "total_stock_TgC": 494.6,
+  "soc_fraction_mean": 0.77,
+  "soc_lodo_median_r2": -1.71,
+  "agb_lodo_median_r2": -0.597,
+  "soc_t1_random_r2": 0.652,
+  "agb_t1_random_r2": 0.638,
+  "both_pools_aoa_inside": 0.0
+ },
+ "per_delta": [
+  {
+   "delta": "amazon_amapa",
+   "agbc_Mgha": 64.0,
+   "soc_Mgha": 141.2,
+   "total_Mgha": 205.2,
+   "area_km2": 4462.0,
+   "total_stock_TgC": 91.57,
+   "soc_frac": 0.69
+  },
+  {
+   "delta": "everglades",
+   "agbc_Mgha": 16.7,
+   "soc_Mgha": 309.3,
+   "total_Mgha": 326.0,
+   "area_km2": 1845.0,
+   "total_stock_TgC": 60.15,
+   "soc_frac": 0.95
+  },
+  {
+   "delta": "mekong",
+   "agbc_Mgha": 39.0,
+   "soc_Mgha": 270.3,
+   "total_Mgha": 309.3,
+   "area_km2": 1021.0,
+   "total_stock_TgC": 31.58,
+   "soc_frac": 0.87
+  },
+  {
+   "delta": "musi_banyuasin",
+   "agbc_Mgha": 120.6,
+   "soc_Mgha": 518.6,
+   "total_Mgha": 639.2,
+   "area_km2": 1637.0,
+   "total_stock_TgC": 104.65,
+   "soc_frac": 0.81
+  },
+  {
+   "delta": "rufiji",
+   "agbc_Mgha": 125.7,
+   "soc_Mgha": 157.9,
+   "total_Mgha": 283.6,
+   "area_km2": 412.0,
+   "total_stock_TgC": 11.69,
+   "soc_frac": 0.56
+  },
+  {
+   "delta": "saloum_gambia",
+   "agbc_Mgha": 13.7,
+   "soc_Mgha": 252.3,
+   "total_Mgha": 266.0,
+   "area_km2": 1066.0,
+   "total_stock_TgC": 28.37,
+   "soc_frac": 0.95
+  },
+  {
+   "delta": "sundarbans",
+   "agbc_Mgha": 60.9,
+   "soc_Mgha": 199.5,
+   "total_Mgha": 260.4,
+   "area_km2": 6052.0,
+   "total_stock_TgC": 157.58,
+   "soc_frac": 0.77
+  },
+  {
+   "delta": "zambezi",
+   "agbc_Mgha": 45.6,
+   "soc_Mgha": 60.8,
+   "total_Mgha": 106.4,
+   "area_km2": 847.0,
+   "total_stock_TgC": 9.01,
+   "soc_frac": 0.57
+  }
+ ]
+}
