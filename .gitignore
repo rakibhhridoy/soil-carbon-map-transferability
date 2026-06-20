@@ -29,3 +29,6 @@ manuscript/*.log
 manuscript/*.out
 manuscript/*.toc
 manuscript/*.pdf
+
+# Generated figure PDFs (regenerate via src/manuscript_assets.py); table .tex fragments ARE tracked
+manuscript/figures/*.pdf

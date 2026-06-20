@@ -11,6 +11,7 @@
 \usepackage{lmodern}
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{graphicx}
+\graphicspath{{figures/}}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{siunitx}
@@ -99,51 +100,79 @@ predict an unsampled one? This is exactly the question a carbon buyer faces.}
 \subsection{A multi-delta blue-carbon benchmark}
 \PLACE{Describe the frozen registry: candidate deltas, GMW-clipped mangrove area,
 usable in-situ label counts, the core/prediction-only/excluded roles, continental
-spread. Reference Table~\ref{tab:deltas} and Fig.~\ref{fig:map}.}
+spread.} The v1 SOC benchmark comprises eight core deltas spanning four continents
+(Table~\ref{tab:deltas}, Fig.~\ref{fig:map}); median 0--100~cm SOC stocks range from
+\SI{61}{\mega\gram\per\hectare} (Zambezi) to \SI{519}{\mega\gram\per\hectare}
+(Musi--Banyuasin) despite near-uniform tropical climate, signalling strong
+delta-specific control.
 
 \begin{table}[t]
 \centering
 \caption{Core (leave-one-delta-out) deltas in the v1 SOC benchmark: mangrove area
-(GMW v3, 2020), usable in-situ SOC cores, and continent. \PLACE{regenerate from
-\texttt{data/processed/delta\_registry.csv}.}}
+(GMW v3, 2020, equal-area), usable in-situ SOC cores, and median 0--100~cm SOC stock
+(Mg\,ha$^{-1}$). Auto-generated from \texttt{data/processed/delta\_registry.csv}.}
 \label{tab:deltas}
-\begin{tabular}{llrrl}
-\toprule
-Delta & Country & Area (km$^2$) & SOC cores & Continent \\
-\midrule
-\PLACE{Sundarbans} & BD/IN & \PLACE{6052} & \PLACE{11} & Asia \\
-\PLACE{\dots populate from registry \dots} & & & & \\
-\bottomrule
-\end{tabular}
+\input{tables/tab_deltas}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_map.pdf}
+\caption{The eight core leave-one-delta-out deltas. Marker area scales with mangrove
+extent (GMW v3, 2020); colour shows median in-situ SOC$_{0\text{--}100}$. Spread across
+five continents with strongly varying soil-carbon density.}
+\label{fig:map}
+\end{figure}
+
 \subsection{Standard validation overstates transferable skill}
-\PLACE{The headline table: T1 random vs T2 spatial-block vs T3 LODO, for ridge
-and gradient boosting; the transfer gap. Reference Table~\ref{tab:tiers}.}
+A gradient-boosting model that explains \PLACE{65}\% of SOC variance under random
+$k$-fold cross-validation drops to slightly negative skill under spatial-block CV and
+collapses to strongly negative skill under leave-one-delta-out (Table~\ref{tab:tiers},
+Fig.~\ref{fig:tiers}). The implied \emph{transfer gap} (random minus LODO) is
+\PLACE{6.5} $R^2$ units --- the magnitude by which conventional validation overstates
+out-of-distribution skill.
 
 \begin{table}[t]
 \centering
 \caption{Three-tier validation of the SOC model. Random $k$-fold is inflated by
-spatial autocorrelation; leave-one-delta-out (LODO) is the out-of-distribution
-test. \PLACE{from \texttt{soc\_lodo\_results.json}.}}
+spatial autocorrelation \citep{ploton2020}; leave-one-delta-out (LODO) is the
+out-of-distribution test. Auto-generated from \texttt{soc\_lodo\_results.json}.}
 \label{tab:tiers}
-\begin{tabular}{lrr}
-\toprule
-Validation tier & Ridge $R^2$ & Gradient boosting $R^2$ \\
-\midrule
-T1 random $k$-fold        & \PLACE{0.30} & \PLACE{0.65} \\
-T2 spatial-block          & \PLACE{$-0.09$} & \PLACE{$-0.69$} \\
-T3 leave-one-delta-out (median) & \PLACE{} & \PLACE{$-1.12$} \\
-\midrule
-Transfer gap (T1$-$T3)    & \PLACE{} & \PLACE{} \\
-\bottomrule
-\end{tabular}
+\input{tables/tab_tiers}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{fig_tiers.pdf}
+\caption{Model skill ($R^2$) under the three validation tiers. The drop from random
+$k$-fold to leave-one-delta-out quantifies the inflation of conventional validation.}
+\label{fig:tiers}
+\end{figure}
+
 \subsection{Every unsampled delta lies outside the area of applicability}
-\PLACE{AOA = 0 for all held-out deltas across feature sets; conformal coverage
-breaks under shift. This is the robust, model-agnostic core result. Reference
-Fig.~\ref{fig:aoa}.}
+For all eight held-out deltas, \emph{zero} percent of the mangrove area falls inside
+the model's area of applicability (Table~\ref{tab:perdelta}, Fig.~\ref{fig:aoa}): each
+delta is a separated cluster in covariate space, so every cross-delta prediction is an
+extrapolation. Conformal intervals targeting 90\% coverage realise \PLACE{0--90}\%
+empirical coverage, confirming that distribution-free guarantees break under this
+shift. This AOA result is model-agnostic and robust across all feature sets.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_aoa.pdf}
+\caption{Per-delta leave-one-delta-out error (left) and fraction of each delta inside
+the area of applicability (right). Every delta lies entirely outside the AOA.}
+\label{fig:aoa}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Per-delta leave-one-delta-out results (gradient boosting, full covariate set):
+sample size, $R^2$, RMSE (Mg\,ha$^{-1}$), fraction inside AOA, and empirical conformal
+coverage (target 0.90). Auto-generated from \texttt{soc\_lodo\_results.json}.}
+\label{tab:perdelta}
+\input{tables/tab_perdelta}
+\end{table}
 
 \subsection{Adding geomorphic and tidal forcing does not restore transfer}
 \PLACE{The climate $\to$ +geomorphic $\to$ +tidal (EOT20) progression; gap barely

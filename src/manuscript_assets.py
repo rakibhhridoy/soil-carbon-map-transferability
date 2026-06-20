@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Generate manuscript figures + LaTeX table fragments directly from results files,
+so the paper stays in sync with the code (no hand-typed numbers).
+
+Outputs:
+  manuscript/figures/fig_map.pdf        delta map (area x median SOC)
+  manuscript/figures/fig_tiers.pdf      3-tier validation + transfer gap
+  manuscript/figures/fig_aoa.pdf        per-delta LODO R2 / RMSE / AOA
+  manuscript/tables/tab_deltas.tex      core delta registry
+  manuscript/tables/tab_tiers.tex       3-tier validation
+  manuscript/tables/tab_perdelta.tex    per-delta LODO (gradient boosting)
+"""
+import json
+from pathlib import Path
+import numpy as np, pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import geopandas as gpd
+
+ROOT = Path(__file__).resolve().parents[1]
+PROC = ROOT / "data/processed"
+FIG = ROOT / "manuscript/figures"; FIG.mkdir(parents=True, exist_ok=True)
+TAB = ROOT / "manuscript/tables"; TAB.mkdir(parents=True, exist_ok=True)
+plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200})
+
+CONT = {"sundarbans": "Asia", "mekong": "Asia", "musi_banyuasin": "Asia",
+        "amazon_amapa": "S.America", "everglades": "N.America",
+        "saloum_gambia": "Africa", "zambezi": "Africa", "rufiji": "Africa"}
+
+
+def load():
+    reg = pd.read_csv(PROC / "delta_registry.csv")
+    lodo = json.loads((PROC / "soc_lodo_results.json").read_text())
+    diag = json.loads((PROC / "transfer_diagnostic.json").read_text())
+    soc = pd.read_parquet(PROC / "soc_training.parquet")
+    return reg, lodo, diag, soc
+
+
+def delta_centroids(soc, core_ids):
+    g = (soc.dropna(subset=["delta_id"]).groupby("delta_id")
+         .agg(lon=("lon", "median"), lat=("lat", "median"),
+              soc=("soc_0_100_Mgha", "median"), n=("soc_0_100_Mgha", "size")))
+    return g[g.index.isin(core_ids)]
+
+
+def fig_map(reg, soc):
+    core = reg[reg.role == "core"]
+    cents = delta_centroids(soc, set(core.id)).join(
+        core.set_index("id")["mangrove_area_km2"])
+    coast = gpd.read_file(next((ROOT / "data/raw/naturalearth/coastline").glob("*.shp")))
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+    coast.plot(ax=ax, color="0.7", linewidth=0.3)
+    sc = ax.scatter(cents.lon, cents.lat, s=np.sqrt(cents.mangrove_area_km2) * 3.5,
+                    c=cents.soc, cmap="viridis", edgecolor="k", linewidth=0.6,
+                    zorder=3, alpha=0.9)
+    for d, r in cents.iterrows():
+        ax.annotate(d.replace("_", " "), (r.lon, r.lat), fontsize=7,
+                    xytext=(4, 4), textcoords="offset points")
+    cb = fig.colorbar(sc, ax=ax, shrink=0.7, pad=0.01)
+    cb.set_label("median SOC$_{0-100}$ (Mg ha$^{-1}$)")
+    ax.set_xlim(-100, 160); ax.set_ylim(-40, 40)
+    ax.set_xlabel("Longitude"); ax.set_ylabel("Latitude")
+    ax.set_title("Core leave-one-delta-out benchmark (marker size $\\propto\\sqrt{area}$)")
+    fig.savefig(FIG / "fig_map.pdf"); plt.close(fig)
+
+
+def fig_tiers(lodo):
+    fig, ax = plt.subplots(figsize=(5, 3.4))
+    tiers = ["t1_random_r2", "t2_spatialblock_r2", "t3_lodo_mean_r2"]
+    labels = ["Random\n$k$-fold", "Spatial\nblock", "LODO\n(mean)"]
+    x = np.arange(3); w = 0.38
+    for i, (m, c) in enumerate([("ridge", "#4C72B0"), ("histgb", "#C44E52")]):
+        vals = [lodo["models"][m][t] for t in tiers]
+        ax.bar(x + (i - 0.5) * w, vals, w, label=m, color=c)
+    ax.axhline(0, color="k", lw=0.6)
+    ax.set_xticks(x); ax.set_xticklabels(labels)
+    ax.set_ylabel("$R^2$"); ax.legend(title="model", fontsize=8)
+    ax.set_title("Skill collapses out-of-distribution")
+    fig.savefig(FIG / "fig_tiers.pdf"); plt.close(fig)
+
+
+def fig_aoa(lodo):
+    pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(9, 3.4))
+    a1.barh(pd_.delta.str.replace("_", " "), pd_.rmse_Mgha, color="#C44E52")
+    a1.set_xlabel("LODO RMSE (Mg ha$^{-1}$)"); a1.set_title("Per-delta error")
+    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color="#55A868")
+    a2.set_xlim(0, 1); a2.set_xlabel("fraction inside AOA")
+    a2.set_title("Every delta outside AOA")
+    fig.tight_layout(); fig.savefig(FIG / "fig_aoa.pdf"); plt.close(fig)
+
+
+def tab_deltas(reg, soc):
+    core = reg[reg.role == "core"].copy()
+    cents = delta_centroids(soc, set(core.id))
+    core = core.set_index("id").join(cents["soc"]).sort_values("mangrove_area_km2",
+                                                               ascending=False)
+    rows = []
+    for d, r in core.iterrows():
+        rows.append(f"{d.replace('_',' ').title()} & {CONT.get(d,'')} & "
+                    f"{r.mangrove_area_km2:.0f} & {int(r.n_soc_cores)} & "
+                    f"{r.soc:.0f} \\\\")
+    body = "\n".join(rows)
+    (TAB / "tab_deltas.tex").write_text(
+        "\\begin{tabular}{llrrr}\n\\toprule\n"
+        "Delta & Continent & Area (km$^2$) & SOC cores & Median SOC \\\\\n\\midrule\n"
+        + body + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_tiers(lodo):
+    r, h = lodo["models"]["ridge"], lodo["models"]["histgb"]
+    def row(name, key):
+        return f"{name} & {r[key]:+.2f} & {h[key]:+.2f} \\\\"
+    body = "\n".join([
+        row("T1 random $k$-fold", "t1_random_r2"),
+        row("T2 spatial-block", "t2_spatialblock_r2"),
+        row("T3 leave-one-delta-out (mean)", "t3_lodo_mean_r2"),
+        "\\midrule",
+        row("Transfer gap (T1$-$T3)", "transfer_gap"),
+    ])
+    (TAB / "tab_tiers.tex").write_text(
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        "Validation tier & Ridge $R^2$ & Grad.\\ boosting $R^2$ \\\\\n\\midrule\n"
+        + body + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_perdelta(lodo):
+    pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
+    rows = [f"{r.delta.replace('_',' ').title()} & {int(r.n)} & {r.r2_lodo:+.2f} & "
+            f"{r.rmse_Mgha:.0f} & {r.aoa_inside:.2f} & {r.conformal_cov:.2f} \\\\"
+            for _, r in pd_.iterrows()]
+    (TAB / "tab_perdelta.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Delta & $n$ & $R^2$ & RMSE & AOA in & Conf.\\ cov. \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def main():
+    reg, lodo, diag, soc = load()
+    fig_map(reg, soc); fig_tiers(lodo); fig_aoa(lodo)
+    tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
+    print("figures ->", FIG)
+    print("tables  ->", TAB)
+    for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):
+        print("  ", p.relative_to(ROOT), f"{p.stat().st_size} B")
+
+
+if __name__ == "__main__":
+    main()
