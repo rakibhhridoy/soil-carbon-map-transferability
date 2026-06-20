@@ -1,0 +1,148 @@
+% =====================================================================
+% MDBC --- Supplementary Information
+% Build: pdflatex -> bibtex -> pdflatex x2  (shares references.bib)
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round,authoryear]{natbib}
+
+\newcommand{\TODO}[1]{\textcolor{red}{[\textbf{TODO:} #1]}}
+\newcommand{\PLACE}[1]{\textcolor{blue}{[\textit{#1}]}}
+
+% number SI floats as S1, S2, ...
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thesection}{S\arabic{section}}
+
+\title{\textbf{Supplementary Information}\\[4pt]
+\large Cross-delta transferability limits of mangrove blue-carbon stock models}
+\author{Md Rakib Hasan}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+
+% ---------------------------------------------------------------------
+\section{Delta selection and the frozen benchmark}
+\PLACE{Full pre-registered criteria (C1--C5), candidate windows, the GMW-clip
+procedure, the usable-SOC-core gate, and the change log (estuarine systems added
+for continental coverage; the Oceania data-gap decision). Mirror
+\texttt{docs/stage0\_delta\_selection\_criteria.md}.}
+
+\begin{longtable}{llrrrl}
+\caption{Full candidate delta registry: mangrove area (GMW v3, 2020, equal-area),
+usable SOC cores, raw in-window cores, and assigned role.
+\PLACE{regenerate from \texttt{data/processed/delta\_registry.csv}.}}\\
+\toprule
+Delta & Country & Area (km$^2$) & SOC cores & Raw cores & Role \\
+\midrule
+\endfirsthead
+\toprule
+Delta & Country & Area (km$^2$) & SOC cores & Raw cores & Role \\
+\midrule
+\endhead
+\PLACE{populate all 16 windows} & & & & & \\
+\bottomrule
+\end{longtable}
+
+% ---------------------------------------------------------------------
+\section{SOC label harmonization}
+\PLACE{Detail Eq.~\ref{eq:soc-si}: layer cleaning bounds (BD, $f_C$ ranges),
+OM$\to$C ratio derivation ($\approx0.427$ over $\sim$12k paired CCN samples),
+$\geq$80~cm coverage requirement, deepest-layer extrapolation to 100~cm and its
+flag, 0.5/99.5 percentile outlier trim. Report final $n$, median and range.}
+\begin{equation}
+\mathrm{SOC}_{0\text{--}100} = 100 \sum_i \mathrm{BD}_i\, f_{C,i}\, \Delta z_i,
+\qquad f_{C,i} = \begin{cases} f_{C,i}^{\text{meas}} \\ 0.427\, f_{OM,i} \end{cases}
+\label{eq:soc-si}
+\end{equation}
+
+% ---------------------------------------------------------------------
+\section{Covariate stack}
+\PLACE{Full covariate list with source, native resolution, CRS and sampling
+method (nearest finite cell). Note the PEDOFLUX-lake layers that were truncated
+and excluded (SoilGrids texture, OpenLandMap, MERIT terrain) and why GSOCmap is
+treated cautiously (circular prior). EOT20 constituents (M2, S2, K1, O1) and the
+tidal-range / form-factor definitions.}
+
+\begin{table}[h]
+\centering
+\caption{Covariates used in the v1 SOC model and per-core coverage.
+\PLACE{from the \texttt{sample\_covariates.py} coverage report.}}
+\begin{tabular}{lllr}
+\toprule
+Covariate group & Source & Variables & Coverage \\
+\midrule
+Climate    & CHELSA v2.1   & bio1--19            & \PLACE{100\%} \\
+SOC prior  & GSOCmap        & stock               & \PLACE{77\%} \\
+Soil       & SoilGrids      & bdod, cec (0--5 cm) & \PLACE{58\%} \\
+Land cover & Copernicus LULC& class (2015)        & \PLACE{100\%} \\
+Geomorphic & Natural Earth  & dist.\ coast/river  & \PLACE{100\%} \\
+Tidal      & EOT20          & range mean/spring, form & \PLACE{100\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------
+\section{Validation, AOA and conformal details}
+\PLACE{Spatial-block size relative to the SOC autocorrelation range; LODO fold
+definition and leakage control; AOA dissimilarity-index formula and threshold
+choice; split-conformal construction and the $\alpha=0.1$ target. Sensitivity of
+the AOA threshold.}
+
+% ---------------------------------------------------------------------
+\section{Full per-delta transfer results}
+\PLACE{Per-delta LODO $R^2$, RMSE, bias, AOA-inside fraction and conformal
+coverage for both models and all three feature sets (climate; +geomorphic;
++tidal). Mirror \texttt{soc\_lodo\_results.json}.}
+
+\begin{table}[h]
+\centering
+\caption{Per-delta leave-one-delta-out results (gradient boosting, full feature
+set). \PLACE{from \texttt{soc\_lodo\_results.json}.}}
+\begin{tabular}{lrrrrr}
+\toprule
+Delta & $n$ & $R^2$ & RMSE (Mg ha$^{-1}$) & AOA in & Conf.\ cov. \\
+\midrule
+\PLACE{populate 8 core deltas} & & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------
+\section{Transfer diagnostic}
+\PLACE{Energy-distance and dissimilarity-index methodology; the full per-delta
+shift table; Spearman correlations with the small-$n$ power caveat; the
+standardized-mean-difference ranking that names each delta's dominant shift axis.
+Mirror \texttt{docs/stage2\_diagnostic.md}.}
+
+% ---------------------------------------------------------------------
+\section{Aboveground and total ecosystem carbon (reserved)}
+\TODO{Simard 2019 AGB acquired for all core deltas. To add: AGB$\to$C labels,
+AGB LODO models, AGB-C + SOC total with uncertainty propagation, and per-delta
+total-carbon maps with AOA masks.}
+
+% ---------------------------------------------------------------------
+\section{Reproducibility}
+\PLACE{Pinned environment (\texttt{requirements.txt}), single-command runner
+(\texttt{run\_all.sh}), the \texttt{MDBC\_LAKE} external-driver convention, and
+the provenance manifests. Frozen LODO splits released with the benchmark.}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

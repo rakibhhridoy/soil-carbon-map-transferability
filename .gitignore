@@ -20,3 +20,12 @@ venv/
 # Large intermediates (kept out; small processed/ artifacts ARE tracked)
 data/interim/
 data/tensors/
+
+# LaTeX build artifacts
+manuscript/*.aux
+manuscript/*.bbl
+manuscript/*.blg
+manuscript/*.log
+manuscript/*.out
+manuscript/*.toc
+manuscript/*.pdf

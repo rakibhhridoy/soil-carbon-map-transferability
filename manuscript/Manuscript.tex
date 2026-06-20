@@ -1,0 +1,248 @@
+% =====================================================================
+% MDBC --- Multi-Delta Blue Carbon: cross-delta transferability
+% Target: Nature-portfolio style (Communications Earth & Environment).
+% Standalone build (no publisher .cls required); retarget at submission.
+% Build: pdflatex -> bibtex -> pdflatex x2
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{authblk}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round,authoryear]{natbib}
+\usepackage{lineno}
+\linenumbers
+
+% editorial note macro (remove before submission)
+\newcommand{\TODO}[1]{\textcolor{red}{[\textbf{TODO:} #1]}}
+\newcommand{\PLACE}[1]{\textcolor{blue}{[\textit{#1}]}}
+
+\title{\textbf{Cross-delta transferability limits of mangrove blue-carbon
+stock models: a multi-delta benchmark with area-of-applicability and
+conformal uncertainty}}
+
+\author[1,2]{Md Rakib Hasan\thanks{Corresponding author:
+\texttt{rakibhhridoy@fermium.systems}; ORCID: 0009-0002-4007-7590}}
+\affil[1]{Fermium Systems, Dhaka 1207, Bangladesh}
+\affil[2]{Department of Soil, Water and Environment, University of Dhaka,
+Dhaka 1000, Bangladesh}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------------
+\begin{abstract}
+\noindent
+Mangroves are among Earth's most carbon-dense ecosystems, and global maps of
+their soil and biomass carbon now underpin carbon-crediting and conservation
+decisions. Yet these maps are validated almost exclusively with random or
+in-distribution cross-validation, which is inflated by spatial autocorrelation
+and silent about whether a model trained on some regions can predict an
+\emph{unsampled} delta. Here we build a multi-delta benchmark spanning
+\PLACE{N} major mangrove systems across \PLACE{C} continents and evaluate
+total ecosystem carbon (aboveground biomass carbon, AGB-C, plus soil organic
+carbon, SOC) under three validation tiers --- random, spatial-block, and
+leave-one-delta-out (LODO) --- coupled with area-of-applicability (AOA) masking
+and distribution-free conformal prediction intervals. \PLACE{For SOC, a model
+scoring $R^2\approx0.65$ under random cross-validation collapses to a median
+LODO $R^2$ of $-1.1$, and every held-out delta falls entirely outside the AOA,
+even with climate, geomorphic and tidal covariates included.} We show that the
+failure is not explained by covariate-shift magnitude alone, implicating
+delta-specific (concept-level) controls on carbon density. \PLACE{AGB and
+total-carbon results.} Our results quantify a hard limit on the geographic
+transferability of blue-carbon stock models and argue that crediting-grade
+estimates for an unsampled delta require local calibration data.
+\end{abstract}
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} blue carbon; mangroves; soil organic carbon;
+out-of-distribution generalization; area of applicability; conformal prediction;
+spatial cross-validation.
+
+% ---------------------------------------------------------------------
+\section{Introduction}
+\PLACE{Open with the stakes: mangrove carbon density, the SOC-dominated stock
+($\sim$10 of 11.7~Pg C belowground), and the rise of global wall-to-wall maps
+(Sanderman 2018 SOC 30~m; Simard 2019 AGB 30~m) now feeding carbon markets and
+Bangladesh Delta Plan-type policy.}
+
+\PLACE{Problem: these maps report in-distribution skill. Spatial autocorrelation
+inflates apparent accuracy \citep{ploton2020}; nobody has asked the
+out-of-distribution question --- can blue-carbon knowledge from sampled deltas
+predict an unsampled one? This is exactly the question a carbon buyer faces.}
+
+\PLACE{Gap and contribution (enumerate):}
+\begin{enumerate}
+  \item A reproducible \emph{multi-delta benchmark} with frozen leave-one-delta-out
+        splits for mangrove total ecosystem carbon (AGB-C + SOC).
+  \item Three-tier validation that exposes the spatial-autocorrelation inflation
+        and quantifies the \emph{transfer gap}.
+  \item Trustworthiness layers --- area of applicability \citep{meyer2021} and
+        conformal intervals --- that tell a practitioner \emph{where} a global
+        model may be used.
+  \item A mechanistic diagnostic separating covariate shift from concept shift.
+\end{enumerate}
+
+% ---------------------------------------------------------------------
+\section{Results}
+
+\subsection{A multi-delta blue-carbon benchmark}
+\PLACE{Describe the frozen registry: candidate deltas, GMW-clipped mangrove area,
+usable in-situ label counts, the core/prediction-only/excluded roles, continental
+spread. Reference Table~\ref{tab:deltas} and Fig.~\ref{fig:map}.}
+
+\begin{table}[t]
+\centering
+\caption{Core (leave-one-delta-out) deltas in the v1 SOC benchmark: mangrove area
+(GMW v3, 2020), usable in-situ SOC cores, and continent. \PLACE{regenerate from
+\texttt{data/processed/delta\_registry.csv}.}}
+\label{tab:deltas}
+\begin{tabular}{llrrl}
+\toprule
+Delta & Country & Area (km$^2$) & SOC cores & Continent \\
+\midrule
+\PLACE{Sundarbans} & BD/IN & \PLACE{6052} & \PLACE{11} & Asia \\
+\PLACE{\dots populate from registry \dots} & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Standard validation overstates transferable skill}
+\PLACE{The headline table: T1 random vs T2 spatial-block vs T3 LODO, for ridge
+and gradient boosting; the transfer gap. Reference Table~\ref{tab:tiers}.}
+
+\begin{table}[t]
+\centering
+\caption{Three-tier validation of the SOC model. Random $k$-fold is inflated by
+spatial autocorrelation; leave-one-delta-out (LODO) is the out-of-distribution
+test. \PLACE{from \texttt{soc\_lodo\_results.json}.}}
+\label{tab:tiers}
+\begin{tabular}{lrr}
+\toprule
+Validation tier & Ridge $R^2$ & Gradient boosting $R^2$ \\
+\midrule
+T1 random $k$-fold        & \PLACE{0.30} & \PLACE{0.65} \\
+T2 spatial-block          & \PLACE{$-0.09$} & \PLACE{$-0.69$} \\
+T3 leave-one-delta-out (median) & \PLACE{} & \PLACE{$-1.12$} \\
+\midrule
+Transfer gap (T1$-$T3)    & \PLACE{} & \PLACE{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Every unsampled delta lies outside the area of applicability}
+\PLACE{AOA = 0 for all held-out deltas across feature sets; conformal coverage
+breaks under shift. This is the robust, model-agnostic core result. Reference
+Fig.~\ref{fig:aoa}.}
+
+\subsection{Adding geomorphic and tidal forcing does not restore transfer}
+\PLACE{The climate $\to$ +geomorphic $\to$ +tidal (EOT20) progression; gap barely
+moves. Argues the limit is not merely a missing-covariate artifact.}
+
+\subsection{Covariate shift does not fully explain which deltas fail}
+\PLACE{The diagnostic: weak/non-significant correlation between shift magnitude
+(dissimilarity index, energy distance) and LODO error, with the small-$n$ caveat;
+physically coherent per-delta shift axes (tidal for Amazon/Rufiji/Musi,
+precipitation seasonality for Saloum, monsoon thermal regime for Sundarbans).
+Points to concept shift. Reference Table in SI.}
+
+\subsection{Aboveground and total ecosystem carbon}
+\TODO{AGB labels (Simard 2019) acquired for all core deltas; AGB LODO models and
+AGB-C + SOC $\to$ total ecosystem carbon with propagated uncertainty are the next
+analysis. Section reserved.}
+
+% ---------------------------------------------------------------------
+\section{Discussion}
+\PLACE{Interpretation: a hard transferability limit for blue-carbon stock models;
+implications for carbon crediting (no crediting-grade estimate for an unsampled
+delta without local cores); why concept shift (delta-specific sediment/salinity/
+hydroperiod controls) is the likely mechanism; what would close the gap (local
+calibration, hierarchical/partial pooling, transfer learning).}
+
+\PLACE{Limitations: SOC label sparsity and depth harmonization; small per-delta
+$n$; provisional AOA threshold; tidal from EOT20 rather than a process model;
+v1 is SOC-led with AGB pending.}
+
+\PLACE{Outlook: total-carbon mapping, the change/emissions and SLR-projection
+modules, and the framework's portability to any delta via a bounding box.}
+
+% ---------------------------------------------------------------------
+\section{Methods}
+
+\subsection{Study systems and the delta registry}
+\PLACE{Pre-registered selection criteria (area, deltaic setting, label
+availability, continental spread, non-overlap to prevent LODO leakage). GMW v3
+2020 extent clipped per delta in an equal-area projection; usable-core gate from
+the harmonized SOC labels.}
+
+\subsection{In-situ carbon labels}
+\PLACE{SOC: Coastal Carbon Network Data Library v1.6.0; mangrove cores integrated
+to a standardized 0--100~cm stock (mass-preserving; bulk-density $\times$ carbon
+fraction; OM$\to$C fallback ratio; extrapolation flags). AGB: Simard et al. 2019
+30~m, AGB$\to$C $\times 0.47$.}
+\begin{equation}
+\mathrm{SOC}_{0\text{--}100} \;=\; 100 \sum_i \mathrm{BD}_i \, f_{C,i}\, \Delta z_i
+\quad [\mathrm{Mg\,C\,ha^{-1}}],
+\label{eq:soc}
+\end{equation}
+\PLACE{define terms, units, depth handling.}
+
+\subsection{Covariates}
+\PLACE{Climate (CHELSA bio1--19); soil context and SOC prior (SoilGrids, GSOCmap);
+land cover (Copernicus); geomorphic position (distance-to-coast/-river, Natural
+Earth); tidal range and form factor from the EOT20 ocean-tide model. External
+driver lake referenced via \texttt{MDBC\_LAKE}.}
+
+\subsection{Models and three-tier validation}
+\PLACE{Ridge baseline and histogram gradient boosting on $\log(1+\mathrm{SOC})$.
+T1 random $k$-fold; T2 spatial-block CV \citep{roberts2017}; T3 leave-one-delta-out.
+Transfer gap $=$ T1$-$T3.}
+
+\subsection{Area of applicability}
+\PLACE{Importance-weighted dissimilarity index to the training feature space with
+an outlier-aware threshold \citep{meyer2021}; report fraction of each held-out
+delta inside the AOA.}
+
+\subsection{Conformal prediction intervals}
+\PLACE{Split-conformal on held-out calibration residuals for finite-sample marginal
+coverage; report empirical coverage per delta.}
+
+\subsection{Transfer diagnostic}
+\PLACE{Per-delta covariate shift via mean dissimilarity index and multivariate
+energy distance; Spearman correlation against LODO error; standardized
+mean-difference ranking to name the dominant shift axis.}
+
+% ---------------------------------------------------------------------
+\section*{Data availability}
+\PLACE{All source datasets are public (CCN, GMW v3, Simard 2019, EOT20, CHELSA,
+Natural Earth); per-source provenance manifests and derived label/feature tables
+are released with the code.}
+
+\section*{Code availability}
+\PLACE{Reproducible pipeline (Stage 0--2), pinned environment and a single-command
+runner are available at \PLACE{repository URL on publication}.}
+
+\section*{Acknowledgements}
+\PLACE{Funding and data-provider acknowledgements.}
+
+\section*{Author contributions}
+\PLACE{M.R.H.: conceptualization, methodology, software, analysis, writing.}
+
+\section*{Competing interests}
+The author declares no competing interests.
+
+% ---------------------------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
