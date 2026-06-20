@@ -44,6 +44,8 @@ python3 src/labels/build_agb_labels.py         # -> data/processed/agb_labels.pa
 python3 src/features/build_agb_features.py      # -> data/processed/agb_training.parquet
 python3 src/models/agb_lodo.py                 # -> data/processed/agb_lodo_results.json
 python3 src/models/total_carbon.py             # -> data/processed/total_carbon.json
+python3 src/models/terrestrial_test.py         # -> data/processed/terrestrial_test.json (specificity control)
+python3 src/models/crediting_risk.py           # -> data/processed/crediting_risk.json
 
 echo "== Manuscript assets (figures + tables) =="
 python3 src/manuscript_assets.py               # -> manuscript/figures + manuscript/tables

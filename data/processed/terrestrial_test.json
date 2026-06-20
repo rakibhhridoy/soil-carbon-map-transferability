@@ -1,0 +1,83 @@
+{
+ "n_profiles": 9390,
+ "gsocmap_test": {
+  "global_pearson": 0.36,
+  "median_region_pearson": 0.4,
+  "median_abs_region_bias": 8.3,
+  "per_region": [
+   {
+    "region": "Africa",
+    "n": 245,
+    "bias": -8.3,
+    "rmse": 32.7,
+    "pearson": 0.62
+   },
+   {
+    "region": "Asia",
+    "n": 216,
+    "bias": -0.7,
+    "rmse": 62.1,
+    "pearson": 0.4
+   },
+   {
+    "region": "Europe",
+    "n": 83,
+    "bias": -15.9,
+    "rmse": 78.8,
+    "pearson": 0.22
+   },
+   {
+    "region": "N.America",
+    "n": 8643,
+    "bias": -5.4,
+    "rmse": 55.9,
+    "pearson": 0.34
+   },
+   {
+    "region": "S.America",
+    "n": 85,
+    "bias": -26.5,
+    "rmse": 66.4,
+    "pearson": 0.53
+   }
+  ]
+ },
+ "loco": {
+  "t1_random_r2": 0.39,
+  "loco_median_r2": -0.05,
+  "transfer_gap": 0.44,
+  "loco_median_pearson": 0.35,
+  "per_region": [
+   {
+    "region": "Africa",
+    "n": 256,
+    "r2": 0.19,
+    "pearson": 0.53
+   },
+   {
+    "region": "Asia",
+    "n": 221,
+    "r2": 0.13,
+    "pearson": 0.47
+   },
+   {
+    "region": "Europe",
+    "n": 86,
+    "r2": -0.15,
+    "pearson": -0.05
+   },
+   {
+    "region": "N.America",
+    "n": 8729,
+    "r2": -0.09,
+    "pearson": 0.35
+   },
+   {
+    "region": "S.America",
+    "n": 86,
+    "r2": -0.05,
+    "pearson": 0.2
+   }
+  ]
+ }
+}

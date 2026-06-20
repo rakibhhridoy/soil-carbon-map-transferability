@@ -146,6 +146,39 @@ def tab_publishedmap():
         "\\end{tabular}\n")
 
 
+def tab_crediting():
+    c = _opt(PROC / "crediting_risk.json")
+    if c is None:
+        return
+    rows = [f"{r['delta'].replace('_',' ').title()} & {r['area_km2']:.0f} & "
+            f"{r['stock_TgC']:.1f} & $\\pm${r['err_TgC']:.1f} \\\\" for r in c["per_delta"]]
+    rows.append("\\midrule")
+    rows.append(f"\\textbf{{Total}} & {c['prediction_only_area_km2']:.0f} & "
+                f"{c['stock_at_stake_TgC']:.0f} & $\\pm${c['uncaptured_error_TgC']:.0f} \\\\")
+    (TAB / "tab_crediting.tex").write_text(
+        "\\begin{tabular}{lrrr}\n\\toprule\n"
+        "Unsampled delta & Area (km$^2$) & Stock (Tg\\,C) & Error (Tg\\,C) \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_terrestrial():
+    t = _opt(PROC / "terrestrial_test.json")
+    if t is None:
+        return
+    g = t["gsocmap_test"]; lo = t["loco"]
+    rows = [
+        f"Within-region $r$ (operational map) & $-0.11$ & $+{g['median_region_pearson']:.2f}$ \\\\",
+        f"Per-region bias (Mg\\,ha$^{{-1}}$) & 116 & {g['median_abs_region_bias']:.0f} \\\\",
+        f"Random$\\rightarrow$OOD transfer gap ($R^2$) & 2.4 & {lo['transfer_gap']:.2f} \\\\",
+        f"Within-region $r$ (our model, OOD) & 0.04 & $+{lo['loco_median_pearson']:.2f}$ \\\\",
+    ]
+    (TAB / "tab_terrestrial.tex").write_text(
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        " & Mangrove & Terrestrial \\\\\n"
+        " & (blue carbon) & SOC \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_registry_full(reg):
     r = reg.sort_values(["role", "mangrove_area_km2"], ascending=[True, False])
     rows = [f"{x.id.replace('_',' ').title()} & {x.mangrove_area_km2:.0f} & "
@@ -333,6 +366,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_conceptshift()
+    tab_crediting(); tab_terrestrial()
     dump_figure_data(reg, lodo, soc)
     print("figures ->", FIG)
     print("tables  ->", TAB)
