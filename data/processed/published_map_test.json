@@ -1,0 +1,84 @@
+{
+ "global": {
+  "n": 294,
+  "pearson": 0.16,
+  "bias": -123.2,
+  "rmse": 210.3,
+  "median_within_delta_pearson": -0.11,
+  "median_abs_bias": 116.0
+ },
+ "per_delta": [
+  {
+   "delta_id": "amazon_amapa",
+   "n": 29.0,
+   "obs_med": 169.0,
+   "map_med": 27.0,
+   "bias": -58.0,
+   "rmse": 146.0,
+   "pearson": -0.22
+  },
+  {
+   "delta_id": "everglades",
+   "n": 5.0,
+   "obs_med": 343.0,
+   "map_med": 34.0,
+   "bias": -190.0,
+   "rmse": 230.0,
+   "pearson": 0.46
+  },
+  {
+   "delta_id": "mekong",
+   "n": 115.0,
+   "obs_med": 273.0,
+   "map_med": 22.0,
+   "bias": -261.0,
+   "rmse": 277.0,
+   "pearson": -0.43
+  },
+  {
+   "delta_id": "musi_banyuasin",
+   "n": 37.0,
+   "obs_med": 519.0,
+   "map_med": 302.0,
+   "bias": -194.0,
+   "rmse": 217.0,
+   "pearson": 0.38
+  },
+  {
+   "delta_id": "rufiji",
+   "n": 75.0,
+   "obs_med": 157.0,
+   "map_med": 253.0,
+   "bias": 89.0,
+   "rmse": 115.0,
+   "pearson": -0.0
+  },
+  {
+   "delta_id": "saloum_gambia",
+   "n": 18.0,
+   "obs_med": 286.0,
+   "map_med": 124.0,
+   "bias": -143.0,
+   "rmse": 153.0,
+   "pearson": 0.28
+  },
+  {
+   "delta_id": "sundarbans",
+   "n": 9.0,
+   "obs_med": 209.0,
+   "map_med": 201.0,
+   "bias": -52.0,
+   "rmse": 118.0,
+   "pearson": -0.29
+  },
+  {
+   "delta_id": "zambezi",
+   "n": 6.0,
+   "obs_med": 98.0,
+   "map_med": 86.0,
+   "bias": -5.0,
+   "rmse": 70.0,
+   "pearson": -0.42
+  }
+ ]
+}

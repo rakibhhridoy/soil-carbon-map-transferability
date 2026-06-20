@@ -57,7 +57,10 @@ spatial-block, and leave-one-delta-out (LODO) --- coupled with area-of-applicabi
 model scoring $R^2=0.65$ under random cross-validation collapses to a median LODO $R^2$
 of $-1.7$, every held-out delta falls entirely outside the AOA, and adding geomorphic
 position and tidal forcing does not restore transfer. The same collapse occurs
-independently for AGB-C, and both pools place every delta outside the AOA. The failure
+independently for AGB-C, and both pools place every delta outside the AOA. Critically,
+the published Sanderman et al.\ soil-carbon product --- a map already used operationally
+--- shows the identical per-delta signature when tested against in-situ cores (median
+within-delta $r=-0.11$; median absolute per-delta bias 116~Mg\,ha$^{-1}$). The failure
 is not explained by covariate-shift magnitude alone, implicating delta-specific
 (concept-level) controls on carbon density, and conformal intervals lose their coverage
 guarantee under cross-delta shift. Across the benchmark, total ecosystem carbon (495~Tg
@@ -211,6 +214,30 @@ the large bias shows it also misses the level. Auto-generated from
 \input{tables/tab_perdelta}
 \end{table}
 
+\subsection{A published global product shows the same per-delta failure}
+The preceding results use our own model; to test whether the problem extends to the maps
+actually in operational use, we evaluated the published Sanderman et al.\ global mangrove
+soil-carbon product (30~m, 0--100~cm) directly against the in-situ cores, delta by delta
+(Table~\ref{tab:publishedmap}). The signature is identical: across the 294 cores the map
+resolves, the median within-delta correlation is $r=-0.11$ and the median absolute
+per-delta bias is 116~Mg\,ha$^{-1}$, with individual deltas mis-estimated by up to
+261~Mg\,ha$^{-1}$ (Mekong). The operational product therefore neither reproduces
+within-delta pattern nor gets delta means right --- exactly the behaviour our
+leave-one-delta-out analysis predicts. Two caveats temper but do not overturn this: the
+map's circa-2000 epoch does not match every core's sampling date, and because the
+product was trained on a global core compilation that likely overlaps ours its agreement
+here is, if anything, optimistic. That it still fails per delta makes the point more
+forcefully.
+
+\begin{table}[t]
+\centering
+\caption{The published Sanderman et al.\ mangrove SOC map evaluated against in-situ cores
+per delta: number of cores resolved, median observed and mapped SOC, mean bias, and
+within-delta correlation. Auto-generated from \texttt{published\_map\_test.json}.}
+\label{tab:publishedmap}
+\input{tables/tab_publishedmap}
+\end{table}
+
 \subsection{Adding geomorphic and tidal forcing does not restore transfer}
 A natural objection is that the failure merely reflects missing predictors. We tested
 this by augmenting the climate covariates first with geomorphic position
@@ -345,6 +372,10 @@ reported uncertainties derive from in-distribution validation and from conformal
 guarantees that, as we show, fail under cross-delta shift (empirical coverage as low as
 0\%). A crediting-grade soil-carbon estimate for a delta absent from the training data
 therefore cannot be inherited from a global model; it requires local calibration cores.
+This is not merely a property of our re-implementation: the published Sanderman et al.\
+product, tested against in-situ cores delta by delta, exhibits the same near-zero
+within-delta correlation and large per-delta bias, so the caution applies directly to
+maps already in use.
 The same logic identifies where global maps \emph{can} be trusted---inside the AOA---and
 turns the area of applicability into an actionable map layer for users.
 

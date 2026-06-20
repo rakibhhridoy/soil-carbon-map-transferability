@@ -33,6 +33,9 @@ python3 src/features/build_tidal.py            # + tidal range/form (EOT20)
 echo "== Stage 2: SOC transferability experiment =="
 python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json
 python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diagnostic.json
+python3 src/models/gsoc_ablation.py            # -> data/processed/gsoc_ablation.json
+python3 src/models/fewshot_calibration.py      # -> data/processed/fewshot_calibration.json
+python3 src/models/published_map_test.py       # -> data/processed/published_map_test.json (remote COGs)
 
 echo "== Stage 3: AGB + total ecosystem carbon =="
 python3 src/labels/build_agb_labels.py         # -> data/processed/agb_labels.parquet

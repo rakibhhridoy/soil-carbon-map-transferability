@@ -95,6 +95,27 @@ def tab_fewshot():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_publishedmap():
+    pm = _opt(PROC / "published_map_test.json")
+    if pm is None:
+        return
+    order = sorted(pm["per_delta"], key=lambda r: abs(r["bias"]))
+    rows = [f"{r['delta_id'].replace('_',' ').title()} & {int(r['n'])} & "
+            f"{r['obs_med']:.0f} & {r['map_med']:.0f} & {r['bias']:+.0f} & "
+            f"{r['pearson']:+.2f} \\\\" for r in order]
+    g = pm["global"]
+    rows.append("\\midrule")
+    rows.append(f"\\textbf{{Median / global}} & {g['n']} & & & "
+                f"{g['median_abs_bias']:.0f}$^{{*}}$ & {g['median_within_delta_pearson']:+.2f} \\\\")
+    (TAB / "tab_publishedmap.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Delta & $n$ & Obs.\\ & Map & Bias & $r$ \\\\\n"
+        " & & \\multicolumn{3}{c}{(Mg\\,ha$^{-1}$)} & within \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{6}{l}{\\footnotesize $^{*}$median of $|$per-delta bias$|$.}\\\\\n"
+        "\\end{tabular}\n")
+
+
 def tab_registry_full(reg):
     r = reg.sort_values(["role", "mangrove_area_km2"], ascending=[True, False])
     rows = [f"{x.id.replace('_',' ').title()} & {x.mangrove_area_km2:.0f} & "
@@ -248,7 +269,7 @@ def main():
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
-    fig_fewshot(); tab_fewshot()
+    fig_fewshot(); tab_fewshot(); tab_publishedmap()
     print("figures ->", FIG)
     print("tables  ->", TAB)
     for p in sorted(FIG.glob("*.pdf")) + sorted(TAB.glob("*.tex")):
