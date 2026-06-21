@@ -42,36 +42,19 @@ Dhaka 1000, Bangladesh}
 % ---------------------------------------------------------------------
 \begin{abstract}
 \noindent
-Mangroves are among Earth's most carbon-dense ecosystems, and global maps of
-their soil and biomass carbon now underpin carbon-crediting and conservation
-decisions. Yet these maps are validated almost exclusively with random or
-in-distribution cross-validation, which is inflated by spatial autocorrelation
-and silent about whether a model trained on some regions can predict an
-\emph{unsampled} delta. Here we build a multi-delta benchmark spanning eight major
-mangrove systems across four continents and evaluate both soil organic carbon (SOC)
-and aboveground biomass carbon (AGB-C) under three validation tiers --- random,
-spatial-block, and leave-one-delta-out (LODO) --- coupled with area-of-applicability
-(AOA) masking and distribution-free conformal prediction intervals. A gradient-boosting
-model scoring $R^2=0.65$ under random cross-validation collapses to a median LODO $R^2$
-of $-1.7$, every held-out delta falls entirely outside the AOA, and adding geomorphic
-position and tidal forcing does not restore transfer. The same collapse occurs
-independently for AGB-C, and both pools place every delta outside the AOA. Critically,
-the published Sanderman et al.\ soil-carbon product --- a map already used operationally
---- shows the identical per-delta signature when tested against in-situ cores (median
-within-delta $r=-0.11$; median absolute per-delta bias 116~Mg\,ha$^{-1}$). The failure
-is not explained by covariate-shift magnitude alone, implicating delta-specific
-(concept-level) controls on carbon density, and conformal intervals lose their coverage
-guarantee under cross-delta shift. Across the benchmark, total ecosystem carbon (495~Tg
-C; 77\% belowground) varies sixfold between deltas in a way a global model cannot
-reconstruct. The failure is specific to blue carbon: under the
-identical protocol, terrestrial soil-carbon predictions and the operational GSOCmap
-product transfer far better between continents, so this is not a generic mapping
-artifact. The stakes are concrete --- across mangrove deltas that lack in-situ cores
-(8\% of global mangrove area) a globally-trained model assigns of order 1.2~Pg CO$_2$e
-of carbon-crediting-relevant stock carrying $\sim$0.3~Pg CO$_2$e of error that current
-products do not report. A few-shot experiment shows that on the order of ten to
-twenty-five local cores recover most of the lost within-delta skill, defining the local
-data needed for crediting-grade estimates in an unsampled delta.
+Global maps of mangrove soil and biomass carbon increasingly underpin carbon-crediting
+decisions, yet they are validated almost exclusively with random cross-validation that
+cannot test whether a model trained on some regions predicts an \emph{unsampled} one.
+Using a multi-delta benchmark of eight mangrove systems under leave-one-delta-out
+evaluation, we show that a model scoring $R^2=0.65$ under random validation collapses to
+a median $R^2$ of $-1.7$ across deltas, with every held-out delta falling entirely
+outside the model's area of applicability. Adding geomorphic and tidal predictors does
+not help, and a widely used published soil-carbon map shows the same failure. The
+breakdown reflects delta-specific concept shift and is specific to blue
+carbon---terrestrial soil carbon transfers far better. In unsampled deltas, 8\% of
+global mangrove area, global models assign of order 1.2~Pg CO$_2$e of crediting-relevant
+stock with unreported error, while ten to twenty-five local cores recover most of the
+lost skill.
 \end{abstract}
 
 \vspace{0.5em}
