@@ -153,17 +153,17 @@ def tab_region():
     s = r["summary"]
     rows = [
         f"Independent regions & {s['n_regions']} (on {s['n_continents']} continents) \\\\",
-        f"Random-CV $R^2$ & {s['t1_random_r2']:+.2f} \\\\",
-        f"LODO median $R^2$ & {s['lodo_median_r2']:+.2f} \\\\",
-        f"LODO median within-region $r$ & {s['lodo_median_pearson']:+.2f} \\\\",
+        f"Median within-region $r$ (out-of-region) & {s['lodo_median_pearson']:+.2f} \\\\",
+        f"Regions with $r<0.2$ & {s['frac_regions_pearson_below_0p2']*100:.0f}\\% \\\\",
         f"Median AOA-inside & {s['median_aoa_inside']:.2f} \\\\",
         f"Regions with negative $R^2$ & {s['frac_regions_negative_r2']*100:.0f}\\% \\\\",
-        f"Regions with $r<0.2$ & {s['frac_regions_pearson_below_0p2']*100:.0f}\\% \\\\",
     ]
     (TAB / "tab_region.tex").write_text(
         "\\begin{tabular}{lr}\n\\toprule\n"
         "Leave-one-region-out (29 regions) & Value \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{2}{l}{\\footnotesize Within-region $r$ and AOA are independent "
+        "of overall skill level.}\\\\\n\\end{tabular}\n")
 
 
 def tab_crediting():
@@ -171,13 +171,14 @@ def tab_crediting():
     if c is None:
         return
     rows = [f"{r['delta'].replace('_',' ').title()} & {r['area_km2']:.0f} & "
-            f"{r['stock_TgC']:.1f} & $\\pm${r['err_TgC']:.1f} \\\\" for r in c["per_delta"]]
+            f"{r['stock_lo_TgC']:.0f}--{r['stock_hi_TgC']:.0f} \\\\" for r in c["per_delta"]]
     rows.append("\\midrule")
+    sp = c["stock_span_TgC"]
     rows.append(f"\\textbf{{Total}} & {c['prediction_only_area_km2']:.0f} & "
-                f"{c['stock_at_stake_TgC']:.0f} & $\\pm${c['uncaptured_error_TgC']:.0f} \\\\")
+                f"\\textbf{{{sp[0]:.0f}--{sp[1]:.0f}}} \\\\")
     (TAB / "tab_crediting.tex").write_text(
-        "\\begin{tabular}{lrrr}\n\\toprule\n"
-        "Unsampled delta & Area (km$^2$) & Stock (Tg\\,C) & Error (Tg\\,C) \\\\\n\\midrule\n"
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        "Unsampled delta & Area (km$^2$) & Stock span (Tg\\,C) \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 

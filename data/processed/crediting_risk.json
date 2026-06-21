@@ -4,12 +4,21 @@
   106.0,
   639.0
  ],
+ "density_fold_spread": 6.0,
  "total_lodo_rmse_Mgha": 124.0,
  "n_prediction_only": 7,
  "prediction_only_area_km2": 11724.0,
  "prediction_only_area_pct_global": 8.0,
  "stock_at_stake_TgC": 322.0,
  "stock_at_stake_TgCO2e": 1181.0,
+ "stock_span_TgC": [
+  125.0,
+  749.0
+ ],
+ "stock_span_PgCO2e": [
+  0.5,
+  2.7
+ ],
  "uncaptured_error_TgC": 83.0,
  "uncaptured_error_TgCO2e": 306.0,
  "all_outside_aoa": true,
@@ -18,42 +27,56 @@
    "delta": "niger",
    "area_km2": 6306.0,
    "stock_TgC": 173.3,
+   "stock_lo_TgC": 67.1,
+   "stock_hi_TgC": 403.1,
    "err_TgC": 78.1
   },
   {
    "delta": "orinoco",
    "area_km2": 1546.0,
    "stock_TgC": 42.5,
+   "stock_lo_TgC": 16.5,
+   "stock_hi_TgC": 98.8,
    "err_TgC": 19.2
   },
   {
    "delta": "irrawaddy",
    "area_km2": 1116.0,
    "stock_TgC": 30.7,
+   "stock_lo_TgC": 11.9,
+   "stock_hi_TgC": 71.3,
    "err_TgC": 13.8
   },
   {
    "delta": "indus",
    "area_km2": 778.0,
    "stock_TgC": 21.4,
+   "stock_lo_TgC": 8.3,
+   "stock_hi_TgC": 49.7,
    "err_TgC": 9.6
   },
   {
    "delta": "rajang_sarawak",
    "area_km2": 751.0,
    "stock_TgC": 20.6,
+   "stock_lo_TgC": 8.0,
+   "stock_hi_TgC": 48.0,
    "err_TgC": 9.3
   },
   {
    "delta": "fly",
    "area_km2": 660.0,
    "stock_TgC": 18.1,
+   "stock_lo_TgC": 7.0,
+   "stock_hi_TgC": 42.2,
    "err_TgC": 8.2
   },
   {
    "delta": "mahakam",
    "area_km2": 566.0,
    "stock_TgC": 15.5,
+   "stock_lo_TgC": 6.0,
+   "stock_hi_TgC": 36.2,
    "err_TgC": 7.0
   }
  ]
