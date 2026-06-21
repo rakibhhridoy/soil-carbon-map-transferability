@@ -146,6 +146,26 @@ def tab_publishedmap():
         "\\end{tabular}\n")
 
 
+def tab_region():
+    r = _opt(PROC / "region_lodo_results.json")
+    if r is None:
+        return
+    s = r["summary"]
+    rows = [
+        f"Independent regions & {s['n_regions']} (on {s['n_continents']} continents) \\\\",
+        f"Random-CV $R^2$ & {s['t1_random_r2']:+.2f} \\\\",
+        f"LODO median $R^2$ & {s['lodo_median_r2']:+.2f} \\\\",
+        f"LODO median within-region $r$ & {s['lodo_median_pearson']:+.2f} \\\\",
+        f"Median AOA-inside & {s['median_aoa_inside']:.2f} \\\\",
+        f"Regions with negative $R^2$ & {s['frac_regions_negative_r2']*100:.0f}\\% \\\\",
+        f"Regions with $r<0.2$ & {s['frac_regions_pearson_below_0p2']*100:.0f}\\% \\\\",
+    ]
+    (TAB / "tab_region.tex").write_text(
+        "\\begin{tabular}{lr}\n\\toprule\n"
+        "Leave-one-region-out (29 regions) & Value \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
 def tab_crediting():
     c = _opt(PROC / "crediting_risk.json")
     if c is None:
@@ -355,6 +375,12 @@ def dump_figure_data(reg, lodo, soc):
         out["fewshot"] = [dict(k=k, rmse=fc["summary"][str(k)]["median_rmse"],
                                pearson=fc["summary"][str(k)]["median_pearson"])
                           for k in fc["ks"] if str(k) in fc["summary"]]
+    rl = _opt(PROC / "region_lodo_results.json")
+    if rl:
+        out["region"] = [dict(continent=r["continent"], n=r["n"],
+                              pearson=r["pearson"], aoa=r["aoa_inside"])
+                         for r in rl["per_region"]]
+        out["region_summary"] = rl["summary"]
     (PROC / "figure_data.json").write_text(json.dumps(out, indent=1))
     print("figure_data ->", PROC / "figure_data.json")
 
@@ -366,7 +392,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_conceptshift()
-    tab_crediting(); tab_terrestrial()
+    tab_crediting(); tab_terrestrial(); tab_region()
     dump_figure_data(reg, lodo, soc)
     print("figures ->", FIG)
     print("tables  ->", TAB)

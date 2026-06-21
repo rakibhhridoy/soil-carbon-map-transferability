@@ -262,7 +262,55 @@ function figFewshot() {
   save(dom, "fig_fewshot");
 }
 
+// ================================================================== fig_region
+// Per-region within-region correlation across the ~29 data-driven regions, by
+// continent: shows the collapse holds at scale (most regions near or below zero).
+function figRegion() {
+  if (!DATA.region) return;
+  const W = 620, H = 320, m = { t: 36, r: 16, b: 64, l: 50 };
+  const { dom, svg } = svgRoot(W, H);
+  title(svg, m.l - 34, 22, "Transfer collapse holds across 29 regions");
+  const conts = [...new Set(DATA.region.map(d => d.continent))].sort();
+  const cx = d3.scaleBand().domain(conts).range([m.l, W - m.r]).padding(0.4);
+  const y = d3.scaleLinear().domain([-0.7, 0.7]).range([H - m.b, m.t]);
+  const col = d3.scaleOrdinal().domain(conts)
+    .range([OI.blue, OI.vermillion, OI.green, OI.orange, OI.sky, OI.purple, OI.grey]);
+  // gridlines + zero line
+  svg.selectAll(".g").data(y.ticks(7)).join("line").attr("class", "g")
+     .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => y(d)).attr("y2", d => y(d))
+     .attr("stroke", GRID).attr("stroke-width", 0.5);
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
+     .attr("stroke", INK).attr("stroke-width", 1);
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(7)).call(axisStyle);
+  svg.append("text").attr("x", 13).attr("y", (m.t + H - m.b) / 2)
+     .attr("transform", `rotate(-90,13,${(m.t + H - m.b) / 2})`).attr("text-anchor", "middle")
+     .attr("font-size", 11).attr("fill", INK).text("within-region r (out-of-region)");
+  const jitter = d3.randomNormal.source(d3.randomLcg(7))(0, cx.bandwidth() / 7);
+  DATA.region.forEach(d => {
+    svg.append("circle")
+       .attr("cx", cx(d.continent) + cx.bandwidth() / 2 + jitter())
+       .attr("cy", y(Math.max(-0.7, Math.min(0.7, d.pearson))))
+       .attr("r", 3 + Math.sqrt(d.n) / 6).attr("fill", col(d.continent))
+       .attr("fill-opacity", 0.78).attr("stroke", "#222").attr("stroke-width", 0.4);
+  });
+  // median marker per continent
+  conts.forEach(c => {
+    const v = DATA.region.filter(d => d.continent === c).map(d => d.pearson).sort(d3.ascending);
+    const med = d3.median(v);
+    svg.append("line").attr("x1", cx(c) + 4).attr("x2", cx(c) + cx.bandwidth() - 4)
+       .attr("y1", y(med)).attr("y2", y(med)).attr("stroke", "#000").attr("stroke-width", 1.6);
+  });
+  conts.forEach(c => svg.append("text").attr("x", cx(c) + cx.bandwidth() / 2)
+    .attr("y", H - m.b + 16).attr("text-anchor", "middle").attr("font-size", 10)
+    .attr("fill", INK).attr("transform", `rotate(12,${cx(c) + cx.bandwidth() / 2},${H - m.b + 16})`)
+    .text(c));
+  svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
+     .attr("font-size", 10).attr("fill", "#777")
+     .text("each point = one held-out region (size ∝ √n); bar = continental median");
+  save(dom, "fig_region");
+}
+
 import { mkdirSync } from "fs";
 mkdirSync(OUT, { recursive: true });
-figMap(); figTiers(); figAoa(); figFewshot();
+figMap(); figTiers(); figAoa(); figFewshot(); figRegion();
 console.log("done.");

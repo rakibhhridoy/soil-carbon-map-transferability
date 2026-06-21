@@ -45,13 +45,13 @@ Dhaka 1000, Bangladesh}
 Global maps of mangrove soil and biomass carbon increasingly underpin carbon-crediting
 decisions, yet they are validated almost exclusively with random cross-validation that
 cannot test whether a model trained on some regions predicts an \emph{unsampled} one.
-Using a multi-delta benchmark of eight mangrove systems under leave-one-delta-out
-evaluation, we show that a model scoring $R^2=0.65$ under random validation collapses to
-a median $R^2$ of $-1.7$ across deltas, with every held-out delta falling entirely
-outside the model's area of applicability. Adding geomorphic and tidal predictors does
-not help, and a widely used published soil-carbon map shows a similar per-delta pattern.
-The breakdown is consistent with delta-specific concept shift; in a parallel test,
-terrestrial soil carbon transfers substantially better, so the failure is not a generic
+Under leave-one-delta-out evaluation across eight mangrove systems, a model scoring
+$R^2=0.65$ under random validation collapses to a median $R^2$ of $-1.7$, with every
+held-out delta falling outside the model's area of applicability; the collapse holds
+across 29 data-driven mangrove regions on six continents. Adding geomorphic and tidal
+predictors does not help, and a widely used published soil-carbon map shows a similar
+pattern. The breakdown is consistent with delta-specific concept shift; in a parallel
+test, terrestrial soil carbon transfers substantially better, so it is not a generic
 mapping artifact. In unsampled deltas, 8\% of global mangrove area, the benchmark median
 density scales to of order 1.2~Pg CO$_2$e of stock whose out-of-delta error current
 products do not report, while ten to twenty-five local
@@ -233,6 +233,42 @@ within-delta correlation.}
 \input{tables/tab_publishedmap}
 \end{table}
 
+\subsection{The collapse holds across 29 regions, not eight deltas}
+The eight named deltas are interpretable but few, inviting the concern that the collapse
+is an artifact of a small or hand-chosen fold set. To test robustness at scale we set
+the named deltas aside and partitioned all 2{,}489 usable mangrove soil cores into
+geographic regions by clustering their coordinates (DBSCAN, $\sim$250~km neighbourhood;
+Methods), yielding 29 data-driven regions with at least twelve cores each, spread across
+six continents. Repeating leave-one-region-out over this larger, geographically balanced
+set reproduces the failure (Fig.~\ref{fig:region}, Table~\ref{tab:region}): the median
+within-region correlation between predicted and observed soil carbon is $-0.09$, 83\% of
+regions have a within-region correlation below 0.2, 90\% have negative $R^2$, and every
+one of the 29 regions falls entirely outside the model's area of applicability. In-sample
+skill is itself lower on this fully heterogeneous global core set (random-CV $R^2=0.10$
+versus 0.65 within the cleaner named-delta subset), but the out-of-region signal is
+unchanged in direction and now rests on 29 independent regions rather than eight. The
+transfer failure is therefore a property of mangrove systems broadly, not of the
+particular deltas we named.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_region.pdf}
+\caption{Leave-one-region-out across 29 data-driven mangrove regions on six continents.
+Each point is one held-out region's within-region correlation between predicted and
+observed soil carbon (point size $\propto\sqrt{n}$); bars are continental medians. Most
+regions cluster near or below zero, and all 29 lie outside the area of applicability.}
+\label{fig:region}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Leave-one-region-out over 29 data-driven mangrove regions (six continents): the
+transfer collapse and zero area-of-applicability coverage hold well beyond the eight
+named deltas.}
+\label{tab:region}
+\input{tables/tab_region}
+\end{table}
+
 \subsection{Adding geomorphic and tidal forcing does not restore transfer}
 A natural objection is that the failure merely reflects missing predictors. We tested
 this by augmenting the climate covariates first with geomorphic position
@@ -412,9 +448,10 @@ thirds of the variance under random cross-validation cannot predict an unsampled
 better than its global mean, and--more diagnostically--every held-out delta lies wholly
 outside the model's area of applicability. Because this AOA result is model-agnostic and
 invariant to the addition of geomorphic and tidal predictors, it is not readily
-dismissed as a quirk of one algorithm or a missing covariate. The world's major
-mangrove deltas occupy separated regions of environmental space, and a model trained on
-some of them is, for an unsampled delta, always extrapolating.
+dismissed as a quirk of one algorithm or a missing covariate. Mangrove systems
+occupy separated regions of environmental space, and a model trained on some of them is,
+for an unsampled one, always extrapolating, a pattern that holds not only for the eight
+named deltas but across 29 data-driven regions spanning six continents.
 
 The practical implication is specific. Wall-to-wall blue-carbon maps are increasingly
 used to set baselines for carbon crediting and restoration prioritisation, yet their
@@ -573,6 +610,17 @@ corresponding LODO error (Spearman $\rho$) and, to name the dominant axis of dif
 for each delta, ranked covariates by the standardized mean difference between the delta
 and the rest. Given only eight folds, these correlations are reported as descriptive
 with explicit acknowledgement of low statistical power.
+
+\subsection{Region-scale robustness}
+To test the transfer collapse beyond the eight named deltas, we partitioned all 2{,}489
+usable mangrove soil cores into geographic regions by density-based clustering of their
+coordinates (DBSCAN with a haversine metric, a 250~km neighbourhood radius, and a
+five-core density threshold), retaining clusters of at least twelve cores as independent
+leave-one-region-out folds. This data-driven definition fixes the number of folds by
+where in-situ data actually exist rather than by naming deltas. We then repeated the
+gradient-boosting leave-one-region-out analysis, with the identical covariates, model
+and area-of-applicability computation, reporting the distribution of within-region
+correlation, $R^2$ and AOA-inside fraction over the 29 resulting regions.
 
 \subsection{Terrestrial comparison}
 As a specificity control we repeated the analysis for terrestrial soil organic carbon.
