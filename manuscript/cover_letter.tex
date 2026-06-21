@@ -16,59 +16,64 @@
 Md Rakib Hasan\\
 Fermium Systems, Dhaka 1207, Bangladesh\\
 Department of Soil, Water and Environment, University of Dhaka\\
-\href{mailto:rakibhhridoy@fermium.systems}{rakibhhridoy@fermium.systems}\\
-\today
+\href{mailto:rakibhhridoy@fermium.systems}{rakibhhridoy@fermium.systems}
 \end{flushright}
 
 To the Editors,\\
-\textit{Communications Earth \& Environment}
+\textit{Nature Communications}
 
 \textbf{Re: Submission of an original research manuscript}
 
 Dear Editors,
 
-We are pleased to submit our manuscript, \textbf{``Cross-delta transferability limits of
-mangrove blue-carbon stock models: a multi-delta benchmark with area-of-applicability and
-conformal uncertainty,''} for consideration as an original research article in
-\textit{Communications Earth \& Environment}.
+We are pleased to submit our manuscript, \textbf{``Global maps overstate the reliability
+of blue-carbon credits,''} for consideration as an article in \textit{Nature
+Communications}.
 
-Global maps of mangrove soil and biomass carbon are now used to set baselines for
-blue-carbon credits and to prioritise conservation, yet their accuracy is validated
-almost exclusively with random or spatially-pooled cross-validation. Such validation is
-inflated by spatial autocorrelation and is silent on the question that actually matters
-for a carbon buyer or a newly-surveyed coastline: can a model trained on some deltas
-predict an \emph{unsampled} one? We pose and answer this question with a reproducible
-multi-delta benchmark spanning eight major mangrove systems across four continents.
+Mangrove soil and biomass carbon underpins a fast-growing market: global wall-to-wall
+maps are now used to set baselines for blue-carbon credits and to target restoration. Yet
+these maps are validated almost exclusively with random or spatially-pooled
+cross-validation, which is inflated by spatial autocorrelation and silent on the question
+a carbon buyer or a newly-surveyed coastline actually faces: can a model trained on some
+regions predict an \emph{unsampled} one? We show, across a reproducible multi-delta
+benchmark and 29 data-driven mangrove regions on six continents, that it cannot, and we
+quantify what that means for the integrity of carbon-crediting baselines.
 
-We believe the study fits the scope of \textit{Communications Earth \& Environment} for
-three reasons:
+We believe the study is well suited to the broad readership of \textit{Nature
+Communications} for three reasons:
 
 \begin{itemize}
-  \item \textbf{A quantified, operationally relevant limit.} Under leave-one-delta-out
-  evaluation a model scoring $R^2=0.65$ in random cross-validation captures essentially
-  no within-delta variation (median within-delta correlation $r\approx0$) and is biased
-  by 100--200~Mg\,ha$^{-1}$; every held-out delta falls entirely outside the model's area
-  of applicability. A similar per-delta pattern appears when we test a widely-used
-  published soil-carbon product against in-situ cores, so the caution plausibly extends to
-  maps already in use, not only to our re-implementation.
-  \item \textbf{A mechanism and a constructive remedy.} We show the failure is driven by concept shift (the environment--carbon relationship itself differs between deltas,
-  with covariate slopes that reverse sign) rather than by missing predictors, which
-  adding tidal and geomorphic forcing does not remedy. We then quantify the data cost of
-  fixing it: on the order of ten to twenty-five local cores recover most of the lost
-  within-delta skill, defining a practical middle path between an untrustworthy global
-  prediction and a full local inventory.
+  \item \textbf{A general and consequential result.} Under leave-one-delta-out evaluation
+  a model scoring $R^2=0.65$ in random cross-validation captures essentially no
+  within-region variation out of region (median correlation $r\approx0$), and every
+  held-out delta lies entirely outside the model's area of applicability, a finding robust
+  to the applicability threshold and reproduced across 29 regions spanning six continents.
+  A widely-used published soil-carbon product shows the same per-region pattern against
+  in-situ cores, so the caution applies to maps already in use. For the 8\% of global
+  mangrove area in deltas that lack in-situ cores, the stock that sets a crediting baseline
+  cannot be pinned by a global model to better than a sixfold range, an uncertainty no
+  current product reports.
+  \item \textbf{A mechanism, a specificity test, and a constructive remedy.} The failure
+  reflects concept shift, the environment--carbon relationship itself differing between
+  deltas, rather than missing predictors, which adding geomorphic and tidal forcing does
+  not remedy; and it is specific to blue carbon, as terrestrial soil carbon transfers far
+  better between continents under the identical protocol. We then show that global and
+  local data are complementary rather than substitutable: neither a global model alone nor
+  a handful of local cores alone predicts within-delta carbon, but together, on the order
+  of ten to twenty-five local cores, they recover most of the lost skill.
   \item \textbf{A reusable, uncertainty-aware framework.} We release a frozen multi-delta
-  benchmark with leave-one-delta-out splits, a three-tier validation protocol, and
-  area-of-applicability and conformal-prediction layers that tell a practitioner where a
-  global model can be trusted; portable to any coastal system by a bounding box.
+  benchmark with leave-one-delta-out and leave-one-region-out splits, a three-tier
+  validation protocol, and area-of-applicability and conformal-prediction layers that tell
+  a practitioner where a global model can be trusted, portable to any coastal system by a
+  bounding box.
 \end{itemize}
 
-We have been deliberately conservative in interpretation. We report median alongside mean
-skill because small folds dominate the latter; we separate level error from pattern error
-rather than leaning on a single composite metric; and we state explicitly the limitations
-of sparse in-situ labels, the partial circularity of the biomass product, and the fact
-that version~1 is soil-carbon-led. The complete pipeline, pinned environment, and all
-derived data are openly archived to ensure full reproducibility.
+We have been deliberately conservative in interpretation: we report median alongside mean
+skill, separate level error from pattern error rather than leaning on a single composite
+metric, and state the limitations of sparse in-situ labels and the soil-carbon-led scope
+explicitly. The complete pipeline, pinned environment, and all derived data are openly
+archived (Zenodo, \href{https://doi.org/10.5281/zenodo.20787021}{10.5281/zenodo.20787021})
+to ensure full reproducibility.
 
 \textbf{Declarations.} This manuscript is original, has not been published previously, and
 is not under consideration elsewhere. The study involved no human participants or animals.
