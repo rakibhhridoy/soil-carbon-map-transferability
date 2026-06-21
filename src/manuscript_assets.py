@@ -89,11 +89,14 @@ def tab_fewshot():
     for k in fc["ks"]:
         if str(k) in fc["summary"]:
             s = fc["summary"][str(k)]
+            loc = s.get("median_pearson_localonly")
+            loc_s = "---" if loc is None or loc != loc else f"{loc:+.2f}"
             rows.append(f"{k} & {s['median_rmse']:.0f} & {s['median_pearson']:+.2f} & "
-                        f"{s['n_deltas']} \\\\")
+                        f"{loc_s} \\\\")
     (TAB / "tab_fewshot.tex").write_text(
         "\\begin{tabular}{rrrr}\n\\toprule\n"
-        "Local cores $k$ & Median RMSE & Within-delta $r$ & Deltas \\\\\n\\midrule\n"
+        "Local & Median RMSE & Within-delta $r$ & Within-delta $r$ \\\\\n"
+        "cores $k$ & (Mg\\,ha$^{-1}$) & global $+$ local & local only \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -186,18 +189,20 @@ def tab_terrestrial():
     t = _opt(PROC / "terrestrial_test.json")
     if t is None:
         return
-    g = t["gsocmap_test"]; lo = t["loco"]
+    lo = t["loco"]
     rows = [
-        f"Within-region $r$ (operational map) & $-0.11$ & $+{g['median_region_pearson']:.2f}$ \\\\",
-        f"Per-region bias (Mg\\,ha$^{{-1}}$) & 116 & {g['median_abs_region_bias']:.0f} \\\\",
-        f"Random$\\rightarrow$OOD transfer gap ($R^2$) & 2.4 & {lo['transfer_gap']:.2f} \\\\",
-        f"Within-region $r$ (our model, OOD) & 0.04 & $+{lo['loco_median_pearson']:.2f}$ \\\\",
+        f"Held-out units & 8 deltas & {lo['continents']} continents \\\\",
+        f"Median within-region $r$ (OOD) & $+0.04$ & $+{lo['loco_median_pearson']:.2f}$ \\\\",
+        f"Median LODO $R^2$ (OOD) & $-1.7$ & $+{lo['loco_median_r2']:.2f}$ \\\\",
+        f"Outside area of applicability & all & --- \\\\",
     ]
     (TAB / "tab_terrestrial.tex").write_text(
         "\\begin{tabular}{lrr}\n\\toprule\n"
         " & Mangrove & Terrestrial \\\\\n"
         " & (blue carbon) & SOC \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{3}{l}{\\footnotesize Terrestrial: SOC concentration, "
+        "$\\sim$133k profiles, leave-one-continent-out.}\\\\\n\\end{tabular}\n")
 
 
 def tab_registry_full(reg):
@@ -373,8 +378,11 @@ def dump_figure_data(reg, lodo, soc):
     }
     fc = _opt(PROC / "fewshot_calibration.json")
     if fc:
+        def _clean(v):
+            return None if v is None or (isinstance(v, float) and v != v) else v
         out["fewshot"] = [dict(k=k, rmse=fc["summary"][str(k)]["median_rmse"],
-                               pearson=fc["summary"][str(k)]["median_pearson"])
+                               pearson=fc["summary"][str(k)]["median_pearson"],
+                               pearson_local=_clean(fc["summary"][str(k)].get("median_pearson_localonly")))
                           for k in fc["ks"] if str(k) in fc["summary"]]
     rl = _opt(PROC / "region_lodo_results.json")
     if rl:

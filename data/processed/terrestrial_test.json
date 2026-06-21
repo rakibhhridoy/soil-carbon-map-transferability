@@ -1,5 +1,67 @@
 {
- "n_profiles": 9390,
+ "loco": {
+  "n": 25000,
+  "continents": 6,
+  "continent_counts": {
+   "N.America": 9210,
+   "Africa": 4562,
+   "Oceania": 4497,
+   "S.America": 4082,
+   "Europe": 1728,
+   "Asia": 921
+  },
+  "t1_random_r2": 0.58,
+  "loco_median_r2": 0.23,
+  "loco_median_pearson": 0.54,
+  "transfer_gap": 0.35,
+  "per_region": [
+   {
+    "region": "Africa",
+    "n": 4562,
+    "r2": 0.19,
+    "pearson": 0.47
+   },
+   {
+    "region": "Asia",
+    "n": 921,
+    "r2": 0.18,
+    "pearson": 0.56
+   },
+   {
+    "region": "Europe",
+    "n": 1728,
+    "r2": 0.25,
+    "pearson": 0.52
+   },
+   {
+    "region": "N.America",
+    "n": 9210,
+    "r2": 0.34,
+    "pearson": 0.59
+   },
+   {
+    "region": "Oceania",
+    "n": 4497,
+    "r2": 0.21,
+    "pearson": 0.49
+   },
+   {
+    "region": "S.America",
+    "n": 4082,
+    "r2": 0.55,
+    "pearson": 0.74
+   }
+  ]
+ },
+ "n_stock_profiles": 9390,
+ "stock_continent_counts": {
+  "N.America": 8729,
+  "Africa": 256,
+  "Asia": 221,
+  "S.America": 86,
+  "Europe": 86,
+  "Oceania": 12
+ },
  "gsocmap_test": {
   "global_pearson": 0.36,
   "median_region_pearson": 0.4,
@@ -39,44 +101,6 @@
     "bias": -26.5,
     "rmse": 66.4,
     "pearson": 0.53
-   }
-  ]
- },
- "loco": {
-  "t1_random_r2": 0.39,
-  "loco_median_r2": -0.05,
-  "transfer_gap": 0.44,
-  "loco_median_pearson": 0.35,
-  "per_region": [
-   {
-    "region": "Africa",
-    "n": 256,
-    "r2": 0.19,
-    "pearson": 0.53
-   },
-   {
-    "region": "Asia",
-    "n": 221,
-    "r2": 0.13,
-    "pearson": 0.47
-   },
-   {
-    "region": "Europe",
-    "n": 86,
-    "r2": -0.15,
-    "pearson": -0.05
-   },
-   {
-    "region": "N.America",
-    "n": 8729,
-    "r2": -0.09,
-    "pearson": 0.35
-   },
-   {
-    "region": "S.America",
-    "n": 86,
-    "r2": -0.05,
-    "pearson": 0.2
    }
   ]
  }

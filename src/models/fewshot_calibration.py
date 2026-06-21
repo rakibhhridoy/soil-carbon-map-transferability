@@ -57,18 +57,22 @@ def main():
         if len(te_all) < KS[1] + MIN_EVAL:
             continue  # cannot even support the smallest non-zero k
         rng = np.random.default_rng(SEED)
-        dd = {k: {"rmse": [], "pearson": []} for k in KS}
+        dd = {k: {"rmse": [], "pearson": [], "rmse_loc": [], "pearson_loc": []} for k in KS}
         for _ in range(N_REP):
             perm = rng.permutation(te_all)
             for k in KS:
                 if len(te_all) - k < MIN_EVAL:
                     continue   # not enough eval cores left at this k for this delta
                 shots, evalidx = perm[:k], perm[k:]
-                tr = np.concatenate([tr_other, shots])
-                mdl = _fast_model(); mdl.fit(X[tr], y[tr])
-                yp = mdl.predict(X[evalidx])
-                rmse, r = metrics(y[evalidx], yp)
+                # GLOBAL + k local cores
+                mdl = _fast_model(); mdl.fit(X[np.concatenate([tr_other, shots])], y[np.concatenate([tr_other, shots])])
+                rmse, r = metrics(y[evalidx], mdl.predict(X[evalidx]))
                 dd[k]["rmse"].append(rmse); dd[k]["pearson"].append(r)
+                # LOCAL-ONLY: fit on just the k local cores (no global data)
+                if k >= 5:
+                    lm = _fast_model(); lm.fit(X[shots], y[shots])
+                    rl, pl = metrics(y[evalidx], lm.predict(X[evalidx]))
+                    dd[k]["rmse_loc"].append(rl); dd[k]["pearson_loc"].append(pl)
         print(f"  done {d} (n={len(te_all)})", flush=True)
         per_delta[d] = {k: dict(rmse=round(float(np.nanmean(dd[k]["rmse"])), 1),
                                 pearson=round(float(np.nanmean(dd[k]["pearson"])), 3))
@@ -77,9 +81,13 @@ def main():
             if dd[k]["rmse"]:
                 curve[k]["rmse"].append(np.nanmean(dd[k]["rmse"]))
                 curve[k]["pearson"].append(np.nanmean(dd[k]["pearson"]))
+            if dd[k]["pearson_loc"]:
+                curve[k].setdefault("pearson_loc", []).append(np.nanmean(dd[k]["pearson_loc"]))
 
     summary = {k: dict(median_rmse=round(float(np.median(curve[k]["rmse"])), 1),
                        median_pearson=round(float(np.median(curve[k]["pearson"])), 3),
+                       median_pearson_localonly=(round(float(np.median(curve[k]["pearson_loc"])), 3)
+                                                 if curve[k].get("pearson_loc") else None),
                        n_deltas=len(curve[k]["rmse"])) for k in KS if curve[k]["rmse"]}
     out = {"ks": KS, "n_rep": N_REP, "summary": summary, "per_delta": per_delta}
     (ROOT / "data/processed/fewshot_calibration.json").write_text(json.dumps(out, indent=1))

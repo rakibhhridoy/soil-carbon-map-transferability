@@ -344,29 +344,27 @@ leave-one-delta-out skill, with zero area-of-applicability coverage.}
 \subsection{Terrestrial soil carbon transfers better}
 A sceptic might ask whether any global carbon map fails out-of-region, making the result
 unremarkable. As a check, we applied the identical protocol to terrestrial soil organic
-carbon, using $\sim$9{,}400 WoSIS profiles (0--30~cm stock; predominantly North American,
-with smaller samples on other continents) under a leave-one-continent-out design, and
-separately tested the operational GSOCmap product (the FAO Global Soil Organic Carbon
-map used for national greenhouse-gas inventories, and a counterpart to the widely-used
-SoilGrids predictions \citep{hengl2017,poggio2021soilgrids}) against those profiles per
-continent. In this comparison terrestrial soil carbon transferred substantially better
-than blue carbon (Table~\ref{tab:terrestrial}): GSOCmap retained a median within-region
-correlation of $r=0.40$ with small per-region bias ($\sim$8~Mg\,ha$^{-1}$), and our own
-continent-held-out model kept a within-region correlation of $0.35$ with a transfer gap
-of only $0.44$ $R^2$ units, versus near-zero correlation and a gap above two for
-mangroves. A plausible mechanism is that terrestrial soil carbon is strongly governed by
-climate, which varies across continents and therefore generalises, whereas mangrove
-deltas share a near-uniform tropical climate and differ instead in delta-specific factors
-that do not. We therefore read the blue-carbon failure as unlikely to be a generic
-artifact of global mapping, while noting that the terrestrial comparison is geographically
-uneven and rests on a single soil-carbon pool.
+carbon, using $\sim$133{,}000 globally-distributed WoSIS profiles (0--30~cm SOC
+concentration; North America 37\%, with substantial samples on five further continents)
+under a leave-one-continent-out design. Terrestrial soil carbon transfers far better than
+blue carbon (Table~\ref{tab:terrestrial}): the median within-region correlation is
+$r=0.54$ and is positive on every continent (0.47 to 0.74), and median out-of-continent
+$R^2$ is $+0.23$, versus near-zero correlation, negative $R^2$ and zero AOA coverage for
+mangroves. The contrast is corroborated by the operational GSOCmap product, which on the
+(more North-American) subset of profiles with measured bulk density retains a median
+within-region correlation of $0.40$ and small bias ($\sim$8~Mg\,ha$^{-1}$). A plausible
+mechanism is that terrestrial soil carbon is strongly governed by climate, which varies
+across continents and therefore generalises, whereas mangrove deltas share a near-uniform
+tropical climate and differ instead in delta-specific factors that do not. The blue-carbon
+failure is therefore unlikely to be a generic artifact of global mapping.
 
 \begin{table}[t]
 \centering
 \caption{Mangrove blue carbon versus terrestrial soil organic carbon under the same
-out-of-region protocol: the operational maps (Sanderman; GSOCmap) and our own held-out
-models. Terrestrial soil carbon transfers substantially better, though the terrestrial
-sample is geographically uneven (predominantly North American).}
+out-of-region protocol. Terrestrial soil carbon, evaluated on $\sim$133{,}000
+globally-distributed WoSIS profiles under leave-one-continent-out, transfers far better
+than mangrove blue carbon: positive correlation and $R^2$ out of region versus near-zero
+correlation and zero AOA coverage for mangroves.}
 \label{tab:terrestrial}
 \input{tables/tab_terrestrial}
 \end{table}
@@ -419,20 +417,24 @@ the area of applicability.}
 \input{tables/tab_crediting}
 \end{table}
 
-\subsection{A few local cores recover much of the lost skill}
+\subsection{Global and local data are complementary, not substitutable}
 The transferability limit is not a counsel of despair but a quantifiable data
-requirement. We measured how quickly skill recovers when a small number of cores from
-the otherwise-unsampled target delta are added to training (Fig.~\ref{fig:fewshot},
-Table~\ref{tab:fewshot}): for each held-out delta (restricted to the five with enough
-cores to spare) we moved $k$ randomly chosen local cores into the training set and
-evaluated on the remainder, averaged over repeated draws. The recovery is rapid: the
-median within-delta correlation rises from $r=0.14$ at $k=0$ (pure leave-one-delta-out)
-to $0.55$ at $k=10$ and $0.67$ at $k=25$, while median RMSE falls from 76 to
-62~Mg\,ha$^{-1}$. On the order of ten to twenty-five local cores thus recover most of the
-within-delta predictive skill that a purely global model lacks entirely. The curve
-quantifies the local-data cost of a crediting-grade estimate in a new delta and
-identifies a practical middle path between an untrustworthy global prediction and a full
-local inventory.
+requirement, and one whose resolution is non-trivial. We measured how skill changes when
+a small number of cores from the otherwise-unsampled target delta are added to training
+(Fig.~\ref{fig:fewshot}, Table~\ref{tab:fewshot}): for each held-out delta (restricted to
+the five with enough cores to spare) we moved $k$ randomly chosen local cores into the
+training set and evaluated on the remainder, averaged over repeated draws. Adding local
+cores to the global model raises the median within-delta correlation from $r=0.14$ at
+$k=0$ (pure leave-one-delta-out) to $0.55$ at $k=10$ and $0.67$ at $k=25$, while median
+RMSE falls from 76 to 62~Mg\,ha$^{-1}$. Crucially, this is not simply because local data
+help: a model fitted on the same $k$ local cores \emph{alone}, without the global data,
+achieves a within-delta correlation of essentially zero at $k=10$ and $k=25$. Neither the
+global model alone nor a handful of local cores alone predicts within-delta carbon; only
+their combination does. Global and local data are therefore complementary rather than
+substitutable, with the global model supplying transferable structure that the few local
+cores calibrate. This identifies a practical middle path, on the order of ten to
+twenty-five local cores, between an untrustworthy global prediction and a full local
+inventory.
 
 \begin{figure}[t]
 \centering
@@ -446,7 +448,9 @@ training. Even a handful of local cores substantially improves transferable skil
 \begin{table}[t]
 \centering
 \caption{Few-shot calibration: median skill over held-out deltas as $k$ local cores are
-added to training (20 random draws each).}
+added to training (20 random draws each). The global model with $k$ local cores recovers
+within-delta skill, whereas a model fitted on the same $k$ cores alone does not, showing
+that global and local data are complementary.}
 \label{tab:fewshot}
 \input{tables/tab_fewshot}
 \end{table}
@@ -498,8 +502,7 @@ and unevenly distributed: some folds are small ($n=11$ for the Sundarbans), whic
 inflates the mean LODO error and motivates our use of the median, and the global core
 distribution forced the inclusion of two estuarine systems to reach four continents.
 Depth harmonisation to 0--100~cm relies on a small fraction of extrapolated and
-organic-matter-inferred values. The AOA threshold is a provisional quantile rather than
-a tuned boxplot-whisker rule, and tidal forcing is taken from an empirical tide model
+organic-matter-inferred values, and tidal forcing is taken from an empirical tide model
 rather than a delta-resolving hydrodynamic simulation. The aboveground-biomass analysis
 inherits the Simard product's structure and its partial climate circularity, and
 because the AGB and SOC label sets are not co-located, total carbon is combined from
@@ -599,9 +602,13 @@ require explicit applicability assessment \citep{meyer2022}: features are standa
 and weighted by model importance, and the
 dissimilarity index (DI) of each test point is its importance-weighted distance to the
 nearest training point, normalised by the mean nearest-neighbour distance within the
-training data. The applicability threshold is set from the (outlier-aware) upper
-quantile of training DI values, and we report the fraction of each held-out delta
-falling below it (inside the AOA).
+training data. The applicability threshold is the boxplot upper whisker of the training
+DI distribution (the third quartile plus 1.5 times the interquartile range), the
+outlier-aware maximum used by the CAST implementation \citep{meyer2021}, and we report
+the fraction of each held-out delta falling below it (inside the AOA). Because every
+held-out delta returns zero coverage, we verified this is not a threshold artifact: it
+is unchanged when the threshold is scaled from half to twice its standard value
+(Supplementary Information).
 
 \subsection{Conformal prediction intervals}
 To attach calibrated uncertainty we used split-conformal prediction
@@ -636,12 +643,15 @@ correlation, $R^2$ and AOA-inside fraction over the 29 resulting regions.
 
 \subsection{Terrestrial comparison}
 As a specificity control we repeated the analysis for terrestrial soil organic carbon.
-From the WoSIS database we computed 0--30~cm SOC stock (concentration $\times$ bulk
-density $\times$ thickness) for profiles with the required measurements, assigned each to
-a continent, and ran a leave-one-continent-out gradient-boosting model on the CHELSA
-covariates. We additionally sampled the operational GSOCmap product at the same profile
-locations and evaluated it against the in-situ stocks per continent, the terrestrial
-analogue of the published-map test.
+From the WoSIS database we computed the thickness-weighted mean 0--30~cm SOC concentration
+for all profiles with the required measurements ($\sim$133{,}000 profiles spanning six
+continents, 37\% North American), and ran a leave-one-continent-out gradient-boosting
+model on the CHELSA covariates, evaluating within-continent correlation and $R^2$. SOC
+concentration rather than stock is used here because it does not require bulk density,
+which is the measurement that restricts the stock-based sample to predominantly North
+American profiles. As a secondary, operational check we sampled the GSOCmap product at
+the smaller bulk-density-bearing subset and evaluated it against in-situ 0--30~cm stock
+per continent, the terrestrial analogue of the published-map test.
 
 \subsection{Carbon-crediting stakes}
 For the prediction-only deltas (sufficient mangrove area but no usable cores), we

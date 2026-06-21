@@ -252,13 +252,24 @@ function figFewshot() {
 
   const lineR = d3.line().x(d => x(d.k)).y(d => yL(d.rmse));
   const lineP = d3.line().x(d => x(d.k)).y(d => yR(d.pearson));
+  // local-only correlation (where defined): the baseline that stays near zero
+  const loc = fs.filter(d => d.pearson_local != null && !Number.isNaN(d.pearson_local));
+  const lineLoc = d3.line().x(d => x(d.k)).y(d => yR(d.pearson_local));
   svg.append("path").attr("d", lineR(fs)).attr("fill", "none").attr("stroke", OI.vermillion).attr("stroke-width", 2);
   svg.append("path").attr("d", lineP(fs)).attr("fill", "none").attr("stroke", OI.blue)
      .attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
+  if (loc.length) svg.append("path").attr("d", lineLoc(loc)).attr("fill", "none")
+     .attr("stroke", OI.grey).attr("stroke-width", 1.6).attr("stroke-dasharray", "2 2");
   fs.forEach(d => {
     svg.append("circle").attr("cx", x(d.k)).attr("cy", yL(d.rmse)).attr("r", 3.2).attr("fill", OI.vermillion);
     svg.append("rect").attr("x", x(d.k) - 3).attr("y", yR(d.pearson) - 3).attr("width", 6).attr("height", 6).attr("fill", OI.blue);
   });
+  loc.forEach(d => svg.append("circle").attr("cx", x(d.k)).attr("cy", yR(d.pearson_local))
+     .attr("r", 2.6).attr("fill", OI.grey));
+  // legend
+  [["global + local", OI.blue], ["local only", OI.grey]].forEach(([t, c], i) =>
+    svg.append("text").attr("x", m.l + 8).attr("y", m.t + 4 + i * 13).attr("font-size", 9)
+       .attr("fill", c).text(t + " (r)"));
   save(dom, "fig_fewshot");
 }
 

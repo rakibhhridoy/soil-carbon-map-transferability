@@ -85,8 +85,11 @@ def t2_spatial_block(df, feats, m, block_deg=5.0):
     return r2_score(y[ok], yp[ok])
 
 
-def aoa_di(Xtr, Xte, importances=None):
-    """Simplified Meyer&Pebesma AOA. Returns (DI_te, threshold, inside_fraction)."""
+def aoa_di(Xtr, Xte, importances=None, thr_mult=1.0):
+    """Area of applicability (Meyer & Pebesma 2021). Importance-weighted dissimilarity
+    index; the applicability threshold is the boxplot upper whisker of the training DI
+    (Q75 + 1.5*IQR, the outlier-aware maximum used by the CAST package), scaled by
+    thr_mult for sensitivity analysis. Returns (DI_te, threshold, inside_fraction)."""
     mu, sd = np.nanmean(Xtr, 0), np.nanstd(Xtr, 0) + 1e-9
     Ztr = np.nan_to_num((Xtr - mu) / sd)
     Zte = np.nan_to_num((Xte - mu) / sd)
@@ -103,7 +106,8 @@ def aoa_di(Xtr, Xte, importances=None):
     d_tr = nn_min(Ztr, Ztr)
     dbar = np.mean(d_tr) + 1e-9
     DI_tr = d_tr / dbar
-    thr = np.quantile(DI_tr, 0.95) * 1.0    # outlier-aware threshold
+    q25, q75 = np.quantile(DI_tr, [0.25, 0.75])
+    thr = (q75 + 1.5 * (q75 - q25)) * thr_mult      # boxplot upper whisker (CAST rule)
     DI_te = nn_min(Zte, Ztr) / dbar
     return DI_te, thr, float(np.mean(DI_te <= thr))
 

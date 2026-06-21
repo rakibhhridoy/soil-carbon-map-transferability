@@ -38,6 +38,7 @@ python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diag
 python3 src/models/concept_shift.py            # -> data/processed/concept_shift.json
 python3 src/models/gsoc_ablation.py            # -> data/processed/gsoc_ablation.json
 python3 src/models/aoa_validity.py             # -> data/processed/aoa_validity.json
+python3 src/models/aoa_threshold_sensitivity.py  # -> data/processed/aoa_threshold_sensitivity.json
 python3 src/models/fewshot_calibration.py      # -> data/processed/fewshot_calibration.json
 python3 src/models/published_map_test.py       # -> data/processed/published_map_test.json (remote COGs)
 

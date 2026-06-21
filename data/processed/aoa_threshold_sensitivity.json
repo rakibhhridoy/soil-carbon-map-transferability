@@ -1,0 +1,93 @@
+{
+ "summary": {
+  "median_inside_x0.5": 0.0,
+  "median_inside_x0.8": 0.0,
+  "median_inside_x1.0": 0.0,
+  "median_inside_x1.2": 0.0,
+  "median_inside_x1.5": 0.0,
+  "median_inside_x2.0": 0.0,
+  "max_inside_any_delta_x2": 0.0
+ },
+ "multipliers": [
+  0.5,
+  0.8,
+  1.0,
+  1.2,
+  1.5,
+  2.0
+ ],
+ "per_delta": [
+  {
+   "delta": "amazon_amapa",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "everglades",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "mekong",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "musi_banyuasin",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "rufiji",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "saloum_gambia",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "sundarbans",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  },
+  {
+   "delta": "zambezi",
+   "inside_x0.5": 0.0,
+   "inside_x0.8": 0.0,
+   "inside_x1.0": 0.0,
+   "inside_x1.2": 0.0,
+   "inside_x1.5": 0.0,
+   "inside_x2.0": 0.0
+  }
+ ]
+}

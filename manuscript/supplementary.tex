@@ -160,6 +160,13 @@ small; spatial-block and whole-delta holdouts both give 0\%. The applicability t
 thus discriminates familiar from novel environment as intended, and the zero coverage of
 held-out deltas reflects genuine separation in covariate space.
 
+The zero coverage is also robust to the threshold magnitude. Recomputing the per-delta
+AOA-inside fraction while scaling the boxplot-whisker threshold from $0.5\times$ to
+$2\times$ its standard value leaves the median at zero throughout, and even at twice the
+standard threshold no delta exceeds zero percent inside. The held-out deltas are far
+enough outside the training distribution that no reasonable threshold places them inside,
+so the result is a property of the data rather than of the threshold rule.
+
 \begin{table}[h]
 \centering
 \caption{Mean fraction of held-out cores inside the area of applicability under three
