@@ -70,7 +70,7 @@ PRE = r"""% ============================================================
 \definecolor{natgrey}{HTML}{5A5A5A}
 \hypersetup{colorlinks=true, linkcolor=black, citecolor=natblue, urlcolor=natblue,
   pdfauthor={Md Rakib Hasan},
-  pdftitle={Global mangrove blue-carbon maps do not transfer between deltas}}
+  pdftitle={Global maps overstate the reliability of blue-carbon credits}}
 \sisetup{detect-all}
 \captionsetup{labelfont=bf, labelsep=period, font=small, justification=justified,
   singlelinecheck=false}
@@ -88,9 +88,7 @@ PRE = r"""% ============================================================
 \vspace*{-6pt}
 {\sffamily\bfseries\large Article}\\[5pt]
 {\color{black}\rule{\textwidth}{1.0pt}}\\[9pt]
-\noindent\resizebox{\textwidth}{!}{\sffamily\bfseries Global mangrove blue-carbon maps do not transfer between deltas}\par
-\vspace{4pt}
-\noindent{\sffamily\bfseries\large\color{natgrey} with consequences for carbon-crediting baselines}\par
+\noindent\resizebox{\textwidth}{!}{\sffamily\bfseries Global maps overstate the reliability of blue-carbon credits}\par
 \vspace{14pt}
 {\centering\normalsize
 Md~Rakib~Hasan\,\orcidlink{0009-0002-4007-7590}\textsuperscript{1,2}\,\Letter\par}
