@@ -42,7 +42,7 @@ body = body.replace("% ---------------------------------------------------------
 
 # ---- 4. preamble + title block ----
 PRE = r"""% ============================================================
-% MDBC --- NatComms-style two-column manuscript (formatting only).
+% MDBC : NatComms-style two-column manuscript (formatting only).
 % Generated from Manuscript.tex by build_natcomm.py; body content identical.
 % Build: pdflatex -> pdflatex -> pdflatex  (refs are inline thebibliography)
 % ============================================================

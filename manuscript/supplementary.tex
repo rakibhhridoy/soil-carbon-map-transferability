@@ -1,5 +1,5 @@
 % =====================================================================
-% MDBC --- Supplementary Information
+% MDBC : Supplementary Information
 % Build: pdflatex -> bibtex -> pdflatex x2  (shares references.bib)
 % =====================================================================
 \documentclass[11pt]{article}
@@ -45,7 +45,7 @@ before any modelling. A system enters the benchmark as a soil-carbon leave-one-d
 (LODO) fold if (C1) its mangrove area within the window, computed from Global Mangrove
 Watch v3 (2020) in the World Cylindrical Equal Area projection (EPSG:6933), is at least
 40~km$^2$; (C2) it represents a coherent deltaic or estuarine mangrove setting; (C3) it
-carries at least five \emph{usable} mangrove soil cores---cores that pass the
+carries at least five \emph{usable} mangrove soil cores, cores that pass the
 harmonization in Section~\ref{si:soc} rather than merely falling in the window; (C4) the
 fold set spans at least four continents; and (C5) windows do not overlap, so no pixel is
 shared between a training and a held-out delta. Systems passing the area but not the
@@ -56,8 +56,7 @@ count: many windows contain marsh, seagrass or shallow cores that do not yield a
 0--100~cm mangrove SOC stock. This distinction is large (Table~\ref{tab:registry}): for
 example the Everglades window holds 276 raw cores but only 7 usable mangrove SOC cores,
 and Zambezi 280 versus 12. The first registry pass yielded only three continents, failing
-C4; we therefore added two estuarine systems with ample usable cores---the Everglades
-(North America) and an Australian estuary (Oceania). The Australian fold was subsequently
+C4; we therefore added two estuarine systems with ample usable cores: the Everglades (North America) and an Australian estuary (Oceania). The Australian fold was subsequently
 excluded because its mangrove area (18~km$^2$) fell below the C1 floor, and no large
 Australian or Papua New Guinean delta carried usable deep SOC cores in the source
 database. The final v1 soil-carbon benchmark therefore comprises eight core deltas across
@@ -99,17 +98,14 @@ percentile trim, the procedure produced 2{,}489 usable mangrove SOC cores (media
 % ---------------------------------------------------------------------
 \section{Covariate stack}
 Each covariate was sampled at every label point in the layer's native coordinate
-reference system; nodata values were masked per layer, and tidal constituents---which
-are masked on land---were sampled by nearest valid ocean cell within a small search
+reference system; nodata values were masked per layer, and tidal constituents, which are masked on land, were sampled by nearest valid ocean cell within a small search
 radius. Climate is represented by the 19 CHELSA v2.1 bioclimatic variables; a global
 soil-carbon prior by GSOCmap; soil context by SoilGrids bulk density and cation-exchange
 capacity; land cover by the Copernicus Global Land Service 2015 classification;
 geomorphic position by distance-to-coast and distance-to-river computed from Natural
 Earth in equal-area projection; and tidal forcing by the mean and spring tidal range and
 the tidal form factor derived from the M2, S2, K1 and O1 constituents of the EOT20 ocean
-tide model. Several archived driver layers in the source data lake were corrupt or
-truncated on read---SoilGrids texture, OpenLandMap soil-carbon, and the fine terrain and
-hydrology tiles---and were excluded; the sampler tolerates and logs such failures rather
+tide model. Several archived driver layers in the source data lake were corrupt or truncated on read (SoilGrids texture, OpenLandMap soil-carbon, and the fine terrain and hydrology tiles) and were excluded; the sampler tolerates and logs such failures rather
 than aborting. GSOCmap is itself a soil-carbon model, so it is retained but treated
 cautiously to avoid circularity; a sensitivity analysis removing it is reported in
 Section~\ref{si:gsoc}. Coverage (fraction of cores with a finite value) is given in
@@ -238,9 +234,8 @@ annual temperature, annual precipitation, distance-to-coast) for the five deltas
 least 30 cores. A specification with shared slopes and per-delta intercepts (permitting a
 level offset only) achieved a median within-delta cross-validated $R^2$ of 0.43; allowing
 per-delta slopes raised this to 0.67. The fitted standardized slopes
-(Table~\ref{tab:conceptshift}) flip sign between deltas --- for instance the SOC response
-to mean annual temperature is positive in Amazon--Amap\'a and Rufiji but strongly negative
-in the Mekong --- direct evidence that the relationship, not just the level, is
+(Table~\ref{tab:conceptshift}) flip sign between deltas: for instance, the SOC response
+to mean annual temperature is positive in Amazon--Amap\'a and Rufiji but strongly negative in the Mekong, direct evidence that the relationship, not just the level, is
 delta-specific.
 
 \begin{table}[h]
