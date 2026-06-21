@@ -66,6 +66,7 @@ PRE = r"""% ============================================================
 \usepackage{orcidlink}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage[mathlines,switch]{lineno}
 \definecolor{natblue}{HTML}{0B6FB8}
 \definecolor{natgrey}{HTML}{5A5A5A}
 \hypersetup{colorlinks=true, linkcolor=black, citecolor=natblue, urlcolor=natblue,
@@ -105,6 +106,7 @@ Md~Rakib~Hasan\,\orcidlink{0009-0002-4007-7590}\textsuperscript{1,2}\,\Letter\pa
 \vspace{6pt}
 }]
 \thispagestyle{fancy}
+\linenumbers
 
 """
 PRE = PRE.replace("ABSTRACTTEXT", abs)
