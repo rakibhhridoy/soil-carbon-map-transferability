@@ -55,6 +55,13 @@ The terrestrial specificity control additionally needs a harmonised WoSIS SOC ta
 (`$MDBC_LAKE/../processed/pedoflux_profiles.parquet`, or set `MDBC_WOSIS`), derived from
 the ISRIC WoSIS snapshot; the core mangrove results do not require it.
 
+## Manuscript
+Two LaTeX versions share one body and one figure/table set:
+- `manuscript/Manuscript.tex` — single-column working draft (natbib + `references.bib`).
+- `manuscript/manuscript_natcomm.tex` — Nature Communications-style two-column submission
+  version, generated from the working draft by `python manuscript/build_natcomm.py`
+  (numeric `\cite`, inline `natcomm_refs.tex` bibliography). Build with `pdflatex` ×3.
+
 ## Figures
 Manuscript figures are rendered as vector PDF by a server-side D3 pipeline (no browser):
 ```bash

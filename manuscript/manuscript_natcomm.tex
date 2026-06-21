@@ -1,49 +1,58 @@
-% =====================================================================
-% MDBC --- Multi-Delta Blue Carbon: cross-delta transferability
-% Target: Nature-portfolio style (Communications Earth & Environment).
-% Standalone build (no publisher .cls required); retarget at submission.
-% Build: pdflatex -> bibtex -> pdflatex x2
-% =====================================================================
-\documentclass[11pt]{article}
-
+% ============================================================
+% MDBC --- NatComms-style two-column manuscript (formatting only).
+% Generated from Manuscript.tex by build_natcomm.py; body content identical.
+% Build: pdflatex -> pdflatex -> pdflatex  (refs are inline thebibliography)
+% ============================================================
+\documentclass[twocolumn,9pt]{extarticle}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \graphicspath{{figures/}}
-\usepackage{amsmath,amssymb}
-\usepackage{booktabs}
-\usepackage{siunitx}
-\usepackage{authblk}
 \usepackage{xcolor}
-\usepackage[hidelinks]{hyperref}
-\usepackage[round,authoryear]{natbib}
-\usepackage{lineno}
-\linenumbers
-
-% editorial note macro (remove before submission)
-\newcommand{\TODO}[1]{\textcolor{red}{[\textbf{TODO:} #1]}}
-\newcommand{\PLACE}[1]{\textcolor{blue}{[\textit{#1}]}}
-
-\title{\textbf{Global mangrove blue-carbon maps do not transfer between deltas,
-with consequences for carbon-crediting baselines}}
-
-\author[1,2]{Md Rakib Hasan\thanks{Corresponding author:
-\texttt{rakibhhridoy@fermium.systems}; ORCID: 0009-0002-4007-7590}}
-\affil[1]{Fermium Systems, Dhaka 1207, Bangladesh}
-\affil[2]{Department of Soil, Water and Environment, University of Dhaka,
-Dhaka 1000, Bangladesh}
-
-\date{}
+\usepackage[top=1.7cm,bottom=1.9cm,left=1.6cm,right=1.6cm,columnsep=0.7cm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{siunitx}
+\usepackage{textcomp}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{marvosym}
+\usepackage{orcidlink}
+\usepackage{hyperref}
+\usepackage{url}
+\definecolor{natblue}{HTML}{0B6FB8}
+\definecolor{natgrey}{HTML}{5A5A5A}
+\hypersetup{colorlinks=true, linkcolor=black, citecolor=natblue, urlcolor=natblue,
+  pdfauthor={Md Rakib Hasan},
+  pdftitle={Global mangrove blue-carbon maps do not transfer between deltas}}
+\sisetup{detect-all}
+\captionsetup{labelfont=bf, labelsep=period, font=small, justification=justified,
+  singlelinecheck=false}
+\renewcommand{\figurename}{Fig.}
+\titleformat{\section}{\normalfont\sffamily\bfseries\large}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\sffamily\bfseries\normalsize}{}{0pt}{}
+\titlespacing*{\section}{0pt}{10pt}{3pt}
+\titlespacing*{\subsection}{0pt}{7pt}{2pt}
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\small\sffamily\thepage}
 
 \begin{document}
-\maketitle
-
-% ---------------------------------------------------------------------
-\begin{abstract}
-\noindent
-Mangroves are among Earth's most carbon-dense ecosystems, and global maps of
+\twocolumn[{%
+\vspace*{-6pt}
+{\sffamily\bfseries\large Article}\\[5pt]
+{\color{black}\rule{\textwidth}{1.0pt}}\\[9pt]
+\noindent\resizebox{\textwidth}{!}{\sffamily\bfseries Global mangrove blue-carbon maps do not transfer between deltas}\par
+\vspace{4pt}
+\noindent{\sffamily\bfseries\large\color{natgrey} with consequences for carbon-crediting baselines}\par
+\vspace{14pt}
+{\centering\normalsize
+Md~Rakib~Hasan\,\orcidlink{0009-0002-4007-7590}\textsuperscript{1,2}\,\Letter\par}
+\vspace{9pt}
+{\small\noindent Mangroves are among Earth's most carbon-dense ecosystems, and global maps of
 their soil and biomass carbon now underpin carbon-crediting and conservation
 decisions. Yet these maps are validated almost exclusively with random or
 in-distribution cross-validation, which is inflated by spatial autocorrelation
@@ -72,31 +81,34 @@ artifact. The stakes are concrete --- across mangrove deltas that lack in-situ c
 of carbon-crediting-relevant stock carrying $\sim$0.3~Pg CO$_2$e of error that current
 products do not report. A few-shot experiment shows that on the order of ten to
 twenty-five local cores recover most of the lost within-delta skill, defining the local
-data needed for crediting-grade estimates in an unsampled delta.
-\end{abstract}
+data needed for crediting-grade estimates in an unsampled delta.\par}
+\vspace{8pt}
+{\color{black}\rule{\textwidth}{0.4pt}}\\[4pt]
+{\footnotesize\color{natgrey}%
+\textsuperscript{1}Fermium Systems, Dhaka 1207, Bangladesh.\;
+\textsuperscript{2}Department of Soil, Water and Environment, University of Dhaka, Dhaka 1000, Bangladesh.\;
+\Letter\,e-mail: \href{mailto:rakibhhridoy@fermium.systems}{rakibhhridoy@fermium.systems}}
+\vspace{8pt}
+{\color{black}\rule{\textwidth}{0.4pt}}
+\vspace{6pt}
+}]
+\thispagestyle{fancy}
 
-\vspace{0.5em}
-\noindent\textbf{Keywords:} blue carbon; mangroves; soil organic carbon;
-out-of-distribution generalization; area of applicability; conformal prediction;
-spatial cross-validation.
-
-% ---------------------------------------------------------------------
-\section{Introduction}
 Mangroves are among the most carbon-dense ecosystems on Earth
-\citep{donato2011,mcleod2011}, and with seagrasses and tidal marshes form the
-``blue carbon'' coastal sinks of disproportionate climate value \citep{fourqurean2012},
+\cite{donato2011,mcleod2011}, and with seagrasses and tidal marshes form the
+``blue carbon'' coastal sinks of disproportionate climate value \cite{fourqurean2012},
 storing of order 11.7~Pg of carbon globally, the large
 majority of it---roughly 10~Pg---belowground in waterlogged, slowly decomposing soils
-\citep{kauffman2020}; their per-area carbon density is set by a small number of
-geomorphic and climatic controls that vary strongly between settings \citep{rovai2018}.
+\cite{kauffman2020}; their per-area carbon density is set by a small number of
+geomorphic and climatic controls that vary strongly between settings \cite{rovai2018}.
 This soil-dominated stock makes mangroves disproportionately valuable for climate
 mitigation and has placed blue carbon at the centre of natural-climate-solution and
-crediting policy \citep{macreadie2021,friess2019}. Their continuing loss
-\citep{hamilton2018,richards2020netloss} has driven a rapid expansion of wall-to-wall
-carbon products: a 30~m global map of mangrove soil carbon \citep{sanderman2018}, a
-30~m map of aboveground biomass and canopy height \citep{simard2019}, a global
-biophysical typology \citep{worthington2020}, and continental syntheses of stock change
-and loss-driven emissions \citep{richards2020netloss,adame2021future}. These products
+crediting policy \cite{macreadie2021,friess2019}. Their continuing loss
+\cite{hamilton2018,richards2020netloss} has driven a rapid expansion of wall-to-wall
+carbon products: a 30~m global map of mangrove soil carbon \cite{sanderman2018}, a
+30~m map of aboveground biomass and canopy height \cite{simard2019}, a global
+biophysical typology \cite{worthington2020}, and continental syntheses of stock change
+and loss-driven emissions \cite{richards2020netloss,adame2021future}. These products
 increasingly underpin operational decisions---setting baselines for blue-carbon credits,
 targeting restoration, and informing national plans such as the Bangladesh Delta Plan
 2100.
@@ -105,14 +117,14 @@ The credibility of those decisions rests on how well the underlying models predi
 where they have not been trained, yet this is precisely what conventional validation
 does not test. Global blue-carbon maps are almost universally assessed with random or
 spatially-pooled cross-validation, which is inflated by spatial autocorrelation:
-\citet{ploton2020} showed that for tropical forest biomass a model appearing to
+\cite{ploton2020} showed that for tropical forest biomass a model appearing to
 explain more than half of the variance had near-zero skill once spatial dependence was
 respected. Mangrove carbon maps have not been stress-tested this way, and the
 operationally decisive question---can soil-carbon knowledge learned in some deltas
 predict an \emph{unsampled} delta, the situation a carbon buyer or a newly-surveyed
 coastline actually faces---has not been posed. Answering it requires both an
 out-of-distribution evaluation and a way to say, for any location, whether a global
-model is even applicable there \citep{meyer2021}, with calibrated uncertainty that is
+model is even applicable there \cite{meyer2021}, with calibrated uncertainty that is
 honest under distribution shift.
 
 Here we address this gap with a multi-delta benchmark and an explicitly
@@ -121,7 +133,7 @@ transferability-focused evaluation. Our contributions are:
   \item A reproducible \emph{multi-delta benchmark} with frozen leave-one-delta-out
         splits for mangrove total ecosystem carbon (AGB-C + SOC), and a demonstration
         that a widely-used operational product fails the same out-of-delta test.
-  \item Three-tier validation, area-of-applicability masking \citep{meyer2021} and
+  \item Three-tier validation, area-of-applicability masking \cite{meyer2021} and
         conformal intervals that expose the spatial-autocorrelation inflation, quantify
         the \emph{transfer gap}, and tell a practitioner where a global model may be used.
   \item Evidence that the failure is \emph{specific to blue carbon} --- terrestrial soil
@@ -132,10 +144,9 @@ transferability-focused evaluation. Our contributions are:
         recovers crediting-grade skill.
 \end{enumerate}
 
-% ---------------------------------------------------------------------
-\section{Results}
+\section*{Results}
 
-\subsection{A multi-delta blue-carbon benchmark}
+\subsection*{A multi-delta blue-carbon benchmark}
 Applying the pre-registered selection criteria (Methods) to the candidate windows
 yielded, for each system, its Global Mangrove Watch mangrove area and its count of
 usable in-situ soil cores; systems meeting both the area and label thresholds became
@@ -147,25 +158,25 @@ deltas spanning four continents (Table~\ref{tab:deltas}, Fig.~\ref{fig:map}); me
 (Musi--Banyuasin) despite near-uniform tropical climate, signalling strong
 delta-specific control.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Core (leave-one-delta-out) deltas in the v1 SOC benchmark: mangrove area
 (GMW v3, 2020, equal-area), usable in-situ SOC cores, and median 0--100~cm SOC stock
 (Mg\,ha$^{-1}$).}
 \label{tab:deltas}
 \input{tables/tab_deltas}
-\end{table}
+\end{table*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{fig_map.pdf}
+\includegraphics[width=0.86\textwidth]{fig_map.pdf}
 \caption{The eight core leave-one-delta-out deltas. Marker area scales with mangrove
 extent (GMW v3, 2020); colour shows median in-situ SOC$_{0\text{--}100}$. Spread across
 four continents (Asia, Africa, North and South America) with strongly varying soil-carbon density.}
 \label{fig:map}
-\end{figure}
+\end{figure*}
 
-\subsection{Standard validation overstates transferable skill}
+\subsection*{Standard validation overstates transferable skill}
 A gradient-boosting model that explains 65\% of SOC variance under random $k$-fold
 cross-validation ($R^2=0.65$) drops to negative skill under spatial-block
 cross-validation ($R^2=-0.69$) and to a median leave-one-delta-out $R^2$ of $-1.7$
@@ -182,24 +193,24 @@ recovers neither the level nor the pattern of soil carbon. The contrast with the
 $k$-fold $r$ ($\sqrt{0.65}=0.81$) is the magnitude by which conventional validation
 overstates transferable skill.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Three-tier validation of the SOC model. Random $k$-fold is inflated by
-spatial autocorrelation \citep{ploton2020}; leave-one-delta-out (LODO) is the
+spatial autocorrelation \cite{ploton2020}; leave-one-delta-out (LODO) is the
 out-of-distribution test.}
 \label{tab:tiers}
 \input{tables/tab_tiers}
-\end{table}
+\end{table*}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\linewidth]{fig_tiers.pdf}
+\includegraphics[width=\linewidth]{fig_tiers.pdf}
 \caption{Model skill ($R^2$) under the three validation tiers. The drop from random
 $k$-fold to leave-one-delta-out quantifies the inflation of conventional validation.}
 \label{fig:tiers}
 \end{figure}
 
-\subsection{Every unsampled delta lies outside the area of applicability}
+\subsection*{Every unsampled delta lies outside the area of applicability}
 For all eight held-out deltas, \emph{zero} percent of the mangrove area falls inside
 the model's area of applicability (Table~\ref{tab:perdelta}; see also Supplementary
 Information): each
@@ -219,7 +230,7 @@ therefore correctly recognises familiar environment and flags only genuinely nov
 locations; that whole deltas are uniformly outside it reflects real separation of deltas
 in covariate space, not an artifact of the leave-one-out design.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Per-delta leave-one-delta-out results (gradient boosting, full covariate set):
 sample size, global $R^2$, within-delta Pearson $r$ (the pattern the model captures),
@@ -228,9 +239,9 @@ $r$ values show that out-of-delta the model recovers little within-delta pattern
 the large bias shows it also misses the level.}
 \label{tab:perdelta}
 \input{tables/tab_perdelta}
-\end{table}
+\end{table*}
 
-\subsection{A published global product shows the same per-delta failure}
+\subsection*{A published global product shows the same per-delta failure}
 The preceding results use our own model; to test whether the problem extends to the maps
 actually in operational use, we evaluated the published Sanderman et al.\ global mangrove
 soil-carbon product (30~m, 0--100~cm) directly against the in-situ cores, delta by delta
@@ -245,21 +256,21 @@ product was trained on a global core compilation that likely overlaps ours its a
 here is, if anything, optimistic. That it still fails per delta makes the point more
 forcefully.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{The published Sanderman et al.\ mangrove SOC map evaluated against in-situ cores
 per delta: number of cores resolved, median observed and mapped SOC, mean bias, and
 within-delta correlation.}
 \label{tab:publishedmap}
 \input{tables/tab_publishedmap}
-\end{table}
+\end{table*}
 
-\subsection{Adding geomorphic and tidal forcing does not restore transfer}
+\subsection*{Adding geomorphic and tidal forcing does not restore transfer}
 A natural objection is that the failure merely reflects missing predictors. We tested
 this by augmenting the climate covariates first with geomorphic position
 (distance-to-coast and distance-to-river) and then with tidal forcing (mean and spring
 tidal range and the tidal form factor, derived from the EOT20 ocean-tide model
-\citep{hartdavis2021eot20}) --- the dominant physical control on mangrove sediment
+\cite{hartdavis2021eot20}) --- the dominant physical control on mangrove sediment
 trapping and carbon burial. The tidal covariates are physically faithful, separating
 macrotidal systems (Amazon--Amap\'a, Zambezi, Rufiji; spring range $3.6$--$4.9$~m) from
 microtidal ones (Musi--Banyuasin, $0.7$~m). Yet the transfer gap is essentially
@@ -272,7 +283,7 @@ removing it leaves the random-CV $R^2$ unchanged ($<0.005$) and the median LODO 
 nearly so ($<0.2$; Supplementary Information), so the transfer gap does not depend on
 that potentially circular feature.
 
-\subsection{Covariate shift does not fully explain which deltas fail}
+\subsection*{Covariate shift does not fully explain which deltas fail}
 If transfer failed simply because held-out deltas were environmentally distant, the
 \emph{magnitude} of covariate shift should predict the \emph{magnitude} of error. It
 does not: across the eight folds, neither the mean dissimilarity index nor the
@@ -294,7 +305,7 @@ and Rufiji but strongly negative in the Mekong, and distance-to-coast reverses l
 relationship is therefore genuinely delta-specific, so no globally-shared model --- however
 well-resolved its covariates --- can transfer across deltas.
 
-\subsection{Aboveground biomass carbon transfers no better than soil carbon}
+\subsection*{Aboveground biomass carbon transfers no better than soil carbon}
 To test whether the transferability limit is peculiar to soil carbon, we repeated the
 entire analysis for aboveground biomass carbon (AGB-C), sampling the 30~m Simard
 product within each delta's mangrove mask (500 points per delta) and applying the
@@ -310,22 +321,22 @@ predicting AGB-C from bioclimatic covariates is partially circular, so the AGB r
 is best read as a companion to, rather than an independent replicate of, the SOC
 result.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Transferability of the two carbon pools under the same gradient-boosting
 model and validation tiers. Both collapse from strong random-CV skill to negative
 leave-one-delta-out skill, with zero area-of-applicability coverage.}
 \label{tab:pooltransfer}
 \input{tables/tab_pooltransfer}
-\end{table}
+\end{table*}
 
-\subsection{The failure is specific to blue carbon}
+\subsection*{The failure is specific to blue carbon}
 A sceptic might ask whether any global carbon map fails out-of-region, making the result
 unremarkable. It does not. We applied the identical protocol to terrestrial soil organic
 carbon, using $\sim$9{,}400 globally-distributed WoSIS profiles (0--30~cm stock) and a
 leave-one-continent-out design, and separately tested the operational GSOCmap product ---
 the FAO Global Soil Organic Carbon map used for national greenhouse-gas inventories, and
-a counterpart to the widely-used SoilGrids predictions \citep{hengl2017,poggio2021soilgrids} ---
+a counterpart to the widely-used SoilGrids predictions \cite{hengl2017,poggio2021soilgrids} ---
 directly against those profiles per continent. Terrestrial soil carbon transfers far
 better than blue carbon (Table~\ref{tab:terrestrial}): GSOCmap retains a median
 within-region correlation of $r=0.40$ with small per-region bias ($\sim$8~Mg\,ha$^{-1}$),
@@ -337,16 +348,16 @@ mangrove deltas share a near-uniform tropical climate and differ instead in the
 delta-specific factors that do not. The blue-carbon transfer failure is thus a genuine
 property of mangrove systems, not a generic artifact of global mapping.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{The transfer failure is specific to blue carbon. Mangrove blue carbon versus
 terrestrial soil organic carbon under the same out-of-region protocol: the operational
 maps (Sanderman; GSOCmap) and our own held-out models.}
 \label{tab:terrestrial}
 \input{tables/tab_terrestrial}
-\end{table}
+\end{table*}
 
-\subsection{Total ecosystem carbon and the cost of mis-transfer}
+\subsection*{Total ecosystem carbon and the cost of mis-transfer}
 Combining the pools gives the total mangrove ecosystem carbon density and stock of the
 benchmark (Table~\ref{tab:totalcarbon}). Across the eight core deltas the total stock
 is \SI{495}{\tera\gram} C (95\% bootstrap CI 460--516), soil carbon constitutes 77\% of
@@ -357,16 +368,16 @@ to \SI{639}{\mega\gram\per\hectare} (Musi--Banyuasin)---a heterogeneity that, be
 both pools fail cross-delta transfer, cannot be reconstructed for an unsampled delta from
 a globally-trained model.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Total ecosystem carbon per core delta: mean AGB-C, median SOC, their sum
 (Mg\,ha$^{-1}$), the soil-carbon fraction, and the delta stock (Tg\,C $=$ density
 $\times$ mangrove area).}
 \label{tab:totalcarbon}
 \input{tables/tab_totalcarbon}
-\end{table}
+\end{table*}
 
-\subsection{Carbon-crediting baselines in unsampled deltas}
+\subsection*{Carbon-crediting baselines in unsampled deltas}
 This transfer failure has a direct accounting consequence. Of the sixteen mangrove
 systems we examined, seven sizeable deltas---including the Niger, Irrawaddy and Indus,
 together \SI{11724}{\kilo\metre\squared} or 8\% of global mangrove area---carry no usable
@@ -380,7 +391,7 @@ that figure (Table~\ref{tab:crediting})---error that the products' reported conf
 intervals do not capture. Carbon-crediting baselines built on global maps for unsampled
 deltas are therefore unverifiable at a magnitude comparable to the credited stock itself.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Carbon at stake in the seven unsampled (prediction-only) deltas: mangrove area,
 the stock a globally-trained model assigns at the benchmark median density, and the
@@ -388,9 +399,9 @@ uncertainty implied by the out-of-delta RMSE. All seven lie outside the area of
 applicability.}
 \label{tab:crediting}
 \input{tables/tab_crediting}
-\end{table}
+\end{table*}
 
-\subsection{A few local cores recover much of the lost skill}
+\subsection*{A few local cores recover much of the lost skill}
 The transferability limit is not a counsel of despair but a quantifiable data
 requirement. We measured how quickly skill recovers when a small number of cores from
 the otherwise-unsampled target delta are added to training (Fig.~\ref{fig:fewshot},
@@ -407,23 +418,22 @@ local inventory.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\linewidth]{fig_fewshot.pdf}
+\includegraphics[width=\linewidth]{fig_fewshot.pdf}
 \caption{Few-shot calibration. Median over held-out deltas of leave-one-delta-out RMSE
 (red) and within-delta correlation (blue) as $k$ local calibration cores are added to
 training. Even a handful of local cores substantially improves transferable skill.}
 \label{fig:fewshot}
 \end{figure}
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Few-shot calibration: median skill over held-out deltas as $k$ local cores are
 added to training (20 random draws each).}
 \label{tab:fewshot}
 \input{tables/tab_fewshot}
-\end{table}
+\end{table*}
 
-% ---------------------------------------------------------------------
-\section{Discussion}
+\section*{Discussion}
 Our central result is that the apparent accuracy of a global mangrove soil-carbon model
 is largely an artifact of in-distribution validation. The same model that explains two
 thirds of the variance under random cross-validation cannot predict an unsampled delta
@@ -476,17 +486,16 @@ per-delta pool summaries rather than per-pixel sums.
 
 These limitations also define the path forward. The framework extends naturally to
 historical extent-change emissions and to sea-level-rise scenarios, where mangrove
-persistence itself is increasingly uncertain \citep{lovelock2015,saintilan2020}; co-located
+persistence itself is increasingly uncertain \cite{lovelock2015,saintilan2020}; co-located
 field plots would allow per-pixel total-carbon mapping with jointly propagated
 uncertainty; and because every delta is specified only by a bounding box, the entire
 pipeline is portable to any coastal system. The contribution of this work is less a new
 map than a measurement of how far existing maps can be trusted beyond where they were
 trained---and a reusable, uncertainty-aware benchmark for improving that reach.
 
-% ---------------------------------------------------------------------
-\section{Methods}
+\section*{Methods}
 
-\subsection{Study systems and the delta registry}
+\subsection*{Study systems and the delta registry}
 Candidate deltas were drawn from the major mangrove systems of the global tropics and
 defined by generous geographic windows. To avoid post-hoc selection, inclusion rules
 were fixed before any modelling: a system enters the benchmark as a soil-carbon
@@ -495,7 +504,7 @@ leave-one-delta-out (LODO) fold if (i) its mangrove area exceeds a minimum thres
 overlap, so no pixel is shared between a training and a held-out delta. We further
 required the fold set to span at least four continents so that the out-of-distribution
 test is environmentally diverse. Mangrove extent was taken from the Global Mangrove
-Watch v3 (2020) product \citep{bunting2022gmw3}; each window's extent was clipped and
+Watch v3 (2020) product \cite{bunting2022gmw3}; each window's extent was clipped and
 its area computed in the World Cylindrical Equal Area projection (EPSG:6933) so that
 area-by-density stock accounting is unbiased. Systems passing the area but not the
 label criterion were retained as prediction-only deltas. Two estuarine systems
@@ -504,9 +513,9 @@ Oceanian coverage; the final v1 soil-carbon benchmark comprises eight core delta
 across four continents (Table~\ref{tab:deltas}). The complete criteria, thresholds,
 and a change log are given in the Supplementary Information.
 
-\subsection{In-situ carbon labels}
+\subsection*{In-situ carbon labels}
 Soil organic carbon labels were derived from the Coastal Carbon Network Data Library
-v1.6.0 \citep{ccn2024}, retaining cores classified as mangrove habitat with valid
+v1.6.0 \cite{ccn2024}, retaining cores classified as mangrove habitat with valid
 coordinates. For each core we integrated the measured depth series to a standardized
 0--100~cm areal stock,
 \begin{equation}
@@ -526,18 +535,18 @@ deepest valid layer's carbon density and flagged. After a 0.5/99.5 percentile tr
 label hygiene, the procedure yielded 2{,}489 mangrove SOC cores (median
 278~Mg\,ha$^{-1}$; 4\% extrapolated, 7\% with carbon inferred from organic matter).
 Aboveground biomass labels were obtained from the 30~m Simard et al.\ product
-\citep{simard2019,simard2019data} and converted to carbon with a factor of 0.47; AGB
+\cite{simard2019,simard2019data} and converted to carbon with a factor of 0.47; AGB
 labels were acquired for all eight core deltas and reserved for the total-carbon
 analysis.
 
-\subsection{Covariates}
+\subsection*{Covariates}
 Predictors spanned the major physical controls on mangrove carbon: bioclimate (CHELSA
-v2.1 bio1--19; \citealp{karger2017chelsa}), a soil-carbon prior and soil context
-(GSOCmap; SoilGrids bulk density and CEC; \citealp{poggio2021soilgrids}), land cover
+v2.1 bio1--19; \cite{karger2017chelsa}), a soil-carbon prior and soil context
+(GSOCmap; SoilGrids bulk density and CEC; \cite{poggio2021soilgrids}), land cover
 (Copernicus Global Land Service), geomorphic position (distance to coast and to major
 rivers, computed from Natural Earth in equal-area projection), and tidal forcing (mean
 and spring tidal range and the tidal form factor, derived from the M2, S2, K1 and O1
-constituents of the EOT20 ocean-tide model; \citealp{hartdavis2021eot20}). Gridded
+constituents of the EOT20 ocean-tide model; \cite{hartdavis2021eot20}). Gridded
 driver layers were sampled at each core in the layer's native coordinate reference
 system, with nodata handled per layer; the external driver archive is referenced in
 place and not redistributed. The GSOCmap prior is itself a soil-carbon model and is
@@ -545,27 +554,27 @@ reported but interpreted cautiously to avoid circularity. Some archived layers w
 corrupt or unreadable (SoilGrids texture, OpenLandMap, fine terrain) and were excluded
 from the v1 stack.
 
-\subsection{Models and three-tier validation}
+\subsection*{Models and three-tier validation}
 We modelled $\log(1+\mathrm{SOC})$ with two estimators of contrasting flexibility: a
 ridge-regression baseline (standardized, median-imputed features) and a tree ensemble
-(histogram gradient-boosted regression trees \citep{breiman2001,ke2017lightgbm}), the
+(histogram gradient-boosted regression trees \cite{breiman2001,ke2017lightgbm}), the
 model family that underpins the operational products tested here, implemented in
-scikit-learn \citep{pedregosa2011}. Each was evaluated under three nested validation schemes. Tier~1
+scikit-learn \cite{pedregosa2011}. Each was evaluated under three nested validation schemes. Tier~1
 is standard random five-fold cross-validation. Tier~2 is spatial-block cross-validation
-\citep{roberts2017}, in which whole $5^\circ$ blocks are held out to suppress the
-spatial-autocorrelation leakage that inflates random validation \citep{ploton2020};
+\cite{roberts2017}, in which whole $5^\circ$ blocks are held out to suppress the
+spatial-autocorrelation leakage that inflates random validation \cite{ploton2020};
 although the appropriateness of spatial cross-validation for map-accuracy assessment is
-debated \citep{wadoux2021}, here it serves as an intermediate diagnostic between random
+debated \cite{wadoux2021}, here it serves as an intermediate diagnostic between random
 and out-of-region evaluation rather than as a global accuracy estimate. Tier~3 is
 leave-one-delta-out: the model is trained on all but one delta and evaluated on the
 held-out delta, the operational analogue of predicting an unsampled system. We summarise the transfer gap as the Tier~1 minus Tier~3 skill, and
 report both mean and median LODO $R^2$ together with RMSE and bias back-transformed to
 Mg\,ha$^{-1}$.
 
-\subsection{Area of applicability}
+\subsection*{Area of applicability}
 For each held-out delta we computed the area of applicability following
-\citet{meyer2021}, part of a broader recognition that global machine-learning maps
-require explicit applicability assessment \citep{meyer2022}: features are standardized
+\cite{meyer2021}, part of a broader recognition that global machine-learning maps
+require explicit applicability assessment \cite{meyer2022}: features are standardized
 and weighted by model importance, and the
 dissimilarity index (DI) of each test point is its importance-weighted distance to the
 nearest training point, normalised by the mean nearest-neighbour distance within the
@@ -573,16 +582,16 @@ training data. The applicability threshold is set from the (outlier-aware) upper
 quantile of training DI values, and we report the fraction of each held-out delta
 falling below it (inside the AOA).
 
-\subsection{Conformal prediction intervals}
+\subsection*{Conformal prediction intervals}
 To attach calibrated uncertainty we used split-conformal prediction
-\citep{vovk2005,romano2019cqr,angelopoulos2023conformal}. A calibration
+\cite{vovk2005,romano2019cqr,angelopoulos2023conformal}. A calibration
 subset (20\%, minimum 50 cores) was withheld from each LODO training set; the
 half-width of the prediction interval was taken as the $(1-\alpha)$ quantile of the
 absolute calibration residuals with $\alpha=0.1$, giving 90\% marginal coverage under
 exchangeability. We report the empirical coverage realised on each held-out delta as a
 direct test of whether that exchangeability assumption survives cross-delta shift.
 
-\subsection{Transfer diagnostic}
+\subsection*{Transfer diagnostic}
 To test whether the magnitude of covariate shift explains which deltas fail, we
 quantified each held-out delta's distance from the training feature space two ways: the
 mean importance-weighted dissimilarity index used for the AOA, and the multivariate
@@ -593,7 +602,7 @@ for each delta, ranked covariates by the standardized mean difference between th
 and the rest. Given only eight folds, these correlations are reported as descriptive
 with explicit acknowledgement of low statistical power.
 
-\subsection{Terrestrial comparison}
+\subsection*{Terrestrial comparison}
 As a specificity control we repeated the analysis for terrestrial soil organic carbon.
 From the WoSIS database we computed 0--30~cm SOC stock (concentration $\times$ bulk
 density $\times$ thickness) for profiles with the required measurements, assigned each to
@@ -602,7 +611,7 @@ covariates. We additionally sampled the operational GSOCmap product at the same 
 locations and evaluated it against the in-situ stocks per continent, the terrestrial
 analogue of the published-map test.
 
-\subsection{Carbon-crediting stakes}
+\subsection*{Carbon-crediting stakes}
 For the prediction-only deltas (sufficient mangrove area but no usable cores), we
 estimated the stock a global model assigns as their mangrove area times the benchmark
 median total-carbon density, and the associated uncertainty as their area times the
@@ -610,7 +619,6 @@ median out-of-delta total-carbon RMSE (the soil and biomass LODO RMSE combined i
 quadrature), aggregating errors across deltas as independent. Carbon masses were
 converted to CO$_2$-equivalent with the factor 44/12.
 
-% ---------------------------------------------------------------------
 \section*{Data availability}
 All primary datasets are publicly available: the Coastal Carbon Network Data Library
 v1.6.0, Global Mangrove Watch v3, the Simard et al.\ (2019) mangrove biomass product
@@ -641,8 +649,182 @@ analysis, and wrote the manuscript.
 \section*{Competing interests}
 The author declares no competing interests.
 
-% ---------------------------------------------------------------------
-\bibliographystyle{plainnat}
-\bibliography{references}
+
+\begin{thebibliography}{99}
+
+% ---- blue-carbon significance & stocks ----
+\bibitem{donato2011}
+D.~C.~Donato, J.~B.~Kauffman, D.~Murdiyarso, S.~Kurnianto, M.~Stidham, and M.~Kanninen.
+\newblock Mangroves among the most carbon-rich forests in the tropics.
+\newblock \emph{Nature Geoscience}, 4:293--297, 2011.
+
+\bibitem{mcleod2011}
+E.~McLeod, G.~L.~Chmura, S.~Bouillon, et~al.
+\newblock A blueprint for blue carbon: toward an improved understanding of the role of vegetated coastal habitats in sequestering CO\textsubscript{2}.
+\newblock \emph{Frontiers in Ecology and the Environment}, 9(10):552--560, 2011.
+
+\bibitem{fourqurean2012}
+J.~W.~Fourqurean, C.~M.~Duarte, H.~Kennedy, et~al.
+\newblock Seagrass ecosystems as a globally significant carbon stock.
+\newblock \emph{Nature Geoscience}, 5:505--509, 2012.
+
+\bibitem{kauffman2020}
+J.~B.~Kauffman, M.~F.~Adame, V.~B.~Arifanti, et~al.
+\newblock Total ecosystem carbon stocks of mangroves across broad global environmental and physical gradients.
+\newblock \emph{Ecological Monographs}, 90(2):e01405, 2020.
+
+\bibitem{macreadie2021}
+P.~I.~Macreadie, M.~D.~P.~Costa, T.~B.~Atwood, et~al.
+\newblock Blue carbon as a natural climate solution.
+\newblock \emph{Nature Reviews Earth \& Environment}, 2:826--839, 2021.
+
+% ---- mangrove extent, loss, typology ----
+\bibitem{friess2019}
+D.~A.~Friess, K.~Rogers, C.~E.~Lovelock, et~al.
+\newblock The state of the world's mangrove forests: past, present, and future.
+\newblock \emph{Annual Review of Environment and Resources}, 44:89--115, 2019.
+
+\bibitem{hamilton2018}
+S.~E.~Hamilton and D.~A.~Friess.
+\newblock Global carbon stocks and potential emissions due to mangrove deforestation from 2000 to 2012.
+\newblock \emph{Nature Climate Change}, 8:240--244, 2018.
+
+\bibitem{richards2020netloss}
+D.~R.~Richards, B.~S.~Thompson, and L.~Wijedasa.
+\newblock Quantifying net loss of global mangrove carbon stocks from 20 years of land cover change.
+\newblock \emph{Nature Communications}, 11:4260, 2020.
+
+\bibitem{adame2021future}
+M.~F.~Adame, R.~M.~Connolly, M.~P.~Turschwell, et~al.
+\newblock Future carbon emissions from global mangrove forest loss.
+\newblock \emph{Global Change Biology}, 27(12):2856--2866, 2021.
+
+\bibitem{worthington2020}
+T.~A.~Worthington, P.~S.~E.~zu~Ermgassen, D.~A.~Friess, et~al.
+\newblock A global biophysical typology of mangroves and its relevance for ecosystem structure and deforestation.
+\newblock \emph{Scientific Reports}, 10:14652, 2020.
+
+\bibitem{bunting2022gmw3}
+P.~Bunting, A.~Rosenqvist, L.~Hilarides, et~al.
+\newblock Global mangrove extent change 1996--2020: Global Mangrove Watch version 3.0.
+\newblock \emph{Remote Sensing}, 14(15):3657, 2022.
+
+% ---- carbon-stock products / labels ----
+\bibitem{sanderman2018}
+J.~Sanderman, T.~Hengl, G.~Fiske, et~al.
+\newblock A global map of mangrove forest soil carbon at 30~m spatial resolution.
+\newblock \emph{Environmental Research Letters}, 13(5):055002, 2018.
+
+\bibitem{simard2019}
+M.~Simard, L.~Fatoyinbo, C.~Smetanka, et~al.
+\newblock Mangrove canopy height globally related to precipitation, temperature and cyclone frequency.
+\newblock \emph{Nature Geoscience}, 12:40--45, 2019.
+
+\bibitem{simard2019data}
+M.~Simard, T.~Fatoyinbo, C.~Smetanka, et~al.
+\newblock Global mangrove distribution, aboveground biomass, and canopy height.
+\newblock ORNL DAAC, Oak Ridge, Tennessee, USA, 2019.
+
+\bibitem{rovai2018}
+A.~S.~Rovai, R.~R.~Twilley, E.~Casta\~neda-Moya, et~al.
+\newblock Global controls on carbon storage in mangrove soils.
+\newblock \emph{Nature Climate Change}, 8:534--538, 2018.
+
+\bibitem{ccn2024}
+J.~R.~Holmquist, D.~Klinges, M.~Lonneman, et~al.
+\newblock The Coastal Carbon Library and Atlas: open source soil data and tools supporting blue carbon research and policy.
+\newblock \emph{Global Change Biology}, 30(1):e17098, 2024.
+
+% ---- sea-level rise / vulnerability ----
+\bibitem{saintilan2020}
+N.~Saintilan, N.~S.~Khan, E.~Ashe, et~al.
+\newblock Thresholds of mangrove survival under rapid sea level rise.
+\newblock \emph{Science}, 368(6495):1118--1121, 2020.
+
+\bibitem{lovelock2015}
+C.~E.~Lovelock, D.~R.~Cahoon, D.~A.~Friess, et~al.
+\newblock The vulnerability of Indo-Pacific mangrove forests to sea-level rise.
+\newblock \emph{Nature}, 526:559--563, 2015.
+
+% ---- spatial validation / area of applicability ----
+\bibitem{ploton2020}
+P.~Ploton, F.~Mortier, M.~R\'ejou-M\'echain, et~al.
+\newblock Spatial validation reveals poor predictive performance of large-scale ecological mapping models.
+\newblock \emph{Nature Communications}, 11:4540, 2020.
+
+\bibitem{meyer2021}
+H.~Meyer and E.~Pebesma.
+\newblock Predicting into unknown space? Estimating the area of applicability of spatial prediction models.
+\newblock \emph{Methods in Ecology and Evolution}, 12(9):1620--1633, 2021.
+
+\bibitem{meyer2022}
+H.~Meyer and E.~Pebesma.
+\newblock Machine learning-based global maps of ecological variables and the challenge of assessing them.
+\newblock \emph{Nature Communications}, 13:2208, 2022.
+
+\bibitem{roberts2017}
+D.~R.~Roberts, V.~Bahn, S.~Ciuti, et~al.
+\newblock Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure.
+\newblock \emph{Ecography}, 40(8):913--929, 2017.
+
+\bibitem{wadoux2021}
+A.~M.~J.~C.~Wadoux, G.~B.~M.~Heuvelink, S.~de~Bruin, and D.~J.~Brus.
+\newblock Spatial cross-validation is not the right way to evaluate map accuracy.
+\newblock \emph{Ecological Modelling}, 457:109692, 2021.
+
+% ---- soil-carbon mapping products ----
+\bibitem{hengl2017}
+T.~Hengl, J.~Mendes~de~Jesus, G.~B.~M.~Heuvelink, et~al.
+\newblock SoilGrids250m: global gridded soil information based on machine learning.
+\newblock \emph{PLOS ONE}, 12(2):e0169748, 2017.
+
+\bibitem{poggio2021soilgrids}
+L.~Poggio, L.~M.~de~Sousa, N.~H.~Batjes, et~al.
+\newblock SoilGrids 2.0: producing soil information for the globe with quantified spatial uncertainty.
+\newblock \emph{SOIL}, 7(1):217--240, 2021.
+
+% ---- uncertainty / machine learning methods ----
+\bibitem{romano2019cqr}
+Y.~Romano, E.~Patterson, and E.~J.~Cand\`es.
+\newblock Conformalized quantile regression.
+\newblock \emph{Advances in Neural Information Processing Systems}, 32, 2019.
+
+\bibitem{angelopoulos2023conformal}
+A.~N.~Angelopoulos and S.~Bates.
+\newblock Conformal prediction: a gentle introduction.
+\newblock \emph{Foundations and Trends in Machine Learning}, 16(4):494--591, 2023.
+
+\bibitem{vovk2005}
+V.~Vovk, A.~Gammerman, and G.~Shafer.
+\newblock \emph{Algorithmic Learning in a Random World}.
+\newblock Springer, New York, 2005.
+
+\bibitem{breiman2001}
+L.~Breiman.
+\newblock Random forests.
+\newblock \emph{Machine Learning}, 45(1):5--32, 2001.
+
+\bibitem{ke2017lightgbm}
+G.~Ke, Q.~Meng, T.~Finley, et~al.
+\newblock LightGBM: a highly efficient gradient boosting decision tree.
+\newblock \emph{Advances in Neural Information Processing Systems}, 30, 2017.
+
+\bibitem{pedregosa2011}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, et~al.
+\newblock Scikit-learn: machine learning in Python.
+\newblock \emph{Journal of Machine Learning Research}, 12:2825--2830, 2011.
+
+% ---- covariates ----
+\bibitem{hartdavis2021eot20}
+M.~G.~Hart-Davis, G.~Piccioni, D.~Dettmering, C.~Schwatke, M.~Passaro, and F.~Seitz.
+\newblock EOT20: a global ocean tide model from multi-mission satellite altimetry.
+\newblock \emph{Earth System Science Data}, 13(8):3869--3884, 2021.
+
+\bibitem{karger2017chelsa}
+D.~N.~Karger, O.~Conrad, J.~B\"ohner, et~al.
+\newblock Climatologies at high resolution for the earth's land surface areas.
+\newblock \emph{Scientific Data}, 4:170122, 2017.
+
+\end{thebibliography}
 
 \end{document}
