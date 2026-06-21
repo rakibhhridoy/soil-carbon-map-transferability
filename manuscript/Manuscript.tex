@@ -49,11 +49,13 @@ Using a multi-delta benchmark of eight mangrove systems under leave-one-delta-ou
 evaluation, we show that a model scoring $R^2=0.65$ under random validation collapses to
 a median $R^2$ of $-1.7$ across deltas, with every held-out delta falling entirely
 outside the model's area of applicability. Adding geomorphic and tidal predictors does
-not help, and a widely used published soil-carbon map shows the same failure. The
-breakdown reflects delta-specific concept shift and is specific to blue carbon; terrestrial soil carbon transfers far better. In unsampled deltas, 8\% of
-global mangrove area, global models assign of order 1.2~Pg CO$_2$e of crediting-relevant
-stock with unreported error, while ten to twenty-five local cores recover most of the
-lost skill.
+not help, and a widely used published soil-carbon map shows a similar per-delta pattern.
+The breakdown is consistent with delta-specific concept shift; in a parallel test,
+terrestrial soil carbon transfers substantially better, so the failure is not a generic
+mapping artifact. In unsampled deltas, 8\% of global mangrove area, the benchmark median
+density scales to of order 1.2~Pg CO$_2$e of stock whose out-of-delta error current
+products do not report, while ten to twenty-five local
+cores recover most of the lost skill.
 \end{abstract}
 
 \vspace{0.5em}
@@ -294,27 +296,32 @@ leave-one-delta-out skill, with zero area-of-applicability coverage.}
 \input{tables/tab_pooltransfer}
 \end{table}
 
-\subsection{The failure is specific to blue carbon}
+\subsection{Terrestrial soil carbon transfers better}
 A sceptic might ask whether any global carbon map fails out-of-region, making the result
-unremarkable. It does not. We applied the identical protocol to terrestrial soil organic
-carbon, using $\sim$9{,}400 globally-distributed WoSIS profiles (0--30~cm stock) and a
-leave-one-continent-out design, and separately tested the operational GSOCmap product (the FAO Global Soil Organic Carbon map used for national greenhouse-gas inventories, and
-a counterpart to the widely-used SoilGrids predictions \citep{hengl2017,poggio2021soilgrids}), directly against those profiles per continent. Terrestrial soil carbon transfers far
-better than blue carbon (Table~\ref{tab:terrestrial}): GSOCmap retains a median
-within-region correlation of $r=0.40$ with small per-region bias ($\sim$8~Mg\,ha$^{-1}$),
-and our own continent-held-out model keeps a within-region correlation of $0.35$ with a
-transfer gap of only $0.44$ $R^2$ units, versus near-zero correlation and a gap above
-two for mangroves. The difference is mechanistic: terrestrial soil carbon is strongly
-governed by climate, which varies across continents and therefore generalises, whereas
-mangrove deltas share a near-uniform tropical climate and differ instead in the
-delta-specific factors that do not. The blue-carbon transfer failure is thus a genuine
-property of mangrove systems, not a generic artifact of global mapping.
+unremarkable. As a check, we applied the identical protocol to terrestrial soil organic
+carbon, using $\sim$9{,}400 WoSIS profiles (0--30~cm stock; predominantly North American,
+with smaller samples on other continents) under a leave-one-continent-out design, and
+separately tested the operational GSOCmap product (the FAO Global Soil Organic Carbon
+map used for national greenhouse-gas inventories, and a counterpart to the widely-used
+SoilGrids predictions \citep{hengl2017,poggio2021soilgrids}) against those profiles per
+continent. In this comparison terrestrial soil carbon transferred substantially better
+than blue carbon (Table~\ref{tab:terrestrial}): GSOCmap retained a median within-region
+correlation of $r=0.40$ with small per-region bias ($\sim$8~Mg\,ha$^{-1}$), and our own
+continent-held-out model kept a within-region correlation of $0.35$ with a transfer gap
+of only $0.44$ $R^2$ units, versus near-zero correlation and a gap above two for
+mangroves. A plausible mechanism is that terrestrial soil carbon is strongly governed by
+climate, which varies across continents and therefore generalises, whereas mangrove
+deltas share a near-uniform tropical climate and differ instead in delta-specific factors
+that do not. We therefore read the blue-carbon failure as unlikely to be a generic
+artifact of global mapping, while noting that the terrestrial comparison is geographically
+uneven and rests on a single soil-carbon pool.
 
 \begin{table}[t]
 \centering
-\caption{The transfer failure is specific to blue carbon. Mangrove blue carbon versus
-terrestrial soil organic carbon under the same out-of-region protocol: the operational
-maps (Sanderman; GSOCmap) and our own held-out models.}
+\caption{Mangrove blue carbon versus terrestrial soil organic carbon under the same
+out-of-region protocol: the operational maps (Sanderman; GSOCmap) and our own held-out
+models. Terrestrial soil carbon transfers substantially better, though the terrestrial
+sample is geographically uneven (predominantly North American).}
 \label{tab:terrestrial}
 \input{tables/tab_terrestrial}
 \end{table}
@@ -340,24 +347,27 @@ $\times$ mangrove area).}
 \end{table}
 
 \subsection{Carbon-crediting baselines in unsampled deltas}
-This transfer failure has a direct accounting consequence. Of the sixteen mangrove
-systems we examined, seven sizeable deltas, including the Niger, Irrawaddy and Indus,
-together \SI{11724}{\kilo\metre\squared} or 8\% of global mangrove area, carry no usable in-situ cores and are exactly the setting in which a project must rely on a global map.
-A globally-trained model assigns these deltas of order \SI{322}{\tera\gram}~C
-(\SI{1.2}{\peta\gram}~CO$_2$e) of stock at the benchmark median density, yet all seven lie
-entirely outside the model's area of applicability, and the out-of-delta error measured
-in our leave-one-delta-out analysis ($\sim$\SI{124}{\mega\gram\per\hectare} combined RMSE)
-implies an uncertainty of $\pm$\SI{83}{\tera\gram}~C ($\pm$\SI{0.3}{\peta\gram}~CO$_2$e) on
-that figure (Table~\ref{tab:crediting}), error that the products' reported confidence
-intervals do not capture. Carbon-crediting baselines built on global maps for unsampled
-deltas are therefore unverifiable at a magnitude comparable to the credited stock itself.
+This transfer failure has an accounting implication, which a simple scaling makes
+concrete. Of the sixteen mangrove systems we examined, seven sizeable deltas, including
+the Niger, Irrawaddy and Indus, together \SI{11724}{\kilo\metre\squared} or 8\% of
+global mangrove area, carry no usable in-situ cores and are exactly the setting in which
+a project must rely on a global map. At the benchmark median density their combined stock
+is of order \SI{322}{\tera\gram}~C (\SI{1.2}{\peta\gram}~CO$_2$e), yet all seven lie
+entirely outside the model's area of applicability, and the out-of-delta error from our
+leave-one-delta-out analysis ($\sim$\SI{124}{\mega\gram\per\hectare} combined RMSE), if it
+applies at this scale, implies an uncertainty of order $\pm$\SI{83}{\tera\gram}~C
+($\pm$\SI{0.3}{\peta\gram}~CO$_2$e) (Table~\ref{tab:crediting}), error that the products'
+reported confidence intervals do not capture. These figures are order-of-magnitude
+illustrations rather than validated estimates, since no in-situ truth exists for these
+deltas; the robust point is that crediting baselines built on global maps for unsampled
+deltas are unverifiable, all of this area lying outside the area of applicability.
 
 \begin{table}[t]
 \centering
 \caption{Carbon at stake in the seven unsampled (prediction-only) deltas: mangrove area,
-the stock a globally-trained model assigns at the benchmark median density, and the
-uncertainty implied by the out-of-delta RMSE. All seven lie outside the area of
-applicability.}
+the stock implied by the benchmark median density, and the uncertainty implied by the
+out-of-delta RMSE. Figures are order-of-magnitude illustrations, not validated estimates;
+all seven deltas lie outside the area of applicability.}
 \label{tab:crediting}
 \input{tables/tab_crediting}
 \end{table}
@@ -413,9 +423,12 @@ guarantees that, as we show, fail under cross-delta shift (empirical coverage as
 0\%). A crediting-grade soil-carbon estimate for a delta absent from the training data
 therefore cannot be inherited from a global model; it requires local calibration cores.
 This is not merely a property of our re-implementation: the published Sanderman et al.\
-product, tested against in-situ cores delta by delta, exhibits the same near-zero
-within-delta correlation and large per-delta bias, so the caution applies directly to
-maps already in use.
+product, tested against in-situ cores delta by delta, exhibits a similar near-zero
+within-delta correlation and large per-delta bias, so the caution plausibly extends to
+maps already in use. We note that this product was trained on a global core compilation
+that likely overlaps ours and predates many cores in epoch, so its agreement here is, if
+anything, optimistic; that it still fails per delta makes the concern more rather than
+less compelling.
 The same logic identifies where global maps \emph{can} be trusted, inside the AOA, and turns the area of applicability into an actionable map layer for users.
 
 That covariate-shift magnitude does not order the per-delta failures points to concept
