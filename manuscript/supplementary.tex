@@ -1,41 +1,80 @@
 % =====================================================================
-% MDBC : Supplementary Information
-% Build: pdflatex -> bibtex -> pdflatex x2  (shares references.bib)
+% MDBC : Supplementary Information (Nature Communications style)
+% Build: pdflatex x3  (no bibtex; main text carries the bibliography)
 % =====================================================================
-\documentclass[11pt]{article}
+\documentclass[10pt]{extarticle}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage[a4paper,top=2.0cm,bottom=2.0cm,left=2.2cm,right=2.2cm]{geometry}
 \usepackage{graphicx}
 \graphicspath{{figures/}}
-\usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{longtable}
+\usepackage{caption}
 \usepackage{siunitx}
+\usepackage{textcomp}
+\usepackage{titlesec}
+\usepackage{titletoc}
+\usepackage{fancyhdr}
+\usepackage{marvosym}
+\usepackage{orcidlink}
 \usepackage{xcolor}
-\usepackage[hidelinks]{hyperref}
-\usepackage[round,authoryear]{natbib}
+\usepackage{hyperref}
+\usepackage{url}
 
-\newcommand{\TODO}[1]{\textcolor{red}{[\textbf{TODO:} #1]}}
-\newcommand{\PLACE}[1]{\textcolor{blue}{[\textit{#1}]}}
+\definecolor{natblue}{HTML}{0B6FB8}
+\definecolor{natgrey}{HTML}{5A5A5A}
+\hypersetup{colorlinks=true, linkcolor=natblue, citecolor=natblue, urlcolor=natblue,
+  pdfauthor={Md Rakib Hasan},
+  pdftitle={Supplementary Information: Global maps overstate the reliability of blue-carbon credits}}
+\sisetup{detect-all}
+\captionsetup{labelfont=bf, labelsep=period, font=small, justification=justified,
+  singlelinecheck=false}
 
-% number SI floats as S1, S2, ...
+% Nature-style section headings (sans-serif, unnumbered look but S-numbered floats)
+\titleformat{\section}{\normalfont\sffamily\bfseries\large\color{natblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\sffamily\bfseries\normalsize}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{12pt}{4pt}
+\titlespacing*{\subsection}{0pt}{8pt}{2pt}
+
+% number SI floats / sections / equations as S1, S2, ...
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thesubsection}{S\arabic{section}.\arabic{subsection}}
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\theequation}{S\arabic{equation}}
-\renewcommand{\thesection}{S\arabic{section}}
 
-\title{\textbf{Supplementary Information}\\[4pt]
-\large Cross-delta transferability limits of mangrove blue-carbon stock models}
-\author{Md Rakib Hasan}
-\date{\today}
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\sffamily\color{natgrey}Supplementary Information}
+\fancyhead[R]{\footnotesize\sffamily\color{natgrey}Global maps overstate the reliability of blue-carbon credits}
+\fancyfoot[C]{\small\sffamily\thepage}
 
 \begin{document}
-\maketitle
-\tableofcontents
-\bigskip
+
+% ---- Nature-style banner title block ----
+\thispagestyle{fancy}
+{\sffamily\bfseries\large Supplementary Information}\\[5pt]
+{\color{black}\rule{\textwidth}{1.0pt}}\\[8pt]
+\noindent{\sffamily\bfseries\Large Global maps overstate the reliability of blue-carbon credits}\par
+\vspace{8pt}
+{\normalsize Md~Rakib~Hasan\,\orcidlink{0009-0002-4007-7590}\par}
+\vspace{4pt}
+{\footnotesize\color{natgrey}Fermium Systems, Dhaka 1207, Bangladesh;\;
+Department of Soil, Water and Environment, University of Dhaka, Dhaka 1000, Bangladesh.\;
+\Letter\,\href{mailto:rakibhhridoy@fermium.systems}{rakibhhridoy@fermium.systems}}\par
+\vspace{4pt}
+{\color{black}\rule{\textwidth}{0.4pt}}
+\vspace{10pt}
+
+{\sffamily\bfseries\large\color{natblue} Contents}
+\vspace{-2pt}
+{\small\renewcommand{\contentsname}{}\setcounter{tocdepth}{1}\tableofcontents}
+\vspace{6pt}
 
 % ---------------------------------------------------------------------
 \section{Delta selection and the frozen benchmark}
@@ -288,8 +327,5 @@ fixed, and the frozen leave-one-delta-out delta registry is released with the be
 that the splits, figures and every reported number regenerate deterministically. All
 manuscript figures and numerical tables are produced directly from the results files by a
 single script, eliminating hand-transcribed values.
-
-\bibliographystyle{plainnat}
-\bibliography{references}
 
 \end{document}

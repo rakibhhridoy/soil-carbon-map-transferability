@@ -39,3 +39,4 @@ figures_d3/svg/
 
 # Fetched public driver lake (regenerate via fetch_lake.sh)
 data/lake/
+mdbc-data-*.zip
