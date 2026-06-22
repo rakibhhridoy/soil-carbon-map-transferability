@@ -40,3 +40,10 @@ figures_d3/svg/
 # Fetched public driver lake (regenerate via fetch_lake.sh)
 data/lake/
 mdbc-data-*.zip
+
+# Personal outreach drafts (not for the public repo)
+outreach/
+
+# Docs build artifacts (regenerable)
+docs/technical_guide.pdf
+docs/.ipynb_checkpoints/
