@@ -96,7 +96,7 @@ def tab_fewshot():
     (TAB / "tab_fewshot.tex").write_text(
         "\\begin{tabular}{rrrr}\n\\toprule\n"
         "Local & Median RMSE & Within-delta $r$ & Within-delta $r$ \\\\\n"
-        "cores $k$ & (Mg\\,ha$^{-1}$) & global $+$ local & local only \\\\\n\\midrule\n"
+        "cores $k$ & (Mg\\,ha$^{-1}$) & global $+$ local & local only (ridge) \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -328,10 +328,9 @@ def tab_tiers(lodo):
         return f"{name} & {r[key]:+.2f} & {h[key]:+.2f} \\\\"
     body = "\n".join([
         row("T1 random $k$-fold", "t1_random_r2"),
+        row("T1 site-grouped $k$-fold", "t1_grouped_r2"),
         row("T2 spatial-block", "t2_spatialblock_r2"),
-        row("T3 leave-one-delta-out (mean)", "t3_lodo_mean_r2"),
-        "\\midrule",
-        row("Transfer gap (T1$-$T3)", "transfer_gap"),
+        row("T3 leave-one-delta-out (median)", "t3_lodo_median_r2"),
     ])
     (TAB / "tab_tiers.tex").write_text(
         "\\begin{tabular}{lrr}\n\\toprule\n"

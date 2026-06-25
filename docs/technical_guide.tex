@@ -114,16 +114,20 @@ dropped as truncated and circular.
 \section{Stage 2 --- The transferability experiment}
 \subsection{Three-tier validation}
 \textbf{Code:} \file{src/models/soc\_lodo.py}. Two estimators (ridge; histogram
-gradient-boosting) under: \textbf{T1} random $k$-fold; \textbf{T2} spatial-block CV
-($5^\circ$ blocks, Roberts 2017); \textbf{T3} leave-one-delta-out.
+gradient-boosting) under: \textbf{T1} random $k$-fold; \textbf{T1b} site-grouped $k$-fold;
+\textbf{T2} spatial-block CV ($5^\circ$ blocks, Roberts 2017); \textbf{T3}
+leave-one-delta-out.
 
-\out T1 $R^2=0.65 \to$ T2 $-0.69 \to$ T3 median $-1.71$. The scale-invariant truth: median
-within-delta Pearson $r\approx0.04$ out-of-region, with per-delta bias $\pm$100--200; the
-model recovers neither level nor pattern of an unsampled delta. The collapse is model-agnostic.
+\out T1 $R^2=0.65$. But $\sim$51\% of cores share a location (a CCN site sampled at several
+depths, or the same 1~km covariate cell), so random $k$-fold leaks near-duplicates across
+folds; a \textbf{site-grouped $k$-fold} gives the honest in-distribution skill of $0.16$.
+From there: T2 $-0.69 \to$ T3 median $-1.71$. The scale-invariant truth: median within-delta
+Pearson $r\approx0.04$ out-of-region, per-delta bias $\pm$100--200; the model recovers neither
+level nor pattern of an unsampled delta. The collapse is model-agnostic.
 
-\alt Reporting only random CV (the inflated norm); reporting only $R^2$ (confounds level and
-pattern, dominated by tiny folds like Sundarbans $n=11$). We add $r$ and bias and lead with
-the median.
+\alt Reporting only random CV (leakage-inflated; we add site-grouped CV); reporting only $R^2$
+(confounds level and pattern, dominated by tiny folds like Sundarbans $n=11$; we add $r$ and
+bias and lead with the median).
 
 \subsection{Area of applicability and conformal intervals}
 \textbf{Code:} \file{soc\_lodo.aoa\_di}. Importance-weighted dissimilarity index (Meyer \&
@@ -172,14 +176,22 @@ minimal transparent demonstration.
 
 \subsection{Few-shot calibration}
 \textbf{Code:} \file{fewshot\_calibration.py}. Add $k$ target-delta cores to training; also a
-\emph{local-only} baseline ($k$ cores without the global model).
+\emph{local-only} baseline ($k$ cores without the global model, fitted with ridge --- the
+appropriate small-$n$ model).
 
-\out global$+$local recovers within-delta $r$: $0.14\to0.55$ ($k{=}10$) $\to0.67$ ($k{=}25$);
-but $k$ local cores \emph{alone} give $r\approx0$. Neither global-alone nor local-alone works
---- only the combination. Global and local data are \textbf{complementary, not substitutable}.
+\out global$+$local recovers within-delta $r$: $0.14\to0.55$ ($k{=}10$) $\to0.67$ ($k{=}25$).
+A ridge model on the same $k$ cores \emph{alone} already reaches $r=0.33$ ($k{=}10$) and
+$0.44$ ($k{=}25$) --- most of the way, and far above the global model's out-of-region
+$r\approx0$. The global model still adds value, but the decisive ingredient is the local
+sample: the binding constraint for an unsampled delta is local data, not a better global map.
 
-\alt Showing only the rising global$+$local curve (reads as trivial ``data helps''); the
-local-only baseline is what makes it non-trivial. Deep transfer learning is overkill for
+\paragraph{Bug fixed.} An earlier version used a gradient-boosting tree for the local-only
+baseline; at $k\leq25$ it is degenerate (predicts $\sim$constant, $r\approx0$), which made
+local data look useless and produced an overstated ``not substitutable'' claim. Using ridge
+corrects it.
+
+\alt Showing only the rising global$+$local curve (hides whether the global model is needed);
+the local-only baseline is the honest comparison. Deep transfer learning is overkill for
 hundreds of cores.
 
 % =====================================================================

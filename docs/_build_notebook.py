@@ -114,21 +114,25 @@ md(r"""
 leakage), **T3 leave-one-delta-out** (the out-of-distribution test). The gap between T1 and
 T3 is the inflation conventional validation hides.
 
-**Outcome (live below).** T1 ≈ 0.65 → T3 median R² strongly negative. Crucially we read the
-honest, scale-invariant metric too: the **within-delta correlation** between predicted and
-observed SOC out-of-region is ≈ 0 — the model recovers neither the *level* (large bias) nor
-the *pattern* of an unsampled delta.
+**Outcome (live below).** T1 ≈ 0.65 → T3 median R² strongly negative. Two important
+honesty caveats: (a) ~51% of cores share a location, so the random-CV 0.65 is leakage-
+inflated; a **site-grouped k-fold** gives the honest in-distribution skill of ~0.16. (b)
+We read the scale-invariant metric too: the **within-delta correlation** out-of-region is
+≈ 0 — the model recovers neither the *level* (large bias) nor the *pattern* of an
+unsampled delta.
 
-**Alternatives.** (i) Report only R² — rejected, it confounds level error with pattern
-failure and is dominated by small folds; we add Pearson r and bias. (ii) A single model —
-rejected, we run ridge + gradient boosting to show the collapse is model-agnostic.
+**Alternatives.** (i) Report only random k-fold — rejected, it is leakage-inflated; we add
+site-grouped CV. (ii) Report only R² — rejected, it confounds level with pattern and is
+dominated by small folds; we add Pearson r and bias. (iii) A single model — rejected, we
+run ridge + gradient boosting to show the collapse is model-agnostic.
 """)
 code(r"""
 import soc_lodo as S
 df, feats = S.load()
 print(f"model: histogram gradient boosting | {len(feats)} covariates, {len(df)} cores")
 res = J("soc_lodo_results.json")["models"]["histgb"]
-print(f"\nT1 random k-fold R2     : {res['t1_random_r2']:+.2f}")
+print(f"\nT1 random k-fold R2     : {res['t1_random_r2']:+.2f}   (leakage-inflated by repeated sites)")
+print(f"T1 site-grouped R2      : {res.get('t1_grouped_r2'):+.2f}   <- honest in-distribution")
 print(f"T2 spatial-block R2     : {res['t2_spatialblock_r2']:+.2f}")
 print(f"T3 LODO median R2       : {res['t3_lodo_median_r2']:+.2f}   <- out-of-distribution")
 print(f"T3 LODO median Pearson r: {res.get('t3_lodo_median_pearson'):+.2f}   <- pattern (scale-invariant)")
@@ -251,21 +255,28 @@ print(f"Sanderman 2018 map  : within-delta r={pm['median_within_delta_pearson']}
 
 # ============================================================ FEW-SHOT
 md(r"""
-## Stage 2d — Few-shot calibration: global and local data are complementary
+## Stage 2d — Few-shot calibration: the binding constraint is local data
 
 **Why.** A negative result needs a constructive counterpart. We add k cores from the
 otherwise-unsampled delta and ask how skill recovers — and, critically, we add a
-**local-only baseline** (the k cores *without* the global model) to test whether the global
-model adds anything.
+**local-only baseline** (the k cores *without* the global model, fitted with a small-n
+appropriate ridge model) to test how much the global model actually adds.
 
-**Outcome.** global+k-local recovers within-delta r from 0.14 → 0.55 (k=10) → 0.67 (k=25);
-but k local cores **alone** give r ≈ 0. Neither global-alone nor local-alone works — only the
-combination. So global and local data are **complementary, not substitutable**: the global
-model supplies transferable structure that a few local cores calibrate.
+**Outcome.** global+k-local recovers within-delta r from 0.14 → 0.55 (k=10) → 0.67 (k=25).
+A ridge model on the same k local cores *alone* already reaches r=0.33 (k=10) → 0.44
+(k=25) — most of the way, and far above the global model's out-of-region r≈0. The global
+model still adds value (combined is consistently better), but the decisive ingredient is
+the local sample: the binding constraint for an unsampled delta is local data, not a
+better global map.
 
-**Alternatives.** (i) Only show global+local rising — rejected, it reads as trivially "data
-helps"; the local-only baseline is what makes the finding non-trivial. (ii) Transfer-learning
-/ fine-tuning a deep model — overkill for hundreds of cores; the additive few-shot is the
+**Note (a fixed bug).** An earlier version used a gradient-boosting tree for the
+local-only baseline; at k≤25 that model is degenerate (predicts ~constant → r≈0), which
+made local-only look useless and led to an overstated "not substitutable" claim. Using
+the right small-n model (ridge) corrected this.
+
+**Alternatives.** (i) Only show global+local rising — rejected, it hides whether the
+global model is even needed; the local-only baseline is the honest comparison. (ii)
+Transfer-learning / fine-tuning a deep model — overkill for hundreds of cores; the additive few-shot is the
 honest minimal test.
 """)
 code(r"""

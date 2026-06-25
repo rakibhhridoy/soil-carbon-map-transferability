@@ -33,6 +33,17 @@ def _fast_model():
                                          l2_regularization=1.0, random_state=SEED)
 
 
+def _local_model():
+    # appropriate model for a LOCAL-ONLY fit on k<=25 cores: a gradient-boosting tree is
+    # degenerate at that sample size (predicts ~constant), so we use ridge regression,
+    # the right small-n baseline. This is the fair test of whether local data alone suffices.
+    from sklearn.linear_model import Ridge
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.impute import SimpleImputer
+    from sklearn.pipeline import make_pipeline
+    return make_pipeline(SimpleImputer(strategy="median"), StandardScaler(), Ridge(alpha=10.0))
+
+
 def metrics(yt, yp):
     rmse = float(np.sqrt(np.mean((np.expm1(yt) - np.expm1(yp)) ** 2)))
     r = float(np.corrcoef(yt, yp)[0, 1]) if yt.std() > 0 and yp.std() > 0 else np.nan
@@ -68,9 +79,10 @@ def main():
                 mdl = _fast_model(); mdl.fit(X[np.concatenate([tr_other, shots])], y[np.concatenate([tr_other, shots])])
                 rmse, r = metrics(y[evalidx], mdl.predict(X[evalidx]))
                 dd[k]["rmse"].append(rmse); dd[k]["pearson"].append(r)
-                # LOCAL-ONLY: fit on just the k local cores (no global data)
+                # LOCAL-ONLY: fit on just the k local cores (no global data), using a
+                # small-n-appropriate model (ridge) -- the fair test of local sufficiency.
                 if k >= 5:
-                    lm = _fast_model(); lm.fit(X[shots], y[shots])
+                    lm = _local_model(); lm.fit(X[shots], y[shots])
                     rl, pl = metrics(y[evalidx], lm.predict(X[evalidx]))
                     dd[k]["rmse_loc"].append(rl); dd[k]["pearson_loc"].append(pl)
         print(f"  done {d} (n={len(te_all)})", flush=True)

@@ -88,6 +88,20 @@ def t1_random(df, feats, m, k=5):
     return r2_score(y, yp)
 
 
+def t1b_grouped(df, feats, m, k=5):
+    """Site-grouped k-fold: cores sharing a location (CCN sites sampled at multiple depths,
+    or the same 1 km covariate cell) are kept in the same fold, so no site is split between
+    train and test. ~51% of cores share a location, so the plain random k-fold (t1_random)
+    is leakage-inflated; this is the honest in-distribution baseline."""
+    from sklearn.model_selection import GroupKFold
+    X, y = df[feats].to_numpy(), df["y"].to_numpy()
+    grp = (df.lat.round(3).astype(str) + "_" + df.lon.round(3).astype(str)).to_numpy()
+    yp = np.zeros_like(y)
+    for tr, te in GroupKFold(k).split(X, y, grp):
+        yp[te] = _fit_pred(m, X[tr], y[tr], X[te])
+    return r2_score(y, yp)
+
+
 def t2_spatial_block(df, feats, m, block_deg=5.0):
     """Blocked CV: assign points to lat/lon blocks, hold out whole blocks."""
     blk = (np.floor(df.lon / block_deg).astype(int).astype(str) + "_" +
@@ -197,6 +211,7 @@ def main():
     out = {"n_cores": len(df), "n_features": len(feats), "features": feats, "models": {}}
     for m in ("ridge", "histgb"):
         t1 = t1_random(df, feats, m)
+        t1g = t1b_grouped(df, feats, m)
         t2 = t2_spatial_block(df, feats, m)
         lodo = t3_lodo(df, feats, m)
         t3_mean = float(np.mean([r["r2_lodo"] for r in lodo])) if lodo else float("nan")
@@ -205,6 +220,7 @@ def main():
             vals = [r[k] for r in lodo if r.get(k) == r.get(k)]  # drop nan
             return round(float(np.median(vals)), 3) if vals else float("nan")
         out["models"][m] = dict(t1_random_r2=round(t1, 3),
+                                t1_grouped_r2=round(t1g, 3),
                                 t2_spatialblock_r2=round(t2, 3),
                                 t3_lodo_mean_r2=round(t3_mean, 3),
                                 t3_lodo_median_r2=round(t3_med, 3),
@@ -214,7 +230,8 @@ def main():
                                 transfer_gap=round(t1 - t3_mean, 3),
                                 per_delta=lodo)
         print(f"\n=== {m} ===")
-        print(f"  T1 random k-fold R2 : {t1:.3f}")
+        print(f"  T1 random k-fold R2 : {t1:.3f}  (leakage-inflated by repeated sites)")
+        print(f"  T1 site-grouped R2  : {t1g:.3f}  <- honest in-distribution")
         print(f"  T2 spatial-block R2 : {t2:.3f}")
         print(f"  T3 LODO mean R2     : {t3_mean:.3f}   <- out-of-distribution")
         print(f"  TRANSFER GAP (T1-T3): {t1 - t3_mean:.3f}")

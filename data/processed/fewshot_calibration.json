@@ -16,19 +16,19 @@
   "5": {
    "median_rmse": 81.6,
    "median_pearson": 0.322,
-   "median_pearson_localonly": NaN,
+   "median_pearson_localonly": 0.149,
    "n_deltas": 5
   },
   "10": {
    "median_rmse": 70.1,
    "median_pearson": 0.545,
-   "median_pearson_localonly": 0.0,
+   "median_pearson_localonly": 0.329,
    "n_deltas": 5
   },
   "25": {
    "median_rmse": 62.4,
    "median_pearson": 0.671,
-   "median_pearson_localonly": -0.0,
+   "median_pearson_localonly": 0.442,
    "n_deltas": 5
   }
  },

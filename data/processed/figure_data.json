@@ -186,19 +186,19 @@
    "k": 5,
    "rmse": 81.6,
    "pearson": 0.322,
-   "pearson_local": null
+   "pearson_local": 0.149
   },
   {
    "k": 10,
    "rmse": 70.1,
    "pearson": 0.545,
-   "pearson_local": 0.0
+   "pearson_local": 0.329
   },
   {
    "k": 25,
    "rmse": 62.4,
    "pearson": 0.671,
-   "pearson_local": -0.0
+   "pearson_local": 0.442
   }
  ],
  "region": [

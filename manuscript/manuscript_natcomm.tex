@@ -159,20 +159,27 @@ four continents (Asia, Africa, North and South America) with strongly varying so
 \end{figure*}
 
 \subsection*{Standard validation overstates transferable skill}
-A gradient-boosting model that explains 65\% of SOC variance under random $k$-fold
-cross-validation ($R^2=0.65$) drops to negative skill under spatial-block
-cross-validation ($R^2=-0.69$) and to a median leave-one-delta-out $R^2$ of $-1.7$
-(Table~\ref{tab:tiers}, Fig.~\ref{fig:tiers}). Because the global $R^2$ confounds two distinct failures, getting a delta's mean level wrong and failing to reproduce its
-internal spatial pattern; we separate them (Table~\ref{tab:perdelta}). The level
-error is large: per-delta bias reaches $\pm$100--200~Mg\,ha$^{-1}$, so a model trained
-elsewhere systematically over- or under-estimates an unsampled delta's stock. More
-fundamentally, the model captures essentially \emph{none} of the within-delta spatial
-variation: the median within-delta Pearson correlation between predicted and observed
-SOC is $r=0.04$ (mean-centred $R^2$ median $=-0.14$), and individual deltas range from
-$r=0.76$ (Sundarbans) to $r=-0.52$ (Zambezi). Out of distribution, then, the model
-recovers neither the level nor the pattern of soil carbon. The contrast with the random
-$k$-fold $r$ ($\sqrt{0.65}=0.81$) is the magnitude by which conventional validation
-overstates transferable skill.
+A gradient-boosting model explains 65\% of SOC variance under random $k$-fold
+cross-validation ($R^2=0.65$), the number a conventional validation would report. That
+figure is itself inflated, because roughly half of the cores share a location (a Coastal
+Carbon Network site sampled at several depths, or the same 1~km covariate cell) and random
+$k$-fold splits those near-duplicates across train and test. Holding whole sites out
+(site-grouped $k$-fold) drops the honest in-distribution skill to $R^2=0.16$
+(Table~\ref{tab:tiers}). From there it falls further to negative skill under spatial-block
+cross-validation ($R^2=-0.69$) and to a median leave-one-delta-out $R^2$ of $-1.7$. There
+are thus two layers of inflation: repeated-site leakage lifts the reported number from
+0.16 to 0.65, and ignoring cross-delta shift makes even 0.16 unattainable out of region.
+
+Because the global $R^2$ confounds two distinct failures, getting a delta's mean level
+wrong and failing to reproduce its internal spatial pattern, we separate them
+(Table~\ref{tab:perdelta}). The level error is large: per-delta bias reaches
+$\pm$100--200~Mg\,ha$^{-1}$, so a model trained elsewhere systematically over- or
+under-estimates an unsampled delta's stock. More fundamentally, the model captures
+essentially \emph{none} of the within-delta spatial variation: the median within-delta
+Pearson correlation between predicted and observed SOC is $r=0.04$ (mean-centred $R^2$
+median $=-0.14$), and individual deltas range from $r=0.76$ (Sundarbans) to $r=-0.52$
+(Zambezi). Out of distribution, then, the model recovers neither the level nor the pattern
+of soil carbon.
 
 \begin{table*}[t]
 \centering
@@ -429,24 +436,25 @@ the area of applicability.}
 \input{tables/tab_crediting}
 \end{table*}
 
-\subsection*{Global and local data are complementary, not substitutable}
+\subsection*{A few local cores recover most of the lost skill}
 The transferability limit is not a counsel of despair but a quantifiable data
-requirement, and one whose resolution is non-trivial. We measured how skill changes when
-a small number of cores from the otherwise-unsampled target delta are added to training
-(Fig.~\ref{fig:fewshot}, Table~\ref{tab:fewshot}): for each held-out delta (restricted to
-the five with enough cores to spare) we moved $k$ randomly chosen local cores into the
-training set and evaluated on the remainder, averaged over repeated draws. Adding local
-cores to the global model raises the median within-delta correlation from $r=0.14$ at
-$k=0$ (pure leave-one-delta-out) to $0.55$ at $k=10$ and $0.67$ at $k=25$, while median
-RMSE falls from 76 to 62~Mg\,ha$^{-1}$. Crucially, this is not simply because local data
-help: a model fitted on the same $k$ local cores \emph{alone}, without the global data,
-achieves a within-delta correlation of essentially zero at $k=10$ and $k=25$. Neither the
-global model alone nor a handful of local cores alone predicts within-delta carbon; only
-their combination does. Global and local data are therefore complementary rather than
-substitutable, with the global model supplying transferable structure that the few local
-cores calibrate. This identifies a practical middle path, on the order of ten to
-twenty-five local cores, between an untrustworthy global prediction and a full local
-inventory.
+requirement. We measured how skill changes when a small number of cores from the
+otherwise-unsampled target delta are added to training (Fig.~\ref{fig:fewshot},
+Table~\ref{tab:fewshot}): for each held-out delta (restricted to the five with enough
+cores to spare) we moved $k$ randomly chosen local cores into the training set and
+evaluated on the remainder, averaged over repeated draws. Adding local cores to the
+global model raises the median within-delta correlation from $r=0.14$ at $k=0$ (pure
+leave-one-delta-out) to $0.55$ at $k=10$ and $0.67$ at $k=25$, while median RMSE falls
+from 76 to 62~Mg\,ha$^{-1}$. The recovered skill comes overwhelmingly from the local
+data, not from transfer: a simple model (ridge regression, appropriate at this sample
+size) fitted on the same $k$ local cores \emph{alone}, with no global data, already
+reaches $r=0.33$ at $k=10$ and $0.44$ at $k=25$ -- most of the way to the combined model,
+and far above the global model's out-of-region $r\approx0$. The global model still adds
+value (the combination is consistently better), but the decisive ingredient is the local
+sample. On the order of ten to twenty-five local cores therefore defines a practical
+middle path between an untrustworthy global prediction and a full local inventory, and
+underlines that the binding constraint for an unsampled delta is local data rather than a
+better global map.
 
 \begin{figure}[t]
 \centering
@@ -461,8 +469,9 @@ training. Even a handful of local cores substantially improves transferable skil
 \centering
 \caption{Few-shot calibration: median skill over held-out deltas as $k$ local cores are
 added to training (20 random draws each). The global model with $k$ local cores recovers
-within-delta skill, whereas a model fitted on the same $k$ cores alone does not, showing
-that global and local data are complementary.}
+within-delta skill; a simple model fitted on the same $k$ cores alone (ridge) recovers
+most of it, far exceeding the global model's out-of-region skill, so the binding
+constraint is local data rather than transfer.}
 \label{tab:fewshot}
 \input{tables/tab_fewshot}
 \end{table*}

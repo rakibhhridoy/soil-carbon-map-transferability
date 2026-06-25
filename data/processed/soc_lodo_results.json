@@ -34,6 +34,7 @@
  "models": {
   "ridge": {
    "t1_random_r2": 0.309,
+   "t1_grouped_r2": 0.096,
    "t2_spatialblock_r2": -0.087,
    "t3_lodo_mean_r2": -2.43,
    "t3_lodo_median_r2": -2.05,
@@ -142,6 +143,7 @@
   },
   "histgb": {
    "t1_random_r2": 0.652,
+   "t1_grouped_r2": 0.163,
    "t2_spatialblock_r2": -0.687,
    "t3_lodo_mean_r2": -5.804,
    "t3_lodo_median_r2": -1.713,
