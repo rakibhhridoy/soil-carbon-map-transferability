@@ -28,7 +28,7 @@ def main():
         if te.sum() < 5:
             continue
         m = S.models()["histgb"]; m.fit(X[~te], y[~te])
-        imp = getattr(m, "feature_importances_", None)
+        imp = S.model_importance(m, X[~te], y[~te])
         rec = {"delta": d}
         for mu in mults:
             _, _, inside = S.aoa_di(X[~te], X[te], imp, thr_mult=mu)

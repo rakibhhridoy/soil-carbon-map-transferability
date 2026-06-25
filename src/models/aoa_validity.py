@@ -28,7 +28,7 @@ rng = np.random.default_rng(SEED)
 
 def fit_imp(Xtr, ytr):
     m = S.models()["histgb"]; m.fit(Xtr, ytr)
-    return getattr(m, "feature_importances_", None)
+    return S.model_importance(m, Xtr, ytr)   # permutation importance for HistGB
 
 
 def main():

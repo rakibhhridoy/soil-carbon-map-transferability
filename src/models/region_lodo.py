@@ -49,7 +49,7 @@ def main():
         r2 = r2_score(yt, yp)
         rmse = float(np.sqrt(mean_squared_error(np.expm1(yt), np.expm1(yp))))
         pear = float(np.corrcoef(yt, yp)[0, 1]) if yt.std() > 0 and yp.std() > 0 else np.nan
-        imp = getattr(mdl, "feature_importances_", None)
+        imp = S.model_importance(mdl, X[tr], y[tr])
         _, _, inside = S.aoa_di(X[tr], X[te], imp)
         rows.append(dict(region=r, continent=cont.get(r, ""), n=int(te.sum()),
                          r2=round(r2, 3), pearson=round(pear, 3),

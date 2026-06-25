@@ -51,6 +51,28 @@ def models():
     }
 
 
+def model_importance(mdl, X, y, n_repeats=2, max_samples=300):
+    """Feature importances for the AoA weighting (Meyer & Pebesma 2021).
+    Prefer the model's native importances; otherwise fall back to permutation importance,
+    which works for any fitted estimator (HistGradientBoosting has no feature_importances_).
+    Permutation importance is evaluated on a small random subsample with few repeats: it
+    is only a per-feature WEIGHTING for the dissimilarity index, and the AoA verdict is
+    insensitive to it (the unweighted and weighted DI give the same zero coverage, and the
+    threshold sweep confirms robustness). Returns a non-negative vector, or None."""
+    fi = getattr(mdl, "feature_importances_", None)
+    if fi is not None:
+        return np.asarray(fi)
+    try:
+        from sklearn.inspection import permutation_importance
+        if len(X) > max_samples:
+            sub = np.random.default_rng(SEED).choice(len(X), max_samples, replace=False)
+            X, y = X[sub], y[sub]
+        pi = permutation_importance(mdl, X, y, n_repeats=n_repeats, random_state=SEED)
+        return np.clip(pi.importances_mean, 0, None)
+    except Exception:
+        return None
+
+
 def _fit_pred(m, Xtr, ytr, Xte):
     mdl = models()[m]
     mdl.fit(Xtr, ytr)
@@ -144,7 +166,7 @@ def t3_lodo(df, feats, m, alpha=0.1):
         hw = conformal_interval(resid_cal, alpha)
         cov = float(np.mean(np.abs(yte - yp) <= hw))
 
-        imp = getattr(mdl, "feature_importances_", None)
+        imp = model_importance(mdl, Xtr[fit], ytr[fit])
         _, _, inside = aoa_di(Xtr, Xte, imp)
 
         # back-transform metrics to Mg/ha

@@ -196,7 +196,7 @@ tidal feature sets.
 
 This zero-coverage result is not a mechanical consequence of having few training deltas.
 When instead we hold out a random 20\% of cores drawn from across the (still-seen)
-training deltas, 96\% of them fall \emph{inside} the AOA, whereas both spatial-block and
+training deltas, 82\% of them fall \emph{inside} the AOA, whereas both spatial-block and
 whole-delta holdouts give 0\% (Supplementary Information). The applicability threshold
 therefore correctly recognises familiar environment and flags only genuinely novel
 locations; that whole deltas are uniformly outside it reflects real separation of deltas
@@ -298,7 +298,7 @@ If transfer failed simply because held-out deltas were environmentally distant, 
 \emph{magnitude} of covariate shift should predict the \emph{magnitude} of error. It
 does not: across the eight folds, neither the mean dissimilarity index nor the
 multivariate energy distance correlates with LODO error in the expected direction
-(Spearman $\rho=+0.24$, $p=0.57$ for dissimilarity vs.\ $R^2$; $\rho=-0.38$, $p=0.35$
+(Spearman $\rho=+0.19$, $p=0.65$ for dissimilarity vs.\ $R^2$; $\rho=-0.38$, $p=0.35$
 for energy distance vs.\ RMSE). With only eight folds this test is underpowered, so we
 treat it as inconclusive rather than a true null. Instead, the dominant failure mode is
 \emph{concept shift}, a change in the environment--carbon relationship itself between
@@ -599,10 +599,11 @@ Mg\,ha$^{-1}$.
 For each held-out delta we computed the area of applicability following
 \citet{meyer2021}, part of a broader recognition that global machine-learning maps
 require explicit applicability assessment \citep{meyer2022}: features are standardized
-and weighted by model importance, and the
-dissimilarity index (DI) of each test point is its importance-weighted distance to the
-nearest training point, normalised by the mean nearest-neighbour distance within the
-training data. The applicability threshold is the boxplot upper whisker of the training
+and weighted by model importance (permutation importance, since the gradient-boosting
+model exposes no native importances), and the dissimilarity index (DI) of each test point
+is its importance-weighted distance to the nearest training point, normalised by the mean
+nearest-neighbour distance within the training data. The result is unchanged if the
+weighting is omitted (the unweighted DI gives the same zero coverage for every delta). The applicability threshold is the boxplot upper whisker of the training
 DI distribution (the third quartile plus 1.5 times the interquartile range), the
 outlier-aware maximum used by the CAST implementation \citep{meyer2021}, and we report
 the fraction of each held-out delta falling below it (inside the AOA). Because every
