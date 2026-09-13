@@ -50,7 +50,7 @@ def main():
         rmse = float(np.sqrt(mean_squared_error(np.expm1(yt), np.expm1(yp))))
         pear = float(np.corrcoef(yt, yp)[0, 1]) if yt.std() > 0 and yp.std() > 0 else np.nan
         imp = S.model_importance(mdl, X[tr], y[tr])
-        _, _, inside = S.aoa_di(X[tr], X[te], imp)
+        _, _, inside = S.aoa_di(X[tr], X[te], imp, groups=S.site_groups(df.loc[tr]))
         rows.append(dict(region=r, continent=cont.get(r, ""), n=int(te.sum()),
                          r2=round(r2, 3), pearson=round(pear, 3),
                          rmse_Mgha=round(rmse, 1), aoa_inside=round(inside, 2)))
@@ -61,15 +61,23 @@ def main():
     yp_cv = cross_val_predict(S.models()["histgb"], X, y, cv=5)
     t1 = r2_score(y, yp_cv)
 
+    def boot_med_ci(a, B=20000, seed=0):
+        rng = np.random.default_rng(seed); a = np.asarray(a, float); a = a[~np.isnan(a)]
+        meds = [np.median(rng.choice(a, len(a), replace=True)) for _ in range(B)]
+        return [round(float(np.percentile(meds, 2.5)), 3), round(float(np.percentile(meds, 97.5)), 3)]
+
     summary = dict(
         n_regions=len(rdf), n_continents=int(rdf.continent.nunique()),
         t1_random_r2=round(t1, 3),
         lodo_median_r2=round(float(rdf.r2.median()), 3),
         lodo_mean_r2=round(float(rdf.r2.mean()), 3),
         lodo_median_pearson=round(float(rdf.pearson.median()), 3),
+        lodo_median_pearson_ci=boot_med_ci(rdf.pearson),
         median_aoa_inside=round(float(rdf.aoa_inside.median()), 3),
+        median_aoa_inside_ci=boot_med_ci(rdf.aoa_inside),
         frac_regions_negative_r2=round(float((rdf.r2 < 0).mean()), 2),
         frac_regions_pearson_below_0p2=round(float((rdf.pearson < 0.2).mean()), 2),
+        frac_regions_pearson_above_0p2=round(float((rdf.pearson > 0.2).mean()), 2),
         transfer_gap=round(t1 - float(rdf.r2.median()), 3),
     )
     out = {"summary": summary, "per_region": rows}

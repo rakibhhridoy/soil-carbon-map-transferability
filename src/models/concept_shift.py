@@ -2,8 +2,9 @@
 differ between deltas, beyond differences in mean level (covariate/level shift)?
 
 We compare two linear models on a handful of interpretable, standardized covariates,
-using grouped cross-validation (hold out whole deltas is not possible here since we are
-asking about within-delta relationships, so we use repeated within-delta splits):
+using repeated site-grouped cross-validation within the pooled deltas (cores sharing a
+location stay in the same fold, so a held-out core is never predicted from its co-located
+siblings; holding out whole deltas is not possible because the question is within-delta):
 
   M_shared : per-delta intercept + SHARED slopes  (allows level offset only)
   M_local  : per-delta intercept + per-delta slopes (allows the relationship to differ)
@@ -40,6 +41,9 @@ def main():
     counts = df.delta_id.value_counts()
     keep = counts[counts >= MIN_N].index.tolist()
     df = df[df.delta_id.isin(keep)].reset_index(drop=True)
+    # within-delta spread of each covariate relative to its spread across the pooled deltas
+    raw_sd = df.groupby("delta_id")[COVS].std() / df[COVS].std()
+    nuniq = df.groupby("delta_id")[COVS].nunique()
     # standardize covariates globally
     Z = (df[COVS] - df[COVS].mean()) / (df[COVS].std() + 1e-9)
     df[COVS] = Z
@@ -79,9 +83,13 @@ def main():
         return te.y.to_numpy(), pred_s, pred_l
 
     r2s_sh, r2s_lo = [], []
+    site = S.site_groups(df)
+    usite = np.unique(site)
     for rep in range(20):
-        idx = rng.permutation(len(df))
-        folds = np.array_split(idx, 5)
+        order = rng.permutation(len(usite))
+        fold_of = dict(zip(usite[order], np.arange(len(usite)) % 5))
+        f = np.array([fold_of[x] for x in site])
+        folds = [np.where(f == k)[0] for k in range(5)]
         ys, ps, pl = [], [], []
         for k in range(5):
             test_idx = folds[k]; train_idx = np.concatenate([folds[j] for j in range(5) if j != k])
@@ -95,13 +103,18 @@ def main():
                r2_shared_slopes=round(float(np.mean(r2s_sh)), 3),
                r2_local_slopes=round(float(np.mean(r2s_lo)), 3),
                r2_gain=round(float(np.mean(r2s_lo) - np.mean(r2s_sh)), 3),
-               per_delta_slopes=slopes)
+               per_delta_slopes=slopes,
+               cv_design="repeated site-grouped 5-fold (20 repeats)",
+               within_delta_sd_ratio={d: {c: round(float(raw_sd.loc[d, c]), 4) for c in COVS}
+                                      for d in deltas},
+               within_delta_n_unique={d: {c: int(nuniq.loc[d, c]) for c in COVS} for d in deltas})
     res["verdict"] = (
         "Concept shift confirmed: allowing per-delta slopes improves held-out within-delta "
         "prediction over shared slopes, and per-delta slopes flip sign across deltas -- the "
         "environment-carbon relationship itself differs between deltas."
         if res["r2_gain"] > 0.02 else
-        "Per-delta slopes do not clearly beat shared slopes in this comparison.")
+        "Per-delta slopes do not beat shared slopes under site-grouped CV: the fitted "
+        "per-delta relationships do not generalise to new sites within the same delta.")
     (ROOT / "data/processed/concept_shift.json").write_text(json.dumps(res, indent=1))
 
     print(f"\nCV within-delta R2: shared slopes={res['r2_shared_slopes']}  "

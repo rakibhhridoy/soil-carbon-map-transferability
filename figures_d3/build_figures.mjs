@@ -101,25 +101,34 @@ function figMap() {
       .text(d.name);
   });
 
-  // size legend
-  const lx = m.l + 8, ly = H - 70;
-  svg.append("text").attr("x", lx).attr("y", ly - 8).attr("font-size", 10)
+  // size legend: circles bottom-aligned on a common baseline so labels clear the
+  // largest circle; horizontal spacing scaled to the largest radius.
+  const sizes = [500, 2000, 6000];
+  const maxR = r(d3.max(sizes));
+  const lx = m.l + 8 + maxR, baseY = H - 30;       // baseline circles sit on
+  svg.append("text").attr("x", m.l + 8).attr("y", baseY - 2 * maxR - 8).attr("font-size", 10)
      .attr("fill", AXIS).text("mangrove area (km²)");
-  [500, 2000, 6000].forEach((v, i) => {
-    const cx = lx + 14 + i * 52;
-    svg.append("circle").attr("cx", cx).attr("cy", ly + 14).attr("r", r(v))
+  let cx = lx;
+  sizes.forEach((v, i) => {
+    const rr = r(v);
+    if (i > 0) cx += r(sizes[i - 1]) + rr + 12;     // gap = both radii + padding
+    svg.append("circle").attr("cx", cx).attr("cy", baseY - rr).attr("r", rr)
        .attr("fill", "none").attr("stroke", AXIS).attr("stroke-width", 0.8);
-    svg.append("text").attr("x", cx).attr("y", ly + 36).attr("text-anchor", "middle")
+    svg.append("text").attr("x", cx).attr("y", baseY + 13).attr("text-anchor", "middle")
        .attr("font-size", 9).attr("fill", AXIS).text(v);
   });
-  // color legend
+  // color legend. Drawn as discrete solid-colour strips rather than an SVG gradient:
+  // axial-shading PDFs from rsvg-convert do not survive embedding via \includegraphics
+  // (the shading is dropped, leaving a flat fill), so plain rects are used instead.
   const gw = 150, gx = W - m.r - gw - 8, gy = H - 52;
-  const defs = svg.append("defs");
-  const grad = defs.append("linearGradient").attr("id", "soc").attr("x1", "0").attr("x2", "1");
-  d3.range(0, 1.01, 0.1).forEach(t =>
-    grad.append("stop").attr("offset", `${t * 100}%`).attr("stop-color", SEQ(t)));
+  const nStrip = 60, sw = gw / nStrip;
+  d3.range(nStrip).forEach(i => {
+    svg.append("rect").attr("x", gx + i * sw).attr("y", gy)
+       .attr("width", sw + 0.6).attr("height", 10)
+       .attr("fill", SEQ((i + 0.5) / nStrip)).attr("stroke", "none");
+  });
   svg.append("rect").attr("x", gx).attr("y", gy).attr("width", gw).attr("height", 10)
-     .attr("fill", "url(#soc)").attr("stroke", AXIS).attr("stroke-width", 0.5);
+     .attr("fill", "none").attr("stroke", AXIS).attr("stroke-width", 0.5);
   svg.append("text").attr("x", gx).attr("y", gy - 5).attr("font-size", 10).attr("fill", AXIS)
      .text("median SOC₀₋₁₀₀ (Mg ha⁻¹)");
   [cext[0], cext[1]].forEach((v, i) =>
@@ -130,52 +139,109 @@ function figMap() {
 }
 
 // =================================================================== fig_tiers
+// Story: a model's apparent skill collapses as the validation tier becomes more
+// honest about spatial / delta structure. Gradient boosting is the headline (bold
+// bars + value labels); ridge is overlaid; at the leave-one-delta-out tier the eight
+// per-delta R2 values are shown as points to expose the spread. An annotation marks
+// the inflation between the conventionally-reported number and the honest one.
 function figTiers() {
-  const W = 440, H = 320, m = { t: 36, r: 14, b: 56, l: 50 };
+  const W = 520, H = 360, m = { t: 60, r: 16, b: 64, l: 52 };
   const { dom, svg } = svgRoot(W, H);
   const defs = svg.append("defs");
-  title(svg, m.l - 34, 22, "Skill collapses out-of-distribution");
-  const tiers = [["t1", "Random\nk-fold"], ["t2", "Spatial\nblock"], ["t3", "LODO\n(median)"]];
-  const models = [["ridge", OI.blue], ["histgb", OI.vermillion]];
-  const fill = { ridge: hatch(defs, "h-ridge", OI.blue, 45),
-                 histgb: hatch(defs, "h-histgb", OI.vermillion, -45) };
-  const x0 = d3.scaleBand().domain(tiers.map(t => t[0])).range([m.l, W - m.r]).padding(0.3);
-  const x1 = d3.scaleBand().domain(models.map(d => d[0])).range([0, x0.bandwidth()]).padding(0.12);
-  const vals = models.flatMap(([mm]) => tiers.map(([t]) => DATA.tiers[mm][t]));
-  const y = d3.scaleLinear().domain([Math.min(-2, d3.min(vals)) - 0.2, Math.max(0.8, d3.max(vals))])
-              .nice().range([H - m.b, m.t]);
+  title(svg, m.l - 36, 22, "Apparent skill collapses out-of-distribution");
+  svg.append("text").attr("x", m.l - 36).attr("y", 38).attr("font-size", 10.5)
+     .attr("fill", AXIS).text("gradient-boosting R² under progressively honest validation");
 
-  svg.append("g").attr("transform", `translate(${m.l},0)`)
-     .call(d3.axisLeft(y).ticks(6)).call(axisStyle);
+  const tiers = [["t1", "Random", "k-fold"], ["t1g", "Site-grouped", "k-fold"],
+                 ["t2", "Spatial", "block"], ["t3", "Leave-one-", "delta-out"]];
+  const FLOOR = -2.4;                       // y-axis floor; clip extreme per-delta points
+  const fillH = hatch(defs, "h-tier", OI.vermillion, -45);
+  const x0 = d3.scaleBand().domain(tiers.map(t => t[0])).range([m.l, W - m.r]).padding(0.34);
+  const y = d3.scaleLinear().domain([FLOOR, 0.8]).range([H - m.b, m.t]);
+
+  // shaded "conventionally reported" vs "honest" zones
+  svg.append("rect").attr("x", m.l).attr("y", m.t).attr("width", x0("t1g") - m.l)
+     .attr("height", H - m.b - m.t).attr("fill", "#f0f6fb");
+  svg.append("text").attr("x", (m.l + x0("t1g")) / 2).attr("y", m.t - 6)
+     .attr("text-anchor", "middle").attr("font-size", 9.5).attr("fill", OI.blue)
+     .text("conventionally reported");
+
   svg.selectAll(".grid").data(y.ticks(6)).join("line").attr("class", "grid")
      .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => y(d)).attr("y2", d => y(d))
      .attr("stroke", GRID).attr("stroke-width", 0.5);
+  svg.append("g").attr("transform", `translate(${m.l},0)`)
+     .call(d3.axisLeft(y).ticks(6)).call(axisStyle);
   svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
      .attr("stroke", INK).attr("stroke-width", 1);
   svg.append("text").attr("x", 14).attr("y", (m.t + H - m.b) / 2)
      .attr("transform", `rotate(-90,14,${(m.t + H - m.b) / 2})`)
      .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", INK).text("R²");
 
-  tiers.forEach(([t, lab]) => {
-    models.forEach(([mm, col]) => {
-      const v = DATA.tiers[mm][t];
-      const xx = x0(t) + x1(mm), yy = v >= 0 ? y(v) : y(0);
-      svg.append("rect").attr("x", xx).attr("y", yy).attr("width", x1.bandwidth())
-         .attr("height", Math.abs(y(v) - y(0))).attr("fill", fill[mm])
-         .attr("stroke", col).attr("stroke-width", 0.8);
-    });
-    lab.split("\n").forEach((ln, i) =>
-      svg.append("text").attr("x", x0(t) + x0.bandwidth() / 2).attr("y", H - m.b + 16 + i * 12)
-         .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", INK).text(ln));
+  // gradient-boosting bars with value labels
+  tiers.forEach(([t, l1, l2]) => {
+    const v = DATA.tiers.histgb[t];
+    const xx = x0(t), bw = x0.bandwidth();
+    svg.append("rect").attr("x", xx).attr("y", v >= 0 ? y(v) : y(0)).attr("width", bw)
+       .attr("height", Math.abs(y(Math.max(v, FLOOR)) - y(0)))
+       .attr("fill", fillH).attr("stroke", OI.vermillion).attr("stroke-width", 0.9);
+    svg.append("text").attr("x", xx + bw / 2).attr("y", v >= 0 ? y(v) - 5 : y(v) + 13)
+       .attr("text-anchor", "middle").attr("font-size", 11).attr("font-weight", "bold")
+       .attr("fill", INK).text(d3.format("+.2f")(v));
+    [l1, l2].forEach((ln, i) =>
+      svg.append("text").attr("x", xx + bw / 2).attr("y", H - m.b + 16 + i * 12)
+         .attr("text-anchor", "middle").attr("font-size", 10.5).attr("fill", INK).text(ln));
   });
+
+  // ridge overlaid as a line across tiers (secondary model)
+  const lr = d3.line().x(d => x0(d) + x0.bandwidth() / 2)
+                .y(d => y(Math.max(DATA.tiers.ridge[d], FLOOR)));
+  svg.append("path").attr("d", lr(tiers.map(t => t[0]))).attr("fill", "none")
+     .attr("stroke", OI.blue).attr("stroke-width", 1.6).attr("stroke-dasharray", "4 3");
+  tiers.forEach(([t]) => svg.append("circle").attr("cx", x0(t) + x0.bandwidth() / 2)
+     .attr("cy", y(Math.max(DATA.tiers.ridge[t], FLOOR))).attr("r", 2.8).attr("fill", OI.blue));
+
+  // per-delta LODO R2 points (jittered) at the LODO tier, clipped to floor
+  const jit = d3.randomNormal.source(d3.randomLcg(11))(0, x0.bandwidth() / 8);
+  let clipped = 0;
+  (DATA.perdelta || []).forEach(d => {
+    const cx = x0("t3") + x0.bandwidth() / 2 + jit();
+    const off = d.r2 < FLOOR; if (off) clipped++;
+    const cy = y(Math.max(d.r2, FLOOR));
+    svg.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 2.6)
+       .attr("fill", off ? "none" : "#333").attr("stroke", "#333").attr("stroke-width", 0.8)
+       .attr("fill-opacity", 0.55);
+  });
+  svg.append("text").attr("x", x0("t3") + x0.bandwidth() / 2).attr("y", H - m.b - 4)
+     .attr("text-anchor", "middle").attr("font-size", 8.5).attr("fill", "#555")
+     .text(`8 deltas${clipped ? ` (${clipped} below axis)` : ""}`);
+
+  // inflation callout: a short arrow from the random-kfold bar top to the LODO bar
+  defs.append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10")
+     .attr("refX", 8).attr("refY", 5).attr("markerWidth", 6).attr("markerHeight", 6)
+     .attr("orient", "auto").append("path").attr("d", "M0,0 L10,5 L0,10 z").attr("fill", INK);
+  const cxText = (x0("t2") + x0.bandwidth() / 2);
+  svg.append("text").attr("x", cxText).attr("y", y(-1.0)).attr("text-anchor", "middle")
+     .attr("font-size", 10).attr("font-style", "italic").attr("fill", INK)
+     .text("conventional validation");
+  svg.append("text").attr("x", cxText).attr("y", y(-1.0) + 13).attr("text-anchor", "middle")
+     .attr("font-size", 10).attr("font-style", "italic").attr("fill", INK)
+     .text("inflates skill 0.65 → −1.71");
+  svg.append("path")
+     .attr("d", `M${cxText + 70},${y(-1.05)} C${x0("t3") - 6},${y(-1.05)} ${x0("t3") - 6},${y(-1.5)} ${x0("t3") + 6},${y(-1.6)}`)
+     .attr("fill", "none").attr("stroke", INK).attr("stroke-width", 1).attr("marker-end", "url(#arr)");
+
   // legend
-  models.forEach(([mm, col], i) => {
-    const lx = W - m.r - 96, ly = m.t + 4 + i * 16;
-    svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11)
-       .attr("fill", fill[mm]).attr("stroke", col).attr("stroke-width", 0.8);
-    svg.append("text").attr("x", lx + 16).attr("y", ly).attr("font-size", 11).attr("fill", INK)
-       .text(mm === "histgb" ? "gradient boosting" : "ridge");
-  });
+  svg.append("rect").attr("x", W - m.r - 150).attr("y", m.t + 2).attr("width", 11).attr("height", 11)
+     .attr("fill", fillH).attr("stroke", OI.vermillion).attr("stroke-width", 0.9);
+  svg.append("text").attr("x", W - m.r - 135).attr("y", m.t + 11).attr("font-size", 10).attr("fill", INK)
+     .text("gradient boosting");
+  svg.append("line").attr("x1", W - m.r - 150).attr("x2", W - m.r - 139).attr("y1", m.t + 24).attr("y2", m.t + 24)
+     .attr("stroke", OI.blue).attr("stroke-width", 1.6).attr("stroke-dasharray", "4 3");
+  svg.append("text").attr("x", W - m.r - 135).attr("y", m.t + 27).attr("font-size", 10).attr("fill", INK).text("ridge");
+  svg.append("circle").attr("cx", W - m.r - 145).attr("cy", m.t + 38).attr("r", 2.6)
+     .attr("fill", "#333").attr("fill-opacity", 0.55).attr("stroke", "#333").attr("stroke-width", 0.8);
+  svg.append("text").attr("x", W - m.r - 135).attr("y", m.t + 41).attr("font-size", 10).attr("fill", INK)
+     .text("per-delta (LODO)");
   save(dom, "fig_tiers");
 }
 
@@ -220,56 +286,102 @@ function figAoa() {
      .call(d3.axisBottom(x2).ticks(3).tickFormat(d3.format(".0%"))).call(axisStyle);
   svg.append("text").attr("x", bx + panelW / 2).attr("y", H - 8).attr("text-anchor", "middle")
      .attr("font-size", 11).attr("fill", INK).text("fraction inside AOA");
-  svg.append("text").attr("x", bx + panelW / 2).attr("y", (m.t + H - m.b) / 2)
-     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#777")
-     .text("all deltas ≈ 0%");
+  if (d3.max(DATA.perdelta, d => d.aoa) < 0.01)
+    svg.append("text").attr("x", bx + panelW / 2).attr("y", (m.t + H - m.b) / 2)
+       .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#777")
+       .text("all deltas ≈ 0%");
   save(dom, "fig_aoa");
 }
 
 // ================================================================= fig_fewshot
+// Story: within-delta skill (correlation) is the star. From the pure leave-one-delta-out
+// baseline (k=0), adding a handful of local cores recovers most of the lost skill. The
+// shaded band is the skill recovered over that baseline; a local-only ridge shows the
+// recovery is driven by the local data, not transfer. RMSE is a secondary right-axis line.
 function figFewshot() {
   if (!DATA.fewshot) return;
-  const W = 460, H = 330, m = { t: 36, r: 54, b: 48, l: 56 };
+  const W = 520, H = 360, m = { t: 56, r: 58, b: 52, l: 56 };
   const { dom, svg } = svgRoot(W, H);
-  title(svg, m.l - 40, 22, "Few-shot calibration of an unsampled delta");
+  title(svg, m.l - 40, 22, "A few local cores recover most of the lost skill");
+  svg.append("text").attr("x", m.l - 40).attr("y", 38).attr("font-size", 10.5)
+     .attr("fill", AXIS).text("within-delta correlation for an otherwise-unsampled delta");
   const fs = DATA.fewshot;
+  const base = fs[0].pearson;                      // k=0 pure-LODO baseline
   const x = d3.scaleLinear().domain(d3.extent(fs, d => d.k)).range([m.l, W - m.r]);
-  const yL = d3.scaleLinear().domain([0, d3.max(fs, d => d.rmse) * 1.1]).nice().range([H - m.b, m.t]);
-  const yR = d3.scaleLinear().domain([0, 1]).range([H - m.b, m.t]);
+  const yP = d3.scaleLinear().domain([0, 0.75]).range([H - m.b, m.t]);
+  const yR = d3.scaleLinear().domain([55, d3.max(fs, d => d.rmse) * 1.04]).nice().range([H - m.b, m.t]);
 
-  svg.selectAll(".grid").data(yL.ticks(5)).join("line").attr("class", "grid")
-     .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => yL(d)).attr("y2", d => yL(d))
+  svg.selectAll(".grid").data(yP.ticks(6)).join("line").attr("class", "grid")
+     .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => yP(d)).attr("y2", d => yP(d))
      .attr("stroke", GRID).attr("stroke-width", 0.5);
-  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(yL).ticks(5)).call(axisStyle);
-  svg.append("g").attr("transform", `translate(${W - m.r},0)`).call(d3.axisRight(yR).ticks(5)).call(axisStyle);
-  svg.append("g").attr("transform", `translate(0,${H - m.b})`).call(d3.axisBottom(x).ticks(fs.length)).call(axisStyle);
-  svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 8).attr("text-anchor", "middle")
-     .attr("font-size", 11).attr("fill", INK).text("local calibration cores k");
-  svg.append("text").attr("x", 14).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,14,${(m.t + H - m.b) / 2})`)
-     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.vermillion).text("RMSE (Mg ha⁻¹)");
-  svg.append("text").attr("x", W - 12).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,${W - 12},${(m.t + H - m.b) / 2})`)
-     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.blue).text("within-delta r");
 
-  const lineR = d3.line().x(d => x(d.k)).y(d => yL(d.rmse));
-  const lineP = d3.line().x(d => x(d.k)).y(d => yR(d.pearson));
-  // local-only correlation (where defined): the baseline that stays near zero
+  // recovered-skill band: between the k=0 baseline and the global+local curve
+  const areaP = d3.area().x(d => x(d.k)).y0(yP(base)).y1(d => yP(d.pearson));
+  svg.append("path").attr("d", areaP(fs)).attr("fill", OI.blue).attr("fill-opacity", 0.12);
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", yP(base)).attr("y2", yP(base))
+     .attr("stroke", OI.blue).attr("stroke-width", 0.8).attr("stroke-dasharray", "2 3");
+
+  // axes
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(yP).ticks(6)).call(axisStyle);
+  svg.append("g").attr("transform", `translate(${W - m.r},0)`).call(d3.axisRight(yR).ticks(5)).call(axisStyle);
+  svg.append("g").attr("transform", `translate(0,${H - m.b})`)
+     .call(d3.axisBottom(x).tickValues(fs.map(d => d.k))).call(axisStyle);
+  svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 10).attr("text-anchor", "middle")
+     .attr("font-size", 11).attr("fill", INK).text("local calibration cores k");
+  svg.append("text").attr("x", 15).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,15,${(m.t + H - m.b) / 2})`)
+     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.blue).text("within-delta r");
+  svg.append("text").attr("x", W - 13).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,${W - 13},${(m.t + H - m.b) / 2})`)
+     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.vermillion).text("RMSE (Mg ha⁻¹)");
+
   const loc = fs.filter(d => d.pearson_local != null && !Number.isNaN(d.pearson_local));
-  const lineLoc = d3.line().x(d => x(d.k)).y(d => yR(d.pearson_local));
-  svg.append("path").attr("d", lineR(fs)).attr("fill", "none").attr("stroke", OI.vermillion).attr("stroke-width", 2);
-  svg.append("path").attr("d", lineP(fs)).attr("fill", "none").attr("stroke", OI.blue)
-     .attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
-  if (loc.length) svg.append("path").attr("d", lineLoc(loc)).attr("fill", "none")
-     .attr("stroke", OI.grey).attr("stroke-width", 1.6).attr("stroke-dasharray", "2 2");
-  fs.forEach(d => {
-    svg.append("circle").attr("cx", x(d.k)).attr("cy", yL(d.rmse)).attr("r", 3.2).attr("fill", OI.vermillion);
-    svg.append("rect").attr("x", x(d.k) - 3).attr("y", yR(d.pearson) - 3).attr("width", 6).attr("height", 6).attr("fill", OI.blue);
-  });
-  loc.forEach(d => svg.append("circle").attr("cx", x(d.k)).attr("cy", yR(d.pearson_local))
-     .attr("r", 2.6).attr("fill", OI.grey));
+  const lineP = d3.line().x(d => x(d.k)).y(d => yP(d.pearson));
+  const lineLoc = d3.line().x(d => x(d.k)).y(d => yP(d.pearson_local));
+  const lineR = d3.line().x(d => x(d.k)).y(d => yR(d.rmse));
+
+  // RMSE secondary (faint)
+  svg.append("path").attr("d", lineR(fs)).attr("fill", "none").attr("stroke", OI.vermillion)
+     .attr("stroke-width", 1.4).attr("stroke-opacity", 0.55);
+  fs.forEach(d => svg.append("circle").attr("cx", x(d.k)).attr("cy", yR(d.rmse)).attr("r", 2.4)
+     .attr("fill", OI.vermillion).attr("fill-opacity", 0.55));
+
+  // global+local (primary, solid blue)
+  svg.append("path").attr("d", lineP(fs)).attr("fill", "none").attr("stroke", OI.blue).attr("stroke-width", 2.4);
+  fs.forEach(d => svg.append("circle").attr("cx", x(d.k)).attr("cy", yP(d.pearson)).attr("r", 3.6)
+     .attr("fill", OI.blue).attr("stroke", "white").attr("stroke-width", 0.8));
+  // local-only ridge (orange dashed)
+  if (loc.length) {
+    svg.append("path").attr("d", lineLoc(loc)).attr("fill", "none").attr("stroke", OI.orange)
+       .attr("stroke-width", 2).attr("stroke-dasharray", "5 3");
+    loc.forEach(d => svg.append("rect").attr("x", x(d.k) - 3).attr("y", yP(d.pearson_local) - 3)
+       .attr("width", 6).attr("height", 6).attr("fill", OI.orange));
+  }
+
+  // annotations
+  svg.append("circle").attr("cx", x(0)).attr("cy", yP(base)).attr("r", 3.6)
+     .attr("fill", "none").attr("stroke", INK).attr("stroke-width", 1);
+  svg.append("text").attr("x", x(0) + 6).attr("y", yP(base) + 14).attr("font-size", 9.5)
+     .attr("fill", INK).text(`k=0: pure LODO (r=${base.toFixed(2)})`);
+  const kr = fs.find(d => d.k === 25) || fs[fs.length - 1];
+  svg.append("text").attr("x", x(kr.k) - 4).attr("y", yP(kr.pearson) - 8).attr("text-anchor", "end")
+     .attr("font-size", 9.5).attr("font-style", "italic").attr("fill", OI.blue)
+     .text(`r=${kr.pearson.toFixed(2)} at k=${kr.k}`);
+  // lower-right wedge of the band: clear of the global+local and local-only lines
+  svg.append("text").attr("x", x(19)).attr("y", yP(0.225)).attr("text-anchor", "middle")
+     .attr("font-size", 9.5).attr("fill", OI.blue).attr("fill-opacity", 0.85)
+     .text("recovered skill");
+
   // legend
-  [["global + local", OI.blue], ["local only", OI.grey]].forEach(([t, c], i) =>
-    svg.append("text").attr("x", m.l + 8).attr("y", m.t + 4 + i * 13).attr("font-size", 9)
-       .attr("fill", c).text(t + " (r)"));
+  const lx = m.l + 8, ly0 = m.t + 2;
+  const leg = [["global + local", OI.blue, "solid"], ["local only (ridge)", OI.orange, "dash"],
+               ["RMSE (right axis)", OI.vermillion, "faint"]];
+  leg.forEach(([t, c, s], i) => {
+    const ly = ly0 + i * 14;
+    svg.append("line").attr("x1", lx).attr("x2", lx + 16).attr("y1", ly).attr("y2", ly)
+       .attr("stroke", c).attr("stroke-width", s === "solid" ? 2.4 : 1.8)
+       .attr("stroke-dasharray", s === "dash" ? "5 3" : null)
+       .attr("stroke-opacity", s === "faint" ? 0.55 : 1);
+    svg.append("text").attr("x", lx + 22).attr("y", ly + 3.5).attr("font-size", 10).attr("fill", INK).text(t);
+  });
   save(dom, "fig_fewshot");
 }
 
@@ -290,6 +402,18 @@ function figRegion() {
   svg.selectAll(".g").data(y.ticks(7)).join("line").attr("class", "g")
      .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => y(d)).attr("y2", d => y(d))
      .attr("stroke", GRID).attr("stroke-width", 0.5);
+  // global median within-region r + 95% bootstrap CI band (the tight overall bound)
+  const rs = DATA.region_summary || {};
+  const gmed = rs.lodo_median_pearson, gci = rs.lodo_median_pearson_ci;
+  if (gci) {
+    svg.append("rect").attr("x", m.l).attr("y", y(gci[1])).attr("width", W - m.r - m.l)
+       .attr("height", y(gci[0]) - y(gci[1])).attr("fill", OI.vermillion).attr("fill-opacity", 0.10);
+    svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(gmed)).attr("y2", y(gmed))
+       .attr("stroke", OI.vermillion).attr("stroke-width", 1.4).attr("stroke-dasharray", "6 3");
+    svg.append("text").attr("x", W - m.r - 2).attr("y", y(gci[1]) - 4).attr("text-anchor", "end")
+       .attr("font-size", 9).attr("font-style", "italic").attr("fill", OI.vermillion)
+       .text(`median r=${gmed.toFixed(2)} (95% CI ${gci[0].toFixed(2)} to ${gci[1].toFixed(2)})`);
+  }
   svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
      .attr("stroke", INK).attr("stroke-width", 1);
   svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(7)).call(axisStyle);
@@ -317,7 +441,8 @@ function figRegion() {
     .text(c));
   svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
      .attr("font-size", 10).attr("fill", "#777")
-     .text("each point = one held-out region (size ∝ √n); bar = continental median");
+     .text("each point = one held-out region (size ∝ √n); black bar = continental median; "
+         + "red band = 95% CI of overall median");
   save(dom, "fig_region");
 }
 

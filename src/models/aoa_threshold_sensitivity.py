@@ -1,6 +1,13 @@
-"""AOA threshold sensitivity: is 'every delta outside the AOA' an artifact of the
-threshold choice? We recompute the per-delta AOA-inside fraction under the standard
-Meyer & Pebesma boxplot-whisker threshold and under +/-20% and +/-50% multiples of it.
+#!/usr/bin/env python3
+"""AOA threshold sensitivity for the leave-one-delta-out folds.
+
+(a) Threshold magnitude: per-delta AOA-inside fraction under 0.5-2x the CAST upper-whisker
+    threshold (site-grouped folds, the default).
+(c) Importance-estimation noise: AOA-inside under permutation importance from 5 subsample seeds.
+(b) Fold design used to derive the threshold: site-grouped (default), 5-degree spatial
+    blocks, identical-covariate groups, and ungrouped leave-self-out. The ungrouped design
+    reproduces the pre-correction implementation, in which co-located cores with identical
+    covariates set each other's training DI to zero and collapse the threshold.
 
 Output: data/processed/aoa_threshold_sensitivity.json + console.
 """
@@ -12,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "models"))
 import soc_lodo as S
 
+N_IMP_SEEDS = 5
+
 
 def main():
     df, feats = S.load()
@@ -19,34 +28,52 @@ def main():
     core = set(reg[reg.role == "core"].id)
     deltas = [d for d in sorted(df.delta_id.dropna().unique()) if d in core]
     X = df[feats].to_numpy(); y = df["y"].to_numpy()
-    did = df["delta_id"].to_numpy()
+    did = df["delta_id"].to_numpy(); site = S.site_groups(df)
+    blk = (np.floor(df.lon / 5).astype(int).astype(str) + "_" +
+           np.floor(df.lat / 5).astype(int).astype(str)).to_numpy()
 
     mults = [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
     rows = []
     for d in deltas:
-        te = did == d
+        te = did == d; tr = ~te
         if te.sum() < 5:
             continue
-        m = S.models()["histgb"]; m.fit(X[~te], y[~te])
-        imp = S.model_importance(m, X[~te], y[~te])
+        m = S.models()["histgb"]; m.fit(X[tr], y[tr])
+        imp = S.model_importance(m, X[tr], y[tr])
         rec = {"delta": d}
         for mu in mults:
-            _, _, inside = S.aoa_di(X[~te], X[te], imp, thr_mult=mu)
-            rec[f"inside_x{mu}"] = round(inside, 3)
+            rec[f"inside_x{mu}"] = round(S.aoa_full(X[tr], X[te], imp, groups=site[tr],
+                                                    thr_mult=mu)["inside"], 3)
+        schemes = {"site": dict(groups=site[tr]),
+                   "block5deg": dict(groups=blk[tr]),
+                   "identical_covariates": dict(groups=None),
+                   "ungrouped_leave_self_out": dict(groups=np.arange(tr.sum()),
+                                                    n_folds=int(tr.sum()))}
+        for name, kw in schemes.items():
+            a = S.aoa_full(X[tr], X[te], imp, **kw)
+            rec[f"inside_{name}"] = round(a["inside"], 3)
+            rec[f"threshold_{name}"] = round(a["threshold"], 3)
+        # (c) importance-estimation noise: permutation importance on a 300-core subsample
+        ins_seed = [S.aoa_full(X[tr], X[te], S.model_importance(m, X[tr], y[tr], seed=sd),
+                               groups=site[tr])["inside"] for sd in range(N_IMP_SEEDS)]
+        rec["inside_importance_seeds_min"] = round(float(min(ins_seed)), 3)
+        rec["inside_importance_seeds_max"] = round(float(max(ins_seed)), 3)
         rows.append(rec)
+        print(rec, flush=True)
     rdf = pd.DataFrame(rows)
     summary = {f"median_inside_x{mu}": round(float(rdf[f"inside_x{mu}"].median()), 3) for mu in mults}
-    summary["max_inside_any_delta_x2"] = round(float(rdf["inside_x2.0"].max()), 3)
+    summary["min_inside_any_delta_x0.5"] = round(float(rdf["inside_x0.5"].min()), 3)
+    for name in ("site", "block5deg", "identical_covariates", "ungrouped_leave_self_out"):
+        summary[f"median_inside_{name}"] = round(float(rdf[f"inside_{name}"].median()), 3)
+        summary[f"median_threshold_{name}"] = round(float(rdf[f"threshold_{name}"].median()), 3)
+    summary["n_importance_seeds"] = N_IMP_SEEDS
+    summary["max_range_importance_seeds"] = round(float((rdf["inside_importance_seeds_max"]
+                                                         - rdf["inside_importance_seeds_min"]).max()), 3)
     out = {"summary": summary, "multipliers": mults, "per_delta": rows}
     (ROOT / "data/processed/aoa_threshold_sensitivity.json").write_text(json.dumps(out, indent=1))
-
-    print("=== AOA-inside fraction vs threshold multiplier (boxplot-whisker = x1.0) ===")
+    print("\n=== AOA-inside vs threshold multiplier and fold design ===")
     print(rdf.to_string(index=False))
-    print("\nmedian AOA-inside by multiplier:")
-    for mu in mults:
-        print(f"  x{mu}: {summary[f'median_inside_x{mu}']}")
-    print(f"\nEven at 2x the standard threshold, the most-applicable delta reaches only "
-          f"{summary['max_inside_any_delta_x2']*100:.0f}% inside.")
+    print(json.dumps(summary, indent=1))
     print("wrote data/processed/aoa_threshold_sensitivity.json")
 
 

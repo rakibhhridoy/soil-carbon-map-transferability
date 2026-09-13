@@ -26,7 +26,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 warnings.filterwarnings("ignore")
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "models"))
-from soc_lodo import load, models, aoa_di, model_importance   # reuse the exact model + AOA code
+from soc_lodo import load, models, aoa_di, model_importance, site_groups   # reuse the exact model + AOA code
 
 SEED = 0
 rng = np.random.default_rng(SEED)
@@ -68,7 +68,7 @@ def main():
         rmse = np.sqrt(mean_squared_error(np.expm1(yte), np.expm1(yp)))
         # --- shift metrics ---
         imp = model_importance(mdl, X[tr], df.y.to_numpy()[tr])
-        DI_te, thr, inside = aoa_di(X[tr], X[te], imp)
+        DI_te, thr, inside = aoa_di(X[tr], X[te], imp, groups=site_groups(df.loc[tr]))
         ed = energy_distance(z[te], z[tr])
         # --- top shifted covariate (standardized mean diff, delta vs rest) ---
         smd = (z[te].mean(0) - z[tr].mean(0))

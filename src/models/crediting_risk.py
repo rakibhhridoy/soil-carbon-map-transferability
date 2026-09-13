@@ -3,7 +3,8 @@
 The 'prediction-only' deltas in our registry are real, sizeable mangrove systems with
 ZERO usable in-situ cores -- the exact situation a carbon project in an unsurveyed delta
 faces. A globally-trained model assigns them a carbon stock, but our leave-one-delta-out
-analysis shows (i) every such delta lies outside the model's area of applicability and
+analysis shows (i) no local data exist there to check a global model (area-of-applicability
+coverage for each delta is read from prediction_only_aoa.json) and
 (ii) out-of-delta predictions carry RMSE of order 100-200 Mg/ha that current products do
 not report. We translate this into the carbon-accounting magnitude at stake.
 
@@ -24,6 +25,24 @@ ROOT = Path(__file__).resolve().parents[2]
 PROC = ROOT / "data/processed"
 CO2 = 44.0 / 12.0
 GLOBAL_MANGROVE_KM2 = 147000.0     # GMW v3 2020 global extent (~14.7 Mha)
+
+
+def _prediction_only_aoa_inside():
+    """Per-delta AoA-inside fraction from prediction_only_aoa.json ({} if not computed)."""
+    f = PROC / "prediction_only_aoa.json"
+    if not f.exists():
+        return {}
+    return {r["delta"]: r["aoa_inside"] for r in json.loads(f.read_text())["per_delta"]}
+
+
+def _prediction_only_all_outside_aoa():
+    """Directly computed (not asserted): every prediction-only delta 0% inside the AoA,
+    from prediction_only_aoa.py. Returns None with a warning if not yet computed."""
+    f = PROC / "prediction_only_aoa.json"
+    if f.exists():
+        return bool(json.loads(f.read_text()).get("all_outside_aoa"))
+    print("  WARN: prediction_only_aoa.json missing; run prediction_only_aoa.py to compute.")
+    return None
 
 
 def main():
@@ -75,7 +94,8 @@ def main():
         stock_span_PgCO2e=[round(stock_lo_TgC * CO2 / 1e3, 1), round(stock_hi_TgC * CO2 / 1e3, 1)],
         uncaptured_error_TgC=round(err_TgC, 0),
         uncaptured_error_TgCO2e=round(err_TgC * CO2, 0),
-        all_outside_aoa=True,
+        all_outside_aoa=_prediction_only_all_outside_aoa(),
+        prediction_only_aoa_inside=_prediction_only_aoa_inside(),
         per_delta=[dict(delta=r.id, area_km2=round(r.mangrove_area_km2, 0),
                         stock_TgC=round(r.stock_TgC, 1),
                         stock_lo_TgC=round(r.stock_lo_TgC, 1),
@@ -93,7 +113,9 @@ def main():
           f"[{dens.min():.0f}-{dens.max():.0f}]; out-of-delta total RMSE {total_rmse:.0f} Mg/ha")
     print(f"stock at stake : {stock_TgC:.0f} Tg C = {stock_TgC*CO2:.0f} Tg CO2e")
     print(f"uncaptured err : +/-{err_TgC:.0f} Tg C = +/-{err_TgC*CO2:.0f} Tg CO2e")
-    print("all unsampled deltas lie outside the model's area of applicability.")
+    print("all unsampled deltas lie outside the model's area of applicability."
+          if out["all_outside_aoa"] else
+          f"AoA-inside per unsampled delta: {out['prediction_only_aoa_inside']}")
     print("\nwrote data/processed/crediting_risk.json")
 
 

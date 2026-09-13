@@ -73,7 +73,10 @@ def main():
         agb_lodo_median_r2=agbL["models"]["histgb"]["t3_lodo_median_r2"],
         soc_t1_random_r2=socL["models"]["histgb"]["t1_random_r2"],
         agb_t1_random_r2=agbL["models"]["histgb"]["t1_random_r2"],
-        both_pools_aoa_inside=0.0,
+        soc_lodo_median_aoa_inside=round(float(np.median(
+            [r["aoa_inside"] for r in socL["models"]["histgb"]["per_delta"]])), 2),
+        agb_lodo_median_aoa_inside=round(float(np.median(
+            [r["aoa_inside"] for r in agbL["models"]["histgb"]["per_delta"]])), 2),
     )
     out = {"summary": summary, "per_delta": rows}
     (PROC / "total_carbon.json").write_text(json.dumps(out, indent=1))
@@ -84,11 +87,11 @@ def main():
           f"{summary['n_deltas']} deltas")
     print(f"SOC is {summary['soc_fraction_mean']*100:.0f}% of total on average")
     print(f"transfer (median LODO R2): SOC={summary['soc_lodo_median_r2']}  "
-          f"AGB={summary['agb_lodo_median_r2']}  | both pools AOA-inside = 0.00")
+          f"AGB={summary['agb_lodo_median_r2']}  | median AOA-inside SOC="
+          f"{summary['soc_lodo_median_aoa_inside']} AGB={summary['agb_lodo_median_aoa_inside']}")
 
     md = ["# Stage 3 --- Total ecosystem carbon (AGB-C + SOC)\n",
-          f"Per-delta total mangrove carbon and stock; both pools share the same "
-          f"out-of-distribution behaviour (every delta outside AOA).\n",
+          f"Per-delta total mangrove carbon and stock (AGB-C + SOC).\n",
           tab.to_markdown(index=False),
           f"\n- Benchmark total stock: **{summary['total_stock_TgC']} Tg C** across "
           f"{summary['n_deltas']} core deltas.",

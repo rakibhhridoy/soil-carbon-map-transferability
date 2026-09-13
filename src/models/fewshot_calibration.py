@@ -3,7 +3,8 @@
 unsampled delta?
 
 For each held-out delta we move k randomly-chosen local cores into the training set
-(k = 0, 5, 10, 25, 50) and evaluate on the delta's remaining cores. We repeat over random
+(k = 0, 5, 10, 25) and evaluate on the delta's remaining cores at sites not represented
+among the k shots (co-located siblings of a shot would leak its value into the test set). We repeat over random
 draws and report skill vs k. This converts the negative transferability result into an
 actionable 'data cost of crediting a new delta' curve.
 
@@ -57,6 +58,7 @@ def main():
     deltas = [d for d in sorted(df.delta_id.dropna().unique()) if d in core_ids]
     X = df[feats].to_numpy(); y = df["y"].to_numpy()
     didx = df["delta_id"].to_numpy()
+    site = S.site_groups(df)
 
     curve = {k: {"rmse": [], "pearson": []} for k in KS}
     per_delta = {}
@@ -75,6 +77,9 @@ def main():
                 if len(te_all) - k < MIN_EVAL:
                     continue   # not enough eval cores left at this k for this delta
                 shots, evalidx = perm[:k], perm[k:]
+                evalidx = evalidx[~np.isin(site[evalidx], site[shots])]
+                if len(evalidx) < MIN_EVAL:
+                    continue
                 # GLOBAL + k local cores
                 mdl = _fast_model(); mdl.fit(X[np.concatenate([tr_other, shots])], y[np.concatenate([tr_other, shots])])
                 rmse, r = metrics(y[evalidx], mdl.predict(X[evalidx]))

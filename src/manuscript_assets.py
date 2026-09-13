@@ -100,6 +100,57 @@ def tab_fewshot():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_fmparity():
+    """SI table: masked self-supervised pretraining vs raw/PCA few-shot, + per-seed fragility."""
+    fm = _opt(PROC / "fm_feasibility.json")
+    if fm is None:
+        return
+    s = fm["summary"]
+    rows = []
+    for k in fm["ks"]:
+        rows.append(f"{k} & {s[f'median_raw_k{k}']:+.2f} & {s[f'median_pca_k{k}']:+.2f} & "
+                    f"{s[f'median_emb_k{k}']:+.2f} \\\\")
+    lo, hi = s["perseed_gain_k25_p10_p90"]
+    note = (f"Single-encoder gain over raw at $k{{=}}25$: median "
+            f"${s['perseed_gain_k25_median']:+.3f}$ "
+            f"(10--90th pct.\\ $[{lo:+.2f},{hi:+.2f}]$, positive in "
+            f"{s['perseed_gain_k25_frac_positive']*100:.0f}\\% of encoder seeds).")
+    (TAB / "tab_fmparity.tex").write_text(
+        "\\begin{tabular}{rrrr}\n\\toprule\n"
+        " & \\multicolumn{3}{c}{Median within-delta $r$} \\\\\n"
+        "\\cmidrule(lr){2-4}\n"
+        "Local cores $k$ & raw (28\\,d) & PCA (16\\,d) & masked-pretrained (16\\,d) \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\n"
+        "\\vspace{2pt}\n\\footnotesize\\noindent " + note + "\n")
+
+
+def tab_structtransfer():
+    """SI table: structured (regime-conditioned) models also fail to robustly fix transfer."""
+    ts = _opt(PROC / "transfer_structure.json")
+    rb = _opt(PROC / "transfer_structure_robust.json")
+    if ts is None or rb is None:
+        return
+    rows = []
+    for d in ts["per_delta"]:
+        rows.append(f"{d['delta'].replace('_',chr(92)+'_')} & {d['flat_ridge']:+.2f} & "
+                    f"{d['flat_histgb']:+.2f} & {d['interaction']:+.2f} & {d['slope_transfer']:+.2f} \\\\")
+    s = ts["summary"]
+    rows.append("\\midrule")
+    rows.append(f"\\textbf{{median}} & {s['median_flat_ridge']:+.2f} & {s['median_flat_histgb']:+.2f} & "
+                f"{s['median_interaction']:+.2f} & {s['median_slope_transfer']:+.2f} \\\\")
+    lo, hi = rb["modset_p10_p90"]
+    note = (f"Modulator-set sensitivity: over random 4-modulator specifications the median "
+            f"interaction gain is ${rb['modset_median_gain']:+.3f}$ "
+            f"(10--90th pct.\\ $[{lo:+.2f},{hi:+.2f}]$), positive in only "
+            f"{rb['modset_frac_positive']*100:.0f}\\% of specifications.")
+    (TAB / "tab_structtransfer.tex").write_text(
+        "\\begin{tabular}{lrrrr}\n\\toprule\n"
+        "Held-out delta & flat & flat & regime & slope \\\\\n"
+        " & ridge & GBM & interaction & transfer \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\n"
+        "\\vspace{2pt}\n\\footnotesize\\noindent " + note + "\n")
+
+
 def tab_conceptshift():
     c = _opt(PROC / "concept_shift.json")
     if c is None:
@@ -119,12 +170,38 @@ def tab_aoavalidity():
     a = _opt(PROC / "aoa_validity.json")
     if a is None:
         return
-    rows = [f"Random 20\\% (seen deltas) & {a['random_holdout']:.2f} \\\\",
-            f"Spatial-block & {a['spatial_block_holdout']:.2f} \\\\",
-            f"Leave-one-delta-out & {a['lodo_holdout']:.2f} \\\\"]
+    rows = [f"Random 20\\% of sites (seen deltas) & {a['site_random_holdout']:.2f} \\\\",
+            f"Spatial-block ($5^\\circ$) & {a['spatial_block_holdout']:.2f} \\\\",
+            f"Leave-one-delta-out & {a['lodo_holdout']:.2f} \\\\",
+            "\\midrule",
+            f"Random 20\\% of cores (leaky, for reference) & {a['core_random_holdout']:.2f} \\\\"]
     (TAB / "tab_aoavalidity.tex").write_text(
         "\\begin{tabular}{lr}\n\\toprule\n"
         "Holdout design & Fraction inside AOA \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def _fmt_r(v):
+    return "n/a" if v is None or v != v else f"{v:+.2f}"
+
+
+def tab_aoasens():
+    t = _opt(PROC / "aoa_threshold_sensitivity.json")
+    if t is None:
+        return
+    s = t["summary"]
+    names = [("ungrouped_leave_self_out", "Ungrouped (leave-self-out)"),
+             ("site", "Site-grouped folds (used)"),
+             ("identical_covariates", "Identical-covariate groups"),
+             ("block5deg", "5$^\\circ$ spatial-block folds")]
+    rows = [f"{lab} & {s[f'median_threshold_{k}']:.3f} & {s[f'median_inside_{k}']*100:.0f}\\% \\\\"
+            for k, lab in names]
+    rows.append("\\midrule")
+    rows += [f"Site-grouped, threshold $\\times${mu} & --- & {s[f'median_inside_x{mu}']*100:.0f}\\% \\\\"
+             for mu in t["multipliers"] if mu != 1.0]
+    (TAB / "tab_aoasens.tex").write_text(
+        "\\begin{tabular}{lrr}\n\\toprule\n"
+        "Training-DI design & Median threshold & Median AOA-inside \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -135,17 +212,18 @@ def tab_publishedmap():
     order = sorted(pm["per_delta"], key=lambda r: abs(r["bias"]))
     rows = [f"{r['delta_id'].replace('_',' ').title()} & {int(r['n'])} & "
             f"{r['obs_med']:.0f} & {r['map_med']:.0f} & {r['bias']:+.0f} & "
-            f"{r['pearson']:+.2f} \\\\" for r in order]
+            f"{_fmt_r(r['pearson'])} & {r['pi95_coverage']*100:.0f}\\% \\\\" for r in order]
     g = pm["global"]
     rows.append("\\midrule")
     rows.append(f"\\textbf{{Median / global}} & {g['n']} & & & "
-                f"{g['median_abs_bias']:.0f}$^{{*}}$ & {g['median_within_delta_pearson']:+.2f} \\\\")
+                f"{g['median_abs_bias']:.0f}$^{{*}}$ & {g['median_within_delta_pearson']:+.2f} & "
+                f"{g['pi95_coverage']*100:.0f}\\% \\\\")
     (TAB / "tab_publishedmap.tex").write_text(
-        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
-        "Delta & $n$ & Obs.\\ & Map & Bias & $r$ \\\\\n"
-        " & & \\multicolumn{3}{c}{(Mg\\,ha$^{-1}$)} & within \\\\\n\\midrule\n"
+        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
+        "Delta & $n$ & Obs.\\ & Map & Bias & $r$ & 95\\% PI \\\\\n"
+        " & & \\multicolumn{3}{c}{(Mg\\,ha$^{-1}$)} & within & coverage \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n"
-        "\\multicolumn{6}{l}{\\footnotesize $^{*}$median of $|$per-delta bias$|$.}\\\\\n"
+        "\\multicolumn{7}{l}{\\footnotesize $^{*}$median of $|$per-delta bias$|$.}\\\\\n"
         "\\end{tabular}\n")
 
 
@@ -154,19 +232,28 @@ def tab_region():
     if r is None:
         return
     s = r["summary"]
+    pci = s.get("lodo_median_pearson_ci")
+    aci = s.get("median_aoa_inside_ci")
+    pci_s = f" [{pci[0]:+.2f}, {pci[1]:+.2f}]" if pci else ""
+    aci_s = f" [{aci[0]:.2f}, {aci[1]:.2f}]" if aci else ""
+    above = s.get("frac_regions_pearson_above_0p2")
     rows = [
         f"Independent regions & {s['n_regions']} (on {s['n_continents']} continents) \\\\",
-        f"Median within-region $r$ (out-of-region) & {s['lodo_median_pearson']:+.2f} \\\\",
+        f"Median within-region $r$ (out-of-region) & {s['lodo_median_pearson']:+.2f}{pci_s} \\\\",
         f"Regions with $r<0.2$ & {s['frac_regions_pearson_below_0p2']*100:.0f}\\% \\\\",
-        f"Median AOA-inside & {s['median_aoa_inside']:.2f} \\\\",
+        f"Median AOA-inside & {s['median_aoa_inside']:.2f}{aci_s} \\\\",
         f"Regions with negative $R^2$ & {s['frac_regions_negative_r2']*100:.0f}\\% \\\\",
     ]
+    if above is not None:
+        rows.insert(3, f"Regions retaining skill ($r>0.2$) & {above*100:.0f}\\% \\\\")
     (TAB / "tab_region.tex").write_text(
         "\\begin{tabular}{lr}\n\\toprule\n"
         "Leave-one-region-out (29 regions) & Value \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n"
         "\\multicolumn{2}{l}{\\footnotesize Within-region $r$ and AOA are independent "
-        "of overall skill level.}\\\\\n\\end{tabular}\n")
+        "of overall skill level;}\\\\\n"
+        "\\multicolumn{2}{l}{\\footnotesize brackets give the 95\\% bootstrap CI of the "
+        "median over the 29 regions.}\\\\\n\\end{tabular}\n")
 
 
 def tab_crediting():
@@ -190,19 +277,24 @@ def tab_terrestrial():
     if t is None:
         return
     lo = t["loco"]
+    h = json.loads((PROC / "soc_lodo_results.json").read_text())["models"]["histgb"]
+    nd = len(h["per_delta"])
+    aoa_med = float(np.median([r["aoa_inside"] for r in h["per_delta"]]))
     rows = [
-        f"Held-out units & 8 deltas & {lo['continents']} continents \\\\",
-        f"Median within-region $r$ (OOD) & $+0.04$ & $+{lo['loco_median_pearson']:.2f}$ \\\\",
-        f"Median LODO $R^2$ (OOD) & $-1.7$ & $+{lo['loco_median_r2']:.2f}$ \\\\",
-        f"Outside area of applicability & all & --- \\\\",
+        f"Held-out units & {nd} deltas & {lo['continents']} continents \\\\",
+        f"Median within-region $r$ (OOD) & ${h['t3_lodo_median_pearson']:+.2f}$ & ${lo['loco_median_pearson']:+.2f}$ \\\\",
+        f"Median LODO $R^2$ (OOD) & ${h['t3_lodo_median_r2']:+.1f}$ & ${lo['loco_median_r2']:+.2f}$ \\\\",
+        f"Median AOA-inside & {aoa_med*100:.0f}\\% & --- \\\\",
     ]
+    nsub = lo.get("n", 25000)
     (TAB / "tab_terrestrial.tex").write_text(
         "\\begin{tabular}{lrr}\n\\toprule\n"
         " & Mangrove & Terrestrial \\\\\n"
         " & (blue carbon) & SOC \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n"
         "\\multicolumn{3}{l}{\\footnotesize Terrestrial: SOC concentration, "
-        "$\\sim$133k profiles, leave-one-continent-out.}\\\\\n\\end{tabular}\n")
+        f"{nsub//1000}k-profile subsample of $\\sim$133k, leave-one-continent-out."
+        "}\\\\\n\\end{tabular}\n")
 
 
 def tab_registry_full(reg):
@@ -244,7 +336,9 @@ def tab_pooltransfer():
         f"Spatial-block & {s['t2_spatialblock_r2']:+.2f} & {a['t2_spatialblock_r2']:+.2f} \\\\\n"
         f"LODO (median) & {s.get('t3_lodo_median_r2',float('nan')):+.2f} & "
         f"{a['t3_lodo_median_r2']:+.2f} \\\\\n"
-        f"AOA inside (all deltas) & 0.00 & 0.00 \\\\")
+        f"AOA inside (median over deltas) & "
+        f"{np.median([x['aoa_inside'] for x in s['per_delta']]):.2f} & "
+        f"{np.median([x['aoa_inside'] for x in a['per_delta']]):.2f} \\\\")
     (TAB / "tab_pooltransfer.tex").write_text(
         "\\begin{tabular}{lrr}\n\\toprule\n"
         "Validation (grad.\\ boosting) & SOC $R^2$ & AGB-C $R^2$ \\\\\n\\midrule\n"
@@ -301,7 +395,7 @@ def fig_aoa(lodo):
     a1.set_xlabel("LODO RMSE (Mg ha$^{-1}$)"); a1.set_title("Per-delta error")
     a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color="#55A868")
     a2.set_xlim(0, 1); a2.set_xlabel("fraction inside AOA")
-    a2.set_title("Every delta outside AOA")
+    a2.set_title("Fraction inside AOA")
     fig.tight_layout(); fig.savefig(FIG / "fig_aoa.pdf"); plt.close(fig)
 
 
@@ -342,12 +436,13 @@ def tab_perdelta(lodo):
     pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
     rows = [f"{r.delta.replace('_',' ').title()} & {int(r.n)} & {r.r2_lodo:+.2f} & "
             f"{r.get('pearson', float('nan')):+.2f} & {r.rmse_Mgha:.0f} & "
-            f"{r.bias_Mgha:+.0f} & {r.aoa_inside:.2f} \\\\"
+            f"{r.bias_Mgha:+.0f} & {r.aoa_inside:.2f} & {r.median_DI:.2f} & "
+            f"{r.conformal_cov*100:.0f}\\% \\\\"
             for _, r in pd_.iterrows()]
     (TAB / "tab_perdelta.tex").write_text(
-        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
-        "Delta & $n$ & $R^2$ & $r$ & RMSE & Bias & AOA in \\\\\n"
-        " & & global & within & \\multicolumn{2}{c}{(Mg\\,ha$^{-1}$)} & \\\\\n\\midrule\n"
+        "\\begin{tabular}{lrrrrrrrr}\n\\toprule\n"
+        "Delta & $n$ & $R^2$ & $r$ & RMSE & Bias & AOA in & DI & 90\\% PI \\\\\n"
+        " & & global & within & \\multicolumn{2}{c}{(Mg\\,ha$^{-1}$)} & & median & coverage \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -367,6 +462,7 @@ def dump_figure_data(reg, lodo, soc):
     out = {
         "deltas": deltas,
         "tiers": {m: {"t1": lodo["models"][m]["t1_random_r2"],
+                      "t1g": lodo["models"][m].get("t1_grouped_r2"),
                       "t2": lodo["models"][m]["t2_spatialblock_r2"],
                       "t3": lodo["models"][m]["t3_lodo_median_r2"]}
                   for m in ("ridge", "histgb")},
@@ -393,14 +489,134 @@ def dump_figure_data(reg, lodo, soc):
     print("figure_data ->", PROC / "figure_data.json")
 
 
+def tab_depth():
+    """Depth-standardization robustness table from depth_sensitivity.json."""
+    d = _opt(PROC / "depth_sensitivity.json")
+    if d is None:
+        print("  depth_sensitivity.json absent; skipping tab_depth")
+        return
+    labels = {"d100_extrap": "0--100\\,cm, extrapolated (default)",
+              "d100_strict": "0--100\\,cm, full metre only (no extrap.)",
+              "d50": "0--50\\,cm", "d30": "0--30\\,cm"}
+    rows = []
+    for k in ["d100_extrap", "d100_strict", "d50", "d30"]:
+        if k not in d:
+            continue
+        v = d[k]
+        rows.append(f"{labels[k]} & {v['n']} & {v['random_r2']:+.2f} & "
+                    f"{v['lodo_median_r2']:+.2f} & {v['within_delta_median_r']:+.2f} & "
+                    f"{v['median_aoa_inside']*100:.0f}\\% \\\\")
+    (TAB / "tab_depth.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Depth standardization & $n$ & Random $R^2$ & LODO $R^2$ & Within-delta $r$ & AOA-in \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{6}{l}{\\footnotesize Common streamlined leave-one-delta-out across all rows "
+        "for internal comparability. In-distribution}\\\\\n"
+        "\\multicolumn{6}{l}{\\footnotesize skill is stable and out-of-delta skill collapses under "
+        "every depth convention, including the strict full-metre}\\\\\n"
+        "\\multicolumn{6}{l}{\\footnotesize subset that uses no extrapolation.}\\\\\n"
+        "\\end{tabular}\n")
+
+
+def tab_independent():
+    """Out-of-CCN independent-validation table from independent_validation_summary.json."""
+    d = _opt(PROC / "independent_validation_summary.json")
+    if d is None:
+        print("  independent_validation_summary.json absent; skipping tab_independent")
+        return
+    rows = []
+    for s in d["per_source"]:
+        wr = s["within_region_median_r"]
+        wr_s = "n/a" if wr is None else f"{wr:+.2f}"
+        rows.append(f"{s['source']} & {s['depth_cm']} & {s['n_independent']} & {s['n_tested']} & "
+                    f"{s['aoa_inside_pct']}\\% & {s['pooled_r']:+.2f} & {wr_s} \\\\")
+    (TAB / "tab_independent.tex").write_text(
+        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
+        "Independent source & Depth & $n$ indep. & $n$ tested & AOA-in & Pooled $r$ & Within-reg. $r$ \\\\\n"
+        " & (cm) & ($>$5\\,km) & & & & \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{7}{l}{\\footnotesize CCN-trained model predicting at independent (non-CCN) mangrove points. Pooled $r$ reflects the}\\\\\n"
+        "\\multicolumn{7}{l}{\\footnotesize coarse global level gradient; the level-independent within-region pattern correlation (Panama clusters:}\\\\\n"
+        f"\\multicolumn{{7}}{{l}}{{\\footnotesize {d['per_source'][1]['within_region_note']}) is weak and inconsistent.}}\\\\\n"
+        "\\end{tabular}\n")
+
+
+def settings_assets():
+    """fig_settings.pdf + tab_settings.tex + tab_settings_crosstab.tex from
+    setting_transfer.json (Rovai CES analysis). Skipped if the JSON is absent."""
+    st = _opt(PROC / "setting_transfer.json")
+    if st is None:
+        print("  setting_transfer.json absent; skipping settings assets")
+        return
+    order = ["LG", "BR", "CT", "ET", "DT", "CP"]
+    rows = {r["ces"]: r for r in st["per_ces"] if r["ces"] != "unassigned"}
+
+    # table: per-CES transfer skill
+    trows = []
+    for c in sorted(rows, key=lambda k: -rows[k]["within_region_pearson"]):
+        r = rows[c]
+        trows.append(f"{r['setting']} ({c}) & {r['n']} & {r['within_region_pearson']:+.2f} & "
+                     f"{r['pooled_pearson']:+.2f} & {r['aoa_inside_frac']*100:.0f}\\% & {r['median_obs_soc']:.0f} \\\\")
+    (TAB / "tab_settings.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Coastal environmental setting & $n$ & Within-region $r$ & Pooled $r$ & AOA-inside & Median SOC \\\\\n\\midrule\n"
+        + "\n".join(trows) + "\n\\bottomrule\n"
+        "\\multicolumn{6}{l}{\\footnotesize Cores tagged with the Rovai et al.\\ (2018) coastal environmental setting; out-of-region}\\\\\n"
+        "\\multicolumn{6}{l}{\\footnotesize skill under leave-one-region-out, pooled per core. Within-region $r$ is the pattern metric;}\\\\\n"
+        "\\multicolumn{6}{l}{\\footnotesize pooled $r$ can be inflated by between-region level (e.g.\\ carbonate). Median SOC in Mg\\,ha$^{-1}$.}\\\\\n"
+        "\\end{tabular}\n")
+
+    # table: CES x process regime crosstab
+    ct = st["crosstab_ces_x_regime"]
+    full = {"ET": "Estuarine", "DT": "Deltaic", "CT": "Carbonate", "LG": "Lagoonal",
+            "BR": "Barrier/beach", "HI": "High-island/volcanic", "CP": "Composite"}
+    crows = []
+    for c in ["DT", "ET", "LG", "BR", "CT", "CP"]:
+        if c not in ct:
+            continue
+        d = ct[c]
+        crows.append(f"{full[c]} ({c}) & {d.get('tide_dominated',0)} & "
+                     f"{d.get('wave_dominated',0)} & {d.get('non_deltaic',0)} \\\\")
+    (TAB / "tab_settings_crosstab.tex").write_text(
+        "\\begin{tabular}{lrrr}\n\\toprule\n"
+        "Coastal environmental setting & Tide-dominated & Wave-dominated & Non-deltaic \\\\\n\\midrule\n"
+        + "\n".join(crows) + "\n\\bottomrule\n"
+        "\\multicolumn{4}{l}{\\footnotesize Process regime from the nearest catalogued river mouth (Caldwell et al.\\ 2019):}\\\\\n"
+        "\\multicolumn{4}{l}{\\footnotesize tide-dominated where tidal range exceeds wave height. The failing settings (DT, ET) are tide-dominated.}\\\\\n"
+        "\\end{tabular}\n")
+
+    # figure: within-region skill by CES
+    bars = sorted([rows[c] for c in rows], key=lambda r: r["within_region_pearson"])
+    labs = [f'{r["setting"]}\n(n={r["n"]})' for r in bars]
+    vals = [r["within_region_pearson"] for r in bars]
+    cols = ["#D55E00" if v < 0.1 else "#009E73" for v in vals]
+    fig, ax = plt.subplots(figsize=(7.2, 3.6))
+    ax.barh(labs, vals, color=cols, edgecolor="black", linewidth=0.5)
+    ax.axvline(0, color="black", lw=0.8)
+    ax.set_xlabel("Within-region pattern skill (Pearson r) under out-of-region transfer")
+    ax.set_title("Which coastal environmental settings transfer", fontweight="bold", color="#0B6FB8")
+    for r in bars:
+        v = r["within_region_pearson"]
+        ax.text(v + (0.012 if v >= 0 else -0.012), f'{r["setting"]}\n(n={r["n"]})',
+                f'{v:+.2f}', va="center", ha="left" if v >= 0 else "right",
+                fontsize=9, fontweight="bold")
+    ax.set_xlim(-0.35, 0.5)
+    fig.tight_layout(); fig.savefig(FIG / "fig_settings.pdf"); plt.close(fig)
+
+
 def main():
     reg, lodo, diag, soc = load()
-    fig_map(reg, soc); fig_tiers(lodo); fig_aoa(lodo)
+    # fig_tiers and fig_fewshot are rendered by the canonical D3 pipeline
+    # (figures_d3/build_figures.mjs); not regenerated here to avoid clobbering them.
+    fig_map(reg, soc); fig_aoa(lodo)
     tab_deltas(reg, soc); tab_tiers(lodo); tab_perdelta(lodo)
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
-    fig_fewshot(); tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_conceptshift()
-    tab_crediting(); tab_terrestrial(); tab_region()
+    tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
+    tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
+    settings_assets()
+    tab_depth()
+    tab_independent()
     dump_figure_data(reg, lodo, soc)
     print("figures ->", FIG)
     print("tables  ->", TAB)

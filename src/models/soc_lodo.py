@@ -51,23 +51,22 @@ def models():
     }
 
 
-def model_importance(mdl, X, y, n_repeats=2, max_samples=300):
+def model_importance(mdl, X, y, n_repeats=2, max_samples=300, seed=SEED):
     """Feature importances for the AoA weighting (Meyer & Pebesma 2021).
     Prefer the model's native importances; otherwise fall back to permutation importance,
     which works for any fitted estimator (HistGradientBoosting has no feature_importances_).
     Permutation importance is evaluated on a small random subsample with few repeats: it
-    is only a per-feature WEIGHTING for the dissimilarity index, and the AoA verdict is
-    insensitive to it (the unweighted and weighted DI give the same zero coverage, and the
-    threshold sweep confirms robustness). Returns a non-negative vector, or None."""
+    is only a per-feature WEIGHTING for the dissimilarity index (CAST multiplies the
+    standardised predictors by these importances). Returns a non-negative vector, or None."""
     fi = getattr(mdl, "feature_importances_", None)
     if fi is not None:
         return np.asarray(fi)
     try:
         from sklearn.inspection import permutation_importance
         if len(X) > max_samples:
-            sub = np.random.default_rng(SEED).choice(len(X), max_samples, replace=False)
+            sub = np.random.default_rng(seed).choice(len(X), max_samples, replace=False)
             X, y = X[sub], y[sub]
-        pi = permutation_importance(mdl, X, y, n_repeats=n_repeats, random_state=SEED)
+        pi = permutation_importance(mdl, X, y, n_repeats=n_repeats, random_state=seed)
         return np.clip(pi.importances_mean, 0, None)
     except Exception:
         return None
@@ -121,31 +120,74 @@ def t2_spatial_block(df, feats, m, block_deg=5.0):
     return r2_score(y[ok], yp[ok])
 
 
-def aoa_di(Xtr, Xte, importances=None, thr_mult=1.0):
-    """Area of applicability (Meyer & Pebesma 2021). Importance-weighted dissimilarity
-    index; the applicability threshold is the boxplot upper whisker of the training DI
-    (Q75 + 1.5*IQR, the outlier-aware maximum used by the CAST package), scaled by
-    thr_mult for sensitivity analysis. Returns (DI_te, threshold, inside_fraction)."""
-    mu, sd = np.nanmean(Xtr, 0), np.nanstd(Xtr, 0) + 1e-9
-    Ztr = np.nan_to_num((Xtr - mu) / sd)
-    Zte = np.nan_to_num((Xte - mu) / sd)
+def site_groups(df):
+    """Site key shared by cores at the same location (3 dp, ~100 m), as in t1b_grouped."""
+    return (df.lat.round(3).astype(str) + "_" + df.lon.round(3).astype(str)).to_numpy()
+
+
+def _pairwise(A, B):
+    a = (A ** 2).sum(1)[:, None]; b = (B ** 2).sum(1)[None, :]
+    return np.sqrt(np.clip(a + b - 2.0 * A @ B.T, 0.0, None))
+
+
+def aoa_full(Xtr, Xte, importances=None, groups=None, n_folds=5, thr_mult=1.0,
+             seed=SEED, chunk=1500):
+    """Area of applicability as implemented in CAST 1.0 (trainDI + aoa; Meyer & Pebesma 2021).
+
+    Predictors are standardised with the training mean and SD (missing values take the
+    training mean) and multiplied by the model's non-negative variable importance. The DI
+    of a point is its distance to the nearest training point divided by the mean distance
+    between all pairs of training points. The training DI of each training point is taken
+    to its nearest training point in a *different* cross-validation fold; folds are built
+    from `groups` (site keys), so cores that share a site never set each other's DI. Without
+    grouped folds, co-located cores with identical covariates give a training DI of zero and
+    collapse the threshold. The threshold is Q75 + 1.5 IQR of the training DI, capped at its
+    maximum and scaled by `thr_mult` for sensitivity analysis. The local point density (LPD;
+    Schumacher et al. 2025) counts training points within the threshold of each new point.
+    groups=None groups identical covariate vectors.
+
+    Returns dict(di, threshold, inside, lpd, dbar, train_di)."""
+    Xtr = np.asarray(Xtr, float); Xte = np.asarray(Xte, float)
+    mu, sd = np.nanmean(Xtr, 0), np.nanstd(Xtr, 0)
+    sd = np.where(sd > 0, sd, 1.0)
+    Ztr = np.nan_to_num((Xtr - mu) / sd); Zte = np.nan_to_num((Xte - mu) / sd)
     if importances is not None:
-        w = np.sqrt(np.clip(importances, 0, None) + 1e-9)
-        Ztr, Zte = Ztr * w, Zte * w
-    # mean nearest-neighbour distance within training (for normalisation)
-    def nn_min(A, B):
-        out = np.empty(len(A))
-        for i in range(len(A)):
-            d = np.sqrt(((B - A[i]) ** 2).sum(1))
-            out[i] = np.partition(d, 1)[1] if B is A else d.min()
-        return out
-    d_tr = nn_min(Ztr, Ztr)
-    dbar = np.mean(d_tr) + 1e-9
-    DI_tr = d_tr / dbar
-    q25, q75 = np.quantile(DI_tr, [0.25, 0.75])
-    thr = (q75 + 1.5 * (q75 - q25)) * thr_mult      # boxplot upper whisker (CAST rule)
-    DI_te = nn_min(Zte, Ztr) / dbar
-    return DI_te, thr, float(np.mean(DI_te <= thr))
+        w = np.clip(np.asarray(importances, float), 0, None)
+        if w.sum() > 0:
+            Ztr, Zte = Ztr * w, Zte * w
+    n = len(Ztr)
+    if groups is None:
+        _, groups = np.unique(np.round(Ztr, 9), axis=0, return_inverse=True)
+    groups = np.asarray(groups).ravel()
+    ug = np.unique(groups)
+    order = np.random.default_rng(seed).permutation(len(ug))
+    k = min(n_folds, len(ug))
+    fold_of = dict(zip(ug[order], np.arange(len(ug)) % k))
+    fold = np.array([fold_of[g] for g in groups])
+    dsum, nn = 0.0, np.full(n, np.inf)
+    for s in range(0, n, chunk):
+        Dc = _pairwise(Ztr[s:s + chunk], Ztr)
+        Dc[np.arange(len(Dc)), np.arange(s, s + len(Dc))] = 0.0
+        dsum += Dc.sum()
+        nn[s:s + chunk] = np.where(fold[s:s + chunk, None] != fold[None, :], Dc, np.inf).min(1)
+    dbar = dsum / (n * (n - 1))
+    train_di = nn / dbar
+    v = train_di[np.isfinite(train_di)]
+    q25, q75 = np.quantile(v, [0.25, 0.75])
+    thr = min(q75 + 1.5 * (q75 - q25), v.max()) * thr_mult
+    di = np.empty(len(Zte)); lpd = np.empty(len(Zte), dtype=int)
+    for s in range(0, len(Zte), chunk):
+        Dn = _pairwise(Zte[s:s + chunk], Ztr) / dbar
+        di[s:s + chunk] = Dn.min(1)
+        lpd[s:s + chunk] = (Dn < thr).sum(1)
+    return dict(di=di, threshold=float(thr), inside=float(np.mean(di <= thr)), lpd=lpd,
+                dbar=float(dbar), train_di=train_di)
+
+
+def aoa_di(Xtr, Xte, importances=None, thr_mult=1.0, groups=None):
+    """Backward-compatible wrapper around aoa_full. Returns (DI_te, threshold, inside_fraction)."""
+    a = aoa_full(Xtr, Xte, importances, groups=groups, thr_mult=thr_mult)
+    return a["di"], a["threshold"], a["inside"]
 
 
 def conformal_interval(resid_cal, alpha=0.1):
@@ -181,7 +223,8 @@ def t3_lodo(df, feats, m, alpha=0.1):
         cov = float(np.mean(np.abs(yte - yp) <= hw))
 
         imp = model_importance(mdl, Xtr[fit], ytr[fit])
-        _, _, inside = aoa_di(Xtr, Xte, imp)
+        aoa = aoa_full(Xtr, Xte, imp, groups=site_groups(df.loc[tr]))
+        inside = aoa["inside"]
 
         # back-transform metrics to Mg/ha
         r2 = r2_score(yte, yp)
@@ -201,6 +244,8 @@ def t3_lodo(df, feats, m, alpha=0.1):
                          pearson=round(pear, 3), spearman=round(spear, 3),
                          rmse_Mgha=round(rmse, 1), bias_Mgha=round(bias, 1),
                          aoa_inside=round(inside, 2),
+                         median_DI=round(float(np.median(aoa["di"])), 3),
+                         median_LPD=int(np.median(aoa["lpd"])),
                          conformal_cov=round(cov, 2)))
     return rows
 

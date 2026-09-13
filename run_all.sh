@@ -36,6 +36,7 @@ python3 src/build_region_folds.py              # -> data/processed/region_folds.
 python3 src/models/region_lodo.py              # -> data/processed/region_lodo_results.json (scale test)
 python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diagnostic.json
 python3 src/models/concept_shift.py            # -> data/processed/concept_shift.json
+python3 src/models/depth_sensitivity.py        # -> data/processed/depth_sensitivity.json (depth robustness)
 python3 src/models/gsoc_ablation.py            # -> data/processed/gsoc_ablation.json
 python3 src/models/aoa_validity.py             # -> data/processed/aoa_validity.json
 python3 src/models/aoa_threshold_sensitivity.py  # -> data/processed/aoa_threshold_sensitivity.json
@@ -48,7 +49,17 @@ python3 src/features/build_agb_features.py      # -> data/processed/agb_training
 python3 src/models/agb_lodo.py                 # -> data/processed/agb_lodo_results.json
 python3 src/models/total_carbon.py             # -> data/processed/total_carbon.json
 python3 src/models/terrestrial_test.py         # -> data/processed/terrestrial_test.json (specificity control)
-python3 src/models/crediting_risk.py           # -> data/processed/crediting_risk.json
+echo "== Stage 4: environmental settings + applicability layer =="
+python3 src/models/setting_transfer.py         # -> setting_transfer.json + core_setting_assignments.csv (needs Rovai CES xlsx)
+python3 src/models/prediction_only_aoa.py      # -> prediction_only_aoa.json (needs covariate lake)
+python3 src/models/crediting_risk.py           # -> data/processed/crediting_risk.json (reads prediction_only_aoa)
+python3 src/models/build_applicability_layer.py  # -> products/applicability_layer_v1_1/ (region + setting verdicts)
+python3 src/models/build_global_applicability.py # -> products/applicability_layer_v1_1/global_*.{csv,tif} (needs covariate lake + GMW)
+echo "== Stage 5: independent out-of-CCN validation =="
+python3 src/models/build_independent_cores.py    # -> independent_cores.csv (external datasets, dedup vs CCN)
+python3 src/models/independent_validation.py      # -> independent_validation.json (Rovai; needs covariate lake)
+python3 src/models/independent_validation_panama.py # -> independent_validation_panama.json (needs covariate lake)
+python3 src/models/independent_validation_summary.py # -> independent_validation_summary.json (consolidates for the table)
 
 echo "== Manuscript assets (figures + tables) =="
 python3 src/manuscript_assets.py               # -> manuscript/figures + manuscript/tables
