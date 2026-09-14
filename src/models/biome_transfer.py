@@ -69,11 +69,17 @@ def load_external(habitat, target_cm):
         g = gpd.read_file(shp)
         col = {30: "SOCC_0_30_", 100: "SOCC_0_100"}[int(target_cm)]
         g = g[(g[col] > 0) & (g[col] < 900)]                       # kg C m-2; -999 = missing
-        return pd.DataFrame(dict(core_id=g.PROFILE_ID.astype(str), study_id="Hugelius2013",
-                                 lat=g.LAT.astype(float), lon=g.LONG.astype(float),
-                                 country=g.NCSCD_REGI, soc_0_100_Mgha=g[col].astype(float) * 10.0,
-                                 max_depth_cm=g.BASAL_DEPT, n_layers=np.nan, extrapolated=False,
-                                 fc_from_om=False)).reset_index(drop=True)
+        H = pd.DataFrame(dict(core_id=g.PROFILE_ID.astype(str), study_id="Hugelius2013",
+                              lat=g.LAT.astype(float), lon=g.LONG.astype(float),
+                              country=g.NCSCD_REGI, soc_0_100_Mgha=g[col].astype(float) * 10.0,
+                              max_depth_cm=g.BASAL_DEPT, n_layers=np.nan, extrapolated=False,
+                              fc_from_om=False))
+        P = palmtag_pedons(target_cm)
+        both = pd.concat([H, P], ignore_index=True)
+        # drop Palmtag pedons that coincide (<50 m) with a Hugelius pedon
+        key = both.lat.round(4).astype(str) + "_" + both.lon.round(4).astype(str)
+        both = both[~(key.duplicated(keep="first") & (both.study_id == "Palmtag2022"))]
+        return both.reset_index(drop=True)
     if habitat in ("terrestrial_stock", "terrestrial_conc"):
         sys.path.insert(0, str(ROOT / "src" / "models"))
         import terrestrial_test as T
@@ -94,6 +100,48 @@ def load_external(habitat, target_cm):
                                  max_depth_cm=P.max_depth_cm, n_layers=P.n_layers,
                                  extrapolated=False, fc_from_om=False)).reset_index(drop=True)
     raise SystemExit(f"unknown external habitat {habitat!r}")
+
+
+def palmtag_pedons(target_cm):
+    """Palmtag et al. (2022) permafrost pedons (Bolin Centre): integrate the per-increment
+    SOC density, which the sample table reports per centimetre of depth (checked against
+    C fraction x bulk density x thickness), to the target depth with the CCN coverage rule;
+    standardised coordinates only (402 of 651 pedons carry them)."""
+    import re
+    d = ROOT / "data/external/palmtag2022/palmtag-2022-pedon-1"
+    ped = pd.read_csv(d / "pedon-data-on-soil-carbon-and-nitrogen.csv", sep=None, engine="python").iloc[1:]
+    ped.columns = [c.replace("\ufeff", "").strip() for c in ped.columns]
+    ped = ped.assign(lat=pd.to_numeric(ped["Standardized latitude"], errors="coerce"),
+                     lon=pd.to_numeric(ped["Standardized longitude"], errors="coerce"),
+                     pid=ped["Pedon name"].astype(str).str.strip()).dropna(subset=["lat", "lon"])
+    smp = pd.read_csv(d / "sample-data-on-soil-carbon-and-nitrogen.csv", sep=None, engine="python").iloc[1:]
+    smp.columns = [c.replace("\ufeff", "").strip() for c in smp.columns]
+    smp = smp.assign(pid=smp["Sample name with depth"].astype(str).str.replace(r"\s+[\d.]+\s*-\s*[\d.]+\s*$", "", regex=True).str.strip(),
+                     top=pd.to_numeric(smp["Upper sample depth"], errors="coerce"),
+                     bot=pd.to_numeric(smp["Lower sample depth"], errors="coerce"),
+                     socd=pd.to_numeric(smp["SOC density (kg C m-2)"], errors="coerce")).dropna(subset=["top", "bot", "socd"])
+    rows = []
+    for pid, g in smp.groupby("pid"):
+        g = g.sort_values("top"); soc = 0.0; cov = 0.0; last = None
+        for r in g.itertuples():
+            if r.top >= target_cm:
+                break
+            bot = min(r.bot, target_cm); dz = bot - r.top
+            if dz <= 0 or r.bot <= r.top:
+                continue
+            dens = r.socd                              # column is kg C m-2 per cm of depth
+            soc += dens * dz; cov = max(cov, bot); last = dens
+        if last is None or cov < 0.8 * target_cm:
+            continue
+        if cov < target_cm:
+            soc += last * (target_cm - cov)
+        rows.append((pid, soc * 10.0, float(g.bot.max()), int(len(g))))   # kg C m-2 -> Mg ha-1
+    S = pd.DataFrame(rows, columns=["pid", "soc_0_100_Mgha", "max_depth_cm", "n_layers"]).merge(
+        ped[["pid", "lat", "lon", "Study Area abbreviation"]], on="pid", how="inner")
+    return pd.DataFrame(dict(core_id=S.pid, study_id="Palmtag2022", lat=S.lat, lon=S.lon,
+                             country=S["Study Area abbreviation"], soc_0_100_Mgha=S.soc_0_100_Mgha,
+                             max_depth_cm=S.max_depth_cm, n_layers=S.n_layers, extrapolated=False,
+                             fc_from_om=False))
 
 
 EXTERNAL = {"permafrost", "terrestrial_stock", "terrestrial_conc", "peat"}
