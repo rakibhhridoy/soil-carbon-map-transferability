@@ -29,6 +29,8 @@ echo "== Stage 1c: features =="
 python3 src/features/sample_covariates.py      # PEDOFLUX drivers -> soc_training.parquet
 python3 src/features/build_geomorphic.py       # + dist_coast/dist_river (Natural Earth)
 python3 src/features/build_tidal.py            # + tidal range/form (EOT20)
+python3 src/features/build_elevation.py       # + elev_m (Copernicus GLO-30, remote /vsis3/, no auth)
+python3 src/features/build_tsm.py             # + tsm_gm3/kd490 (CMEMS GlobColour 2016-2020; needs `copernicusmarine login`)
 
 echo "== Stage 2: SOC transferability experiment =="
 python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json
@@ -41,6 +43,8 @@ python3 src/models/gsoc_ablation.py            # -> data/processed/gsoc_ablation
 python3 src/models/aoa_validity.py             # -> data/processed/aoa_validity.json
 python3 src/models/aoa_threshold_sensitivity.py  # -> data/processed/aoa_threshold_sensitivity.json
 python3 src/models/fewshot_calibration.py      # -> data/processed/fewshot_calibration.json
+python3 src/models/noise_ceiling.py            # -> data/processed/noise_ceiling.json (replicate-core ceiling on within-region r)
+python3 src/models/covariate_ablation.py       # -> data/processed/covariate_ablation.json (nested covariate sets incl. elevation, TSM)
 python3 src/models/published_map_test.py       # -> data/processed/published_map_test.json (remote COGs)
 
 echo "== Stage 3: AGB + total ecosystem carbon =="
