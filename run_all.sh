@@ -65,6 +65,17 @@ python3 src/models/independent_validation.py      # -> independent_validation.js
 python3 src/models/independent_validation_panama.py # -> independent_validation_panama.json (needs covariate lake)
 python3 src/models/independent_validation_summary.py # -> independent_validation_summary.json (consolidates for the table)
 
+echo "== Stage 6: cross-biome transfer + national-inventory stakes =="
+python3 src/labels/build_peat_cores.py             # -> data/external/cpeat/peat_cores.csv (C-PEAT via PANGAEA, CC-BY)
+for h in marsh seagrass permafrost peat terrestrial_conc terrestrial_stock; do
+  python3 src/models/biome_transfer.py $h --target-cm 30   # -> data/processed/biome_<h>_d30_results.json
+done
+python3 src/models/biome_transfer.py marsh --target-cm 100
+python3 src/models/biome_transfer.py seagrass --target-cm 100
+python3 src/models/biome_transfer.py permafrost --target-cm 100   # Hugelius et al. 2013 pedons (data/external/ncscd_pedons)
+python3 src/models/biome_transfer.py terrestrial_conc --target-cm 30 --drop-gsoc
+python3 src/models/tier1_inventory.py          # -> data/processed/tier1_inventory.json (IPCC Tier 1 vs national cores)
+
 echo "== Manuscript assets (figures + tables) =="
 python3 src/manuscript_assets.py               # -> manuscript/figures + manuscript/tables
 
