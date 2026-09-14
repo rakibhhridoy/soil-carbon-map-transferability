@@ -522,8 +522,93 @@ def dump_figure_data(reg, lodo, soc):
                               pearson=r["pearson"], aoa=r["aoa_inside"])
                          for r in rl["per_region"]]
         out["region_summary"] = rl["summary"]
+    bio = biome_rows()
+    if bio:
+        out["biomes"] = bio
     (PROC / "figure_data.json").write_text(json.dumps(out, indent=1))
     print("figure_data ->", PROC / "figure_data.json")
+
+
+# ordered cross-biome rows: (file tag, display label, mineral/organic class)
+BIOMES = [("terrestrial_conc_d30", "Terrestrial mineral soil (0–30 cm)", "mineral"),
+          ("terrestrial_stock_d30", "Terrestrial mineral soil, stock (0–30 cm)", "mineral"),
+          ("mangrove", "Mangrove (0–100 cm)", "organic"),
+          ("marsh_d30", "Salt marsh (0–30 cm)", "organic"),
+          ("seagrass_d30", "Seagrass (0–30 cm)", "organic"),
+          ("permafrost_d100", "Permafrost (0–100 cm)", "organic"),
+          ("peat_d30", "Peatland (0–30 cm)", "organic")]
+
+
+def biome_rows():
+    """Per-biome summary + per-region points for the cross-biome figure and table."""
+    rows = []
+    for tag, label, cls in BIOMES:
+        if tag == "mangrove":
+            r = _opt(PROC / "region_lodo_results.json"); nc = _opt(PROC / "noise_ceiling.json")
+            if r is None:
+                continue
+            s = r["summary"]; per = r["per_region"]
+            rows.append(dict(tag=tag, label=label, cls=cls, n=2489, n_regions=s["n_regions"],
+                             n_continents=s["n_continents"], random_r2=0.652, grouped_r2=0.163,
+                             median_r=s["lodo_median_pearson"], ci=s["lodo_median_pearson_ci"],
+                             aoa_oor=s["median_aoa_inside"], aoa_rand=s.get("median_aoa_inside_randomcv"),
+                             ceiling=(nc["summary"]["median_r_max"] if nc else None),
+                             regions=[dict(r=x["pearson"], n=x["n"]) for x in per]))
+            continue
+        d = _opt(PROC / f"biome_{tag}_results.json")
+        if d is None:
+            continue
+        s = d["summary"]
+        rows.append(dict(tag=tag, label=label, cls=cls, n=s["n_cores"], n_regions=s["n_regions"],
+                         n_continents=s["n_continents"], random_r2=s["t1_random_r2"],
+                         grouped_r2=s["t1_grouped_r2"], median_r=s["loro_median_pearson"],
+                         ci=s["loro_median_pearson_ci"], aoa_oor=s["median_aoa_inside"],
+                         aoa_rand=s["median_aoa_inside_randomcv"],
+                         ceiling=s["noise_ceiling"]["median_r_max"],
+                         underpowered=s["n_regions"] < 5,
+                         regions=[dict(r=x["pearson"], n=x["n"]) for x in d["per_region"]
+                                  if x["pearson"] == x["pearson"]]))
+    return rows
+
+
+def tab_tier1():
+    d = _opt(PROC / "tier1_inventory.json")
+    if d is None:
+        return
+    rows = []
+    for r in d["per_country"]:
+        rows.append(f"{r['country']} & {r['n_cores']} & {r['mangrove_km2']:,.0f} & "
+                    f"{r['median_stock_Mgha']:.0f} [{r['stock_ci_Mgha'][0]:.0f}, {r['stock_ci_Mgha'][1]:.0f}] & "
+                    f"{r['ratio_obs_to_tier1']:.2f} & {r['tier1_TgC']:.0f} & {r['observed_TgC']:.0f} \\\\")
+    s = d["summary"]
+    rows.append("\\midrule")
+    rows.append(f"\\textbf{{Total}} & & {s['countries_area_km2']:,.0f} & & & {s['sum_tier1_TgC']:.0f} & {s['sum_observed_TgC']:.0f} \\\\")
+    (TAB / "tab_tier1.tex").write_text(
+        "\\begin{tabular}{lrrlrrr}\n\\toprule\n"
+        "Country & Cores & Mangrove km$^2$ & Median stock [95\\% CI] (t\\,C\\,ha$^{-1}$) & Ratio to Tier 1 & Tier-1 Tg\\,C & Cores Tg\\,C \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_biomes():
+    rows = biome_rows()
+    if not rows:
+        return
+    lines = []
+    for b in rows:
+        ci = f"[{b['ci'][0]:+.2f}, {b['ci'][1]:+.2f}]" if b.get("ci") else ""
+        ceil = f"{b['ceiling']:.2f}" if b.get("ceiling") else "---"
+        ratio = f"{b['median_r']/b['ceiling']:+.2f}" if b.get("ceiling") else "---"
+        note = "$^{\\dagger}$" if b.get("underpowered") else ""
+        lines.append(f"{b['label']}{note} & {b['n']:,} & {b['n_regions']} & {b['n_continents']} & "
+                     f"{b['random_r2']:+.2f} & {b['grouped_r2']:+.2f} & {b['median_r']:+.2f} {ci} & "
+                     f"{ceil} & {ratio} \\\\")
+    (TAB / "tab_biomes.tex").write_text(
+        "\\begin{tabular}{lrrrrrlrr}\n\\toprule\n"
+        "Biome & Cores & Regions & Cont. & Random $R^2$ & Site-grouped $R^2$ & Out-of-region $r$ [95\\% CI] & Ceiling $r_{\\max}$ & $r/r_{\\max}$ \\\\\n\\midrule\n"
+        + "\n".join(lines) + "\n\\bottomrule\n"
+        "\\multicolumn{9}{l}{\\footnotesize Identical protocol in every row: 28 covariates, gradient boosting, 250 km regions, site-grouped folds, replicate-core ceiling.}\\\\\n"
+        "\\multicolumn{9}{l}{\\footnotesize $^{\\dagger}$fewer than five regions reach twelve cores; reported for completeness, not as a result.}\\\\\n"
+        "\\end{tabular}\n")
 
 
 def tab_depth():
@@ -650,7 +735,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
-    tab_noiseceiling(); tab_ablation()
+    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1()
     tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
     settings_assets()
     tab_depth()

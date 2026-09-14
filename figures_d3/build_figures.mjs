@@ -446,7 +446,126 @@ function figRegion() {
   save(dom, "fig_region");
 }
 
+// ================================================================== fig_biomes
+// Cross-biome transfer under one protocol: per-region out-of-region r (points),
+// median with 95% CI (bar + band), and the replicate-core ceiling (hollow marker).
+function figBiomes() {
+  if (!DATA.biomes) return;
+  const B = DATA.biomes.filter(b => !b.underpowered);
+  const W = 680, H = 360, m = { t: 40, r: 16, b: 78, l: 52 };
+  const { dom, svg } = svgRoot(W, H);
+  title(svg, m.l - 36, 22, "Global models transfer in mineral soils, not in carbon-dense wetland soils");
+  const short = { terrestrial_conc_d30: "Terrestrial\nmineral (conc.)", terrestrial_stock_d30: "Terrestrial\nmineral (stock)",
+                  mangrove: "Mangrove", marsh_d30: "Salt marsh", seagrass_d30: "Seagrass", permafrost_d100: "Permafrost" };
+  const x = d3.scaleBand().domain(B.map(b => b.tag)).range([m.l, W - m.r]).padding(0.35);
+  const y = d3.scaleLinear().domain([-0.85, 1.05]).range([H - m.b, m.t]);
+  svg.selectAll(".g").data(y.ticks(7)).join("line").attr("class", "g")
+     .attr("x1", m.l).attr("x2", W - m.r).attr("y1", d => y(d)).attr("y2", d => y(d))
+     .attr("stroke", GRID).attr("stroke-width", 0.5);
+  svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(0)).attr("y2", y(0))
+     .attr("stroke", INK).attr("stroke-width", 1);
+  // class shading: mineral vs organic
+  const firstOrg = B.findIndex(b => b.cls === "organic");
+  if (firstOrg > 0) {
+    const xs = x(B[firstOrg].tag) - x.step() * x.paddingInner() / 2;
+    svg.append("rect").attr("x", xs).attr("y", m.t).attr("width", W - m.r - xs).attr("height", H - m.b - m.t)
+       .attr("fill", OI.vermillion).attr("fill-opacity", 0.05);
+    svg.append("text").attr("x", (m.l + xs) / 2).attr("y", H - m.b - 6).attr("text-anchor", "middle")
+       .attr("font-size", 10).attr("fill", OI.blue).text("mineral upland soils");
+    svg.append("text").attr("x", (xs + W - m.r) / 2).attr("y", m.t + 12).attr("text-anchor", "middle")
+       .attr("font-size", 10).attr("fill", OI.vermillion).text("carbon-dense wetland and organic soils");
+  }
+  svg.append("g").attr("transform", `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(7)).call(axisStyle);
+  svg.append("text").attr("x", 13).attr("y", (m.t + H - m.b) / 2)
+     .attr("transform", `rotate(-90,13,${(m.t + H - m.b) / 2})`).attr("text-anchor", "middle")
+     .attr("font-size", 11).attr("fill", INK).text("within-region r (out-of-region prediction)");
+  const jitter = d3.randomNormal.source(d3.randomLcg(11))(0, x.bandwidth() / 8);
+  B.forEach(b => {
+    const cx = x(b.tag) + x.bandwidth() / 2, col = b.cls === "mineral" ? OI.blue : OI.vermillion;
+    // CI band + median bar
+    if (b.ci) svg.append("rect").attr("x", x(b.tag)).attr("y", y(b.ci[1])).attr("width", x.bandwidth())
+       .attr("height", y(b.ci[0]) - y(b.ci[1])).attr("fill", col).attr("fill-opacity", 0.15);
+    b.regions.forEach(d => svg.append("circle").attr("cx", cx + jitter())
+       .attr("cy", y(Math.max(-0.85, Math.min(1.05, d.r)))).attr("r", 2.6 + Math.sqrt(d.n) / 8)
+       .attr("fill", col).attr("fill-opacity", 0.55).attr("stroke", "#222").attr("stroke-width", 0.35));
+    svg.append("line").attr("x1", x(b.tag) + 3).attr("x2", x(b.tag) + x.bandwidth() - 3)
+       .attr("y1", y(b.median_r)).attr("y2", y(b.median_r)).attr("stroke", "#000").attr("stroke-width", 2);
+    // ceiling: hollow diamond
+    if (b.ceiling != null) {
+      const cy = y(b.ceiling), s = 6;
+      svg.append("path").attr("d", `M${cx},${cy - s}L${cx + s},${cy}L${cx},${cy + s}L${cx - s},${cy}Z`)
+         .attr("fill", "white").attr("stroke", "#000").attr("stroke-width", 1.2);
+      svg.append("line").attr("x1", cx).attr("x2", cx).attr("y1", y(b.median_r)).attr("y2", cy - s)
+         .attr("stroke", "#000").attr("stroke-width", 0.7).attr("stroke-dasharray", "2 2");
+    }
+    // x label (two lines) + n
+    const lab = (short[b.tag] || b.label).split("\n");
+    lab.forEach((t, i) => svg.append("text").attr("x", cx).attr("y", H - m.b + 16 + i * 12)
+       .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", INK).text(t));
+    svg.append("text").attr("x", cx).attr("y", H - m.b + 16 + lab.length * 12)
+       .attr("text-anchor", "middle").attr("font-size", 9).attr("fill", "#777")
+       .text(`n=${b.n.toLocaleString()}, ${b.n_regions} regions`);
+  });
+  svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
+     .attr("font-size", 10).attr("fill", "#777")
+     .text("points = held-out regions (size ∝ √n); bar = median, band = 95% CI; ◇ = replicate-core ceiling on attainable r");
+  save(dom, "fig_biomes");
+}
+
+// ================================================================ fig_protocol
+// Certification decision tree (four steps -> four verdicts), with the mangrove
+// benchmark's own numbers annotated at each step.
+function figProtocol() {
+  const W = 700, H = 420, { dom, svg } = svgRoot(W, H);
+  title(svg, 16, 22, "Certifying a spatial prediction before it is used at an unsampled location");
+  const box = (x, y, w, h, lines, fill, stroke = INK, size = 10.5, bold = false) => {
+    svg.append("rect").attr("x", x).attr("y", y).attr("width", w).attr("height", h).attr("rx", 6)
+       .attr("fill", fill).attr("stroke", stroke).attr("stroke-width", 1);
+    lines.forEach((t, i) => svg.append("text").attr("x", x + w / 2)
+       .attr("y", y + h / 2 - (lines.length - 1) * 6.5 + i * 13).attr("text-anchor", "middle")
+       .attr("font-size", size).attr("font-weight", bold ? "bold" : "normal").attr("fill", INK).text(t));
+  };
+  const arrow = (x1, y1, x2, y2, label) => {
+    svg.append("line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+       .attr("stroke", INK).attr("stroke-width", 1).attr("marker-end", "url(#arr)");
+    if (label) svg.append("text").attr("x", (x1 + x2) / 2 + 5).attr("y", (y1 + y2) / 2 - 3)
+       .attr("font-size", 9.5).attr("font-style", "italic").attr("fill", AXIS).text(label);
+  };
+  svg.append("defs").append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9)
+     .attr("refY", 5).attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto")
+     .append("path").attr("d", "M0,0L10,5L0,10Z").attr("fill", INK);
+  const q = "#f4f6fb", v = { usable: "#dff3ea", level: "#fff3d6", local: "#fbe4da" };
+  const L = 24, QW = 300, QH = 46, RX = 420, RW = 258;
+  // steps
+  box(L, 50, QW, QH, ["1  Inside the AOA paired with random-validation skill?",
+                      "mangroves: threshold 0.001; 0% of any unsampled delta"], q);
+  box(L, 132, QW, QH, ["2  Inside the AOA paired with the out-of-region error?",
+                       "threshold 0.26; median 94% of a held-out delta"], q);
+  box(L, 214, QW, QH, ["3  Out-of-region skill ≥ half the replicate ceiling?",
+                       "r = −0.09 [−0.20, 0.03] against a ceiling of 0.74"], q);
+  box(L, 296, QW, QH, ["4  How many local cores close the gap?",
+                       "few-shot curve: 10 cores reach half the ceiling"], q);
+  arrow(L + QW / 2, 96, L + QW / 2, 132, "no: reported R² does not apply here (expected)");
+  arrow(L + QW / 2, 178, L + QW / 2, 214, "yes");
+  arrow(L + QW / 2, 260, L + QW / 2, 296, "no");
+  // verdicts
+  box(RX, 132, RW, 46, ["LOCAL CORES REQUIRED", "extrapolation: no error estimate applies"], v.local, INK, 10.5, true);
+  arrow(L + QW, 155, RX, 155, "no");
+  box(RX, 214, RW, 46, ["USABLE", "out-of-region error applies; pattern recovered"], v.usable, INK, 10.5, true);
+  arrow(L + QW, 237, RX, 237, "yes");
+  box(RX, 296, RW, 46, ["LEVEL ONLY / LOCAL CORES FOR PATTERN", "k cores from the few-shot curve"], v.level, INK, 10, true);
+  arrow(L + QW, 319, RX, 319, "");
+  // footer
+  svg.append("text").attr("x", 16).attr("y", 372).attr("font-size", 9.5).attr("fill", "#777")
+     .text("Every quantity is computed from the model's own training table: two AOA thresholds (folds matched to the error each certifies),");
+  svg.append("text").attr("x", 16).attr("y", 386).attr("font-size", 9.5).attr("fill", "#777")
+     .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling √ICC, and the few-shot calibration curve. Open-source: src/certify.py.");
+  svg.append("text").attr("x", 16).attr("y", 404).attr("font-size", 9.5).attr("fill", "#777")
+     .text("Passing step 2 while failing step 3 is the mangrove, salt-marsh, seagrass and permafrost outcome; mineral upland soils pass step 3.");
+  save(dom, "fig_protocol");
+}
+
 import { mkdirSync } from "fs";
 mkdirSync(OUT, { recursive: true });
-figMap(); figTiers(); figAoa(); figFewshot(); figRegion();
+figMap(); figTiers(); figAoa(); figFewshot(); figRegion(); figBiomes(); figProtocol();
 console.log("done.");
