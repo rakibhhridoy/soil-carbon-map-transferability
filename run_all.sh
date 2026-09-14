@@ -63,6 +63,9 @@ echo "== Stage 5: independent out-of-CCN validation =="
 python3 src/models/build_independent_cores.py    # -> independent_cores.csv (external datasets, dedup vs CCN)
 python3 src/models/independent_validation.py      # -> independent_validation.json (Rovai; needs covariate lake)
 python3 src/models/independent_validation_panama.py # -> independent_validation_panama.json (needs covariate lake)
+python3 src/acquire/download_cifor_swamp.py          # CIFOR SWAMP soil datasets via Dataverse API
+python3 src/labels/build_swamp_cores.py             # -> data/external/cifor_swamp/swamp_cores.csv
+python3 src/models/independent_validation_swamp.py    # -> independent_validation_swamp.json (needs covariate lake)
 python3 src/models/independent_validation_summary.py # -> independent_validation_summary.json (consolidates for the table)
 
 echo "== Stage 6: cross-biome transfer + national-inventory stakes =="

@@ -652,15 +652,20 @@ def tab_independent():
         wr_s = "n/a" if wr is None else f"{wr:+.2f}"
         rows.append(f"{s['source']} & {s['depth_cm']} & {s['n_independent']} & {s['n_tested']} & "
                     f"{s['aoa_inside_pct']}\\% & {s['pooled_r']:+.2f} & {wr_s} \\\\")
+    foot = [
+        "CCN-trained model predicting at independent (non-CCN) mangrove points. Pooled $r$ reflects the",
+        "coarse global level gradient; the level-independent within-region pattern correlation (Panama clusters:",
+        f"{d['per_source'][1]['within_region_note']}) is weak and inconsistent.",
+    ]
+    if len(d["per_source"]) > 2:
+        foot.append("SWAMP: " + d["per_source"][2]["within_region_note"].replace("_", " ") + ".")
     (TAB / "tab_independent.tex").write_text(
         "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
         "Independent source & Depth & $n$ indep. & $n$ tested & AOA-in & Pooled $r$ & Within-reg. $r$ \\\\\n"
         " & (cm) & ($>$5\\,km) & & & & \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n"
-        "\\multicolumn{7}{l}{\\footnotesize CCN-trained model predicting at independent (non-CCN) mangrove points. Pooled $r$ reflects the}\\\\\n"
-        "\\multicolumn{7}{l}{\\footnotesize coarse global level gradient; the level-independent within-region pattern correlation (Panama clusters:}\\\\\n"
-        f"\\multicolumn{{7}}{{l}}{{\\footnotesize {d['per_source'][1]['within_region_note']}) is weak and inconsistent.}}\\\\\n"
-        "\\end{tabular}\n")
+        + "".join(f"\\multicolumn{{7}}{{l}}{{\\footnotesize {f}}}\\\\\n" for f in foot)
+        + "\\end{tabular}\n")
 
 
 def settings_assets():
