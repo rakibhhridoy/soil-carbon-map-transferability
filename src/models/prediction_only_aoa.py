@@ -89,8 +89,10 @@ def main():
         Xte = Xte[keep]
         aoa = S.aoa_full(Xtr, Xte, imp, groups=S.site_groups(tr))
         thr, inside = aoa["threshold"], aoa["inside"]
+        inside_rand = S.aoa_full(Xtr, Xte, imp, groups=np.arange(len(Xtr)))["inside"]
         rows.append(dict(delta=d, n_points=int(keep.sum()),
                          aoa_inside=round(float(inside), 3),
+                         aoa_inside_randomcv=round(float(inside_rand), 3),
                          median_di=round(float(np.median(aoa["di"])), 3),
                          median_lpd=int(np.median(aoa["lpd"])),
                          threshold=round(float(thr), 3)))

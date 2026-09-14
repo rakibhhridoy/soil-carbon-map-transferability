@@ -223,7 +223,11 @@ def t3_lodo(df, feats, m, alpha=0.1):
         cov = float(np.mean(np.abs(yte - yp) <= hw))
 
         imp = model_importance(mdl, Xtr[fit], ytr[fit])
+        # Two AOAs, each paired with the validation tier whose error it certifies (Meyer &
+        # Pebesma 2021): random-CV folds give the AOA of the tier-1 skill; site-grouped
+        # folds give the AOA of the out-of-region error.
         aoa = aoa_full(Xtr, Xte, imp, groups=site_groups(df.loc[tr]))
+        aoa_rand = aoa_full(Xtr, Xte, imp, groups=np.arange(int(tr.sum())))
         inside = aoa["inside"]
 
         # back-transform metrics to Mg/ha
@@ -244,6 +248,9 @@ def t3_lodo(df, feats, m, alpha=0.1):
                          pearson=round(pear, 3), spearman=round(spear, 3),
                          rmse_Mgha=round(rmse, 1), bias_Mgha=round(bias, 1),
                          aoa_inside=round(inside, 2),
+                         aoa_inside_randomcv=round(aoa_rand["inside"], 2),
+                         aoa_threshold=round(aoa["threshold"], 3),
+                         aoa_threshold_randomcv=round(aoa_rand["threshold"], 4),
                          median_DI=round(float(np.median(aoa["di"])), 3),
                          median_LPD=int(np.median(aoa["lpd"])),
                          conformal_cov=round(cov, 2)))

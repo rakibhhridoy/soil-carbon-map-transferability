@@ -185,6 +185,41 @@ def _fmt_r(v):
     return "n/a" if v is None or v != v else f"{v:+.2f}"
 
 
+def tab_noiseceiling():
+    d = _opt(PROC / "noise_ceiling.json")
+    if d is None:
+        return
+    rows = []
+    for r in d["per_region"]:
+        if r.get("r_max") is None:
+            continue
+        rows.append(f"{r['region'].replace('region_', '')} & {r.get('continent', '')} & {r['n']} & "
+                    f"{r['n_replicated_sites']} & {r['icc']:.2f} & {r['r_max']:.2f} & "
+                    f"{r['r_obs']:+.2f} \\\\")
+    (TAB / "tab_noiseceiling.tex").write_text(
+        "\\begin{tabular}{llrrrrr}\n\\toprule\n"
+        "Region & Continent & $n$ & Replicated sites & ICC & $r_{\\max}$ & Observed $r$ \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_ablation():
+    d = _opt(PROC / "covariate_ablation.json")
+    if d is None:
+        return
+    rows = []
+    for r in d["sets"]:
+        h = r["histgb"]
+        rows.append(f"{r['feature_set'].replace('+', '$+$')} & {r['n_features']} & {h['t1_random_r2']:+.2f} & "
+                    f"{h['t1_grouped_r2']:+.2f} & {h['lodo_median_r2']:+.2f} & "
+                    f"{h['lodo_median_within_r']:+.2f} & {h['median_aoa_inside']*100:.0f}\\% \\\\")
+    (TAB / "tab_ablation.tex").write_text(
+        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
+        "Covariate set & $p$ & Random $R^2$ & Site-grouped $R^2$ & LODO $R^2$ & Within-delta $r$ & AOA in \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n"
+        "\\multicolumn{7}{l}{\\footnotesize Gradient boosting; LODO values are medians over the eight deltas; AOA with the out-of-region threshold.}\\\\\n"
+        "\\end{tabular}\n")
+
+
 def tab_aoasens():
     t = _opt(PROC / "aoa_threshold_sensitivity.json")
     if t is None:
@@ -241,7 +276,8 @@ def tab_region():
         f"Independent regions & {s['n_regions']} (on {s['n_continents']} continents) \\\\",
         f"Median within-region $r$ (out-of-region) & {s['lodo_median_pearson']:+.2f}{pci_s} \\\\",
         f"Regions with $r<0.2$ & {s['frac_regions_pearson_below_0p2']*100:.0f}\\% \\\\",
-        f"Median AOA-inside & {s['median_aoa_inside']:.2f}{aci_s} \\\\",
+        f"Median AOA-inside (out-of-region) & {s['median_aoa_inside']:.2f}{aci_s} \\\\",
+        f"Median AOA-inside (random-CV) & {s.get('median_aoa_inside_randomcv', float('nan')):.2f} \\\\",
         f"Regions with negative $R^2$ & {s['frac_regions_negative_r2']*100:.0f}\\% \\\\",
     ]
     if above is not None:
@@ -436,13 +472,13 @@ def tab_perdelta(lodo):
     pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
     rows = [f"{r.delta.replace('_',' ').title()} & {int(r.n)} & {r.r2_lodo:+.2f} & "
             f"{r.get('pearson', float('nan')):+.2f} & {r.rmse_Mgha:.0f} & "
-            f"{r.bias_Mgha:+.0f} & {r.aoa_inside:.2f} & {r.median_DI:.2f} & "
-            f"{r.conformal_cov*100:.0f}\\% \\\\"
+            f"{r.bias_Mgha:+.0f} & {r.aoa_inside_randomcv:.2f} & {r.aoa_inside:.2f} & "
+            f"{r.median_DI:.2f} & {r.conformal_cov*100:.0f}\\% \\\\"
             for _, r in pd_.iterrows()]
     (TAB / "tab_perdelta.tex").write_text(
-        "\\begin{tabular}{lrrrrrrrr}\n\\toprule\n"
-        "Delta & $n$ & $R^2$ & $r$ & RMSE & Bias & AOA in & DI & 90\\% PI \\\\\n"
-        " & & global & within & \\multicolumn{2}{c}{(Mg\\,ha$^{-1}$)} & & median & coverage \\\\\n\\midrule\n"
+        "\\begin{tabular}{lrrrrrrrrr}\n\\toprule\n"
+        "Delta & $n$ & $R^2$ & $r$ & RMSE & Bias & \\multicolumn{2}{c}{AOA inside} & DI & 90\\% PI \\\\\n"
+        " & & global & within & \\multicolumn{2}{c}{(Mg\\,ha$^{-1}$)} & random-CV & out-of-region & median & coverage \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -469,7 +505,8 @@ def dump_figure_data(reg, lodo, soc):
         "perdelta": [dict(delta=r["delta"], name=r["delta"].replace("_", " ").title(),
                           n=r["n"], r2=r["r2_lodo"], pearson=r.get("pearson"),
                           rmse=r["rmse_Mgha"], bias=r["bias_Mgha"],
-                          aoa=r["aoa_inside"]) for r in h["per_delta"]],
+                          aoa=r["aoa_inside"], aoa_randomcv=r.get("aoa_inside_randomcv"))
+                     for r in h["per_delta"]],
     }
     fc = _opt(PROC / "fewshot_calibration.json")
     if fc:
@@ -613,6 +650,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
+    tab_noiseceiling(); tab_ablation()
     tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
     settings_assets()
     tab_depth()

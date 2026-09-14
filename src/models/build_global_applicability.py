@@ -89,15 +89,17 @@ def main():
     print(f"cells with complete covariates: {keep.sum()} / {len(df)}")
     aoa = S.aoa_full(Xtr, X[keep], imp, groups=S.site_groups(tr))
     di, thr = aoa["di"], aoa["threshold"]
+    thr_rand = S.aoa_full(Xtr, X[keep][:1], imp, groups=np.arange(len(Xtr)))["threshold"]
     df = df.loc[keep].reset_index(drop=True)
     df["di"] = np.round(di, 3)
     df["lpd"] = aoa["lpd"]
     df["aoa_inside"] = (di <= thr).astype(int)
+    df["aoa_inside_randomcv"] = (di <= thr_rand).astype(int)
     df["ces"] = tag_ces(df)
     # inside the AoA means covariates resemble training data, not that transfer is verified
     df["verdict"] = np.where(df.aoa_inside == 1, "inside_AoA", "outside_AoA")
 
-    cols = ["lon", "lat", "di", "lpd", "aoa_inside", "ces", "verdict"]
+    cols = ["lon", "lat", "di", "lpd", "aoa_inside", "aoa_inside_randomcv", "ces", "verdict"]
     df[cols].to_csv(OUT / "global_applicability_cells.csv", index=False)
 
     # GeoTIFF
@@ -121,7 +123,9 @@ def main():
 
     summ = dict(n_cells=int(len(df)), aoa_inside_cells=int(df.aoa_inside.sum()),
                 aoa_inside_pct=round(float(df.aoa_inside.mean() * 100), 2),
-                threshold=round(float(thr), 3), grid_deg=DEG, geotiff=tif_ok)
+                threshold=round(float(thr), 3), threshold_randomcv=round(float(thr_rand), 4),
+                aoa_inside_randomcv_pct=round(float(df.aoa_inside_randomcv.mean() * 100), 2),
+                grid_deg=DEG, geotiff=tif_ok)
     (OUT / "global_applicability_summary.json").write_text(json.dumps(summ, indent=1))
     print(f"AoA-inside: {summ['aoa_inside_cells']}/{summ['n_cells']} cells "
           f"({summ['aoa_inside_pct']}%)")

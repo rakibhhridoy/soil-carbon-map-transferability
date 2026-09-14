@@ -51,9 +51,11 @@ def main():
         pear = float(np.corrcoef(yt, yp)[0, 1]) if yt.std() > 0 and yp.std() > 0 else np.nan
         imp = S.model_importance(mdl, X[tr], y[tr])
         _, _, inside = S.aoa_di(X[tr], X[te], imp, groups=S.site_groups(df.loc[tr]))
+        _, _, inside_rand = S.aoa_di(X[tr], X[te], imp, groups=np.arange(int(tr.sum())))
         rows.append(dict(region=r, continent=cont.get(r, ""), n=int(te.sum()),
                          r2=round(r2, 3), pearson=round(pear, 3),
-                         rmse_Mgha=round(rmse, 1), aoa_inside=round(inside, 2)))
+                         rmse_Mgha=round(rmse, 1), aoa_inside=round(inside, 2),
+                         aoa_inside_randomcv=round(inside_rand, 2)))
 
     rdf = pd.DataFrame(rows)
     # random-CV baseline over the same pooled data for the gap
@@ -75,6 +77,7 @@ def main():
         lodo_median_pearson_ci=boot_med_ci(rdf.pearson),
         median_aoa_inside=round(float(rdf.aoa_inside.median()), 3),
         median_aoa_inside_ci=boot_med_ci(rdf.aoa_inside),
+        median_aoa_inside_randomcv=round(float(rdf.aoa_inside_randomcv.median()), 3),
         frac_regions_negative_r2=round(float((rdf.r2 < 0).mean()), 2),
         frac_regions_pearson_below_0p2=round(float((rdf.pearson < 0.2).mean()), 2),
         frac_regions_pearson_above_0p2=round(float((rdf.pearson > 0.2).mean()), 2),
