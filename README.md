@@ -58,7 +58,7 @@ the ISRIC WoSIS snapshot; the core mangrove results do not require it.
 ## Manuscript
 The manuscript, supplementary information and cover letters are not part of this repository.
 The data, results and tables they report are archived at Zenodo
-(https://doi.org/10.5281/zenodo.22769749); `src/manuscript_assets.py` and `figures_d3/build.sh`
+(https://doi.org/10.5281/zenodo.22769198); `src/manuscript_assets.py` and `figures_d3/build.sh`
 regenerate the tables and figures into a local `manuscript/` directory.
 
 ## Figures
