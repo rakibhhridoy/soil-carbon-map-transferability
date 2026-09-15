@@ -13,11 +13,12 @@ const OUT = "svg";
 
 // ---- journal-print style tokens ----
 const FONT = "Times, 'Times New Roman', serif";
-const INK = "#1a1a1a", GRID = "#d9d9d9", AXIS = "#555";
+const INK = "#212121", GRID = "#E0E0E0", AXIS = "#424242";
 // Okabe-Ito colorblind-safe palette
-const OI = { blue: "#0072B2", vermillion: "#D55E00", green: "#009E73",
-             orange: "#E69F00", sky: "#56B4E9", purple: "#CC79A7", grey: "#999999" };
-const SEQ = d3.interpolateViridis;
+// Same palette as the journal figures: red = does not transfer, teal = transfers.
+const OI = { blue: "#1565C0", vermillion: "#C62828", green: "#00838F",
+             orange: "#E65100", sky: "#90CAF9", purple: "#7B1FA2", grey: "#9E9E9E" };
+const SEQ = d3.interpolateRgbBasis(["#E0F2F1", "#4DB6AC", "#00838F", "#00494E"]);
 
 function svgRoot(w, h) {
   const dom = new JSDOM("<!DOCTYPE html><body></body>");
@@ -73,9 +74,9 @@ function figMap() {
   const path = d3.geoPath(proj);
   const g = svg.append("g");
   g.append("path").attr("d", path({ type: "Sphere" }))
-    .attr("fill", "#f4f7fb").attr("stroke", GRID).attr("stroke-width", 0.6);
-  g.append("path").attr("d", path(land)).attr("fill", "#e9ecef")
-    .attr("stroke", "#cfd4da").attr("stroke-width", 0.4);
+    .attr("fill", "#F5F5F5").attr("stroke", GRID).attr("stroke-width", 0.6);
+  g.append("path").attr("d", path(land)).attr("fill", "#ECECEC")
+    .attr("stroke", "#D5D5D5").attr("stroke-width", 0.4);
 
   const deltas = DATA.deltas;
   const rext = d3.extent(deltas, d => d.area_km2);
@@ -94,7 +95,7 @@ function figMap() {
   const gd = svg.append("g");
   nodes.forEach(d => {
     gd.append("circle").attr("cx", d.x).attr("cy", d.y).attr("r", r(d.area_km2))
-      .attr("fill", color(d.soc_med)).attr("stroke", "#111").attr("stroke-width", 0.8)
+      .attr("fill", color(d.soc_med)).attr("stroke", INK).attr("stroke-width", 0.8)
       .attr("opacity", 0.92);
     gd.append("text").attr("x", d.x).attr("y", d.y - r(d.area_km2) - 3)
       .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", INK)
@@ -161,7 +162,7 @@ function figTiers() {
 
   // shaded "conventionally reported" vs "honest" zones
   svg.append("rect").attr("x", m.l).attr("y", m.t).attr("width", x0("t1g") - m.l)
-     .attr("height", H - m.b - m.t).attr("fill", "#f0f6fb");
+     .attr("height", H - m.b - m.t).attr("fill", "#F5F5F5");
   svg.append("text").attr("x", (m.l + x0("t1g")) / 2).attr("y", m.t - 6)
      .attr("text-anchor", "middle").attr("font-size", 9.5).attr("fill", OI.blue)
      .text("conventionally reported");
@@ -208,11 +209,11 @@ function figTiers() {
     const off = d.r2 < FLOOR; if (off) clipped++;
     const cy = y(Math.max(d.r2, FLOOR));
     svg.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 2.6)
-       .attr("fill", off ? "none" : "#333").attr("stroke", "#333").attr("stroke-width", 0.8)
+       .attr("fill", off ? "none" : INK).attr("stroke", INK).attr("stroke-width", 0.8)
        .attr("fill-opacity", 0.55);
   });
   svg.append("text").attr("x", x0("t3") + x0.bandwidth() / 2).attr("y", H - m.b - 4)
-     .attr("text-anchor", "middle").attr("font-size", 8.5).attr("fill", "#555")
+     .attr("text-anchor", "middle").attr("font-size", 8.5).attr("fill", "#424242")
      .text(`8 deltas${clipped ? ` (${clipped} below axis)` : ""}`);
 
   // inflation callout: a short arrow from the random-kfold bar top to the LODO bar
@@ -239,7 +240,7 @@ function figTiers() {
      .attr("stroke", OI.blue).attr("stroke-width", 1.6).attr("stroke-dasharray", "4 3");
   svg.append("text").attr("x", W - m.r - 135).attr("y", m.t + 27).attr("font-size", 10).attr("fill", INK).text("ridge");
   svg.append("circle").attr("cx", W - m.r - 145).attr("cy", m.t + 38).attr("r", 2.6)
-     .attr("fill", "#333").attr("fill-opacity", 0.55).attr("stroke", "#333").attr("stroke-width", 0.8);
+     .attr("fill", INK).attr("fill-opacity", 0.55).attr("stroke", INK).attr("stroke-width", 0.8);
   svg.append("text").attr("x", W - m.r - 135).attr("y", m.t + 41).attr("font-size", 10).attr("fill", INK)
      .text("per-delta (LODO)");
   save(dom, "fig_tiers");
@@ -276,7 +277,7 @@ function figAoa() {
   title(svg, bx, 22, "Inside AOA");
   const x2 = d3.scaleLinear().domain([0, 1]).range([bx, bx + panelW]);
   svg.append("rect").attr("x", bx).attr("y", m.t).attr("width", panelW).attr("height", H - m.b - m.t)
-     .attr("fill", "#f4f7fb").attr("stroke", GRID).attr("stroke-width", 0.5);
+     .attr("fill", "#F5F5F5").attr("stroke", GRID).attr("stroke-width", 0.5);
   pd.forEach(d => {
     const w = Math.max(2, x2(d.aoa) - bx);
     svg.append("rect").attr("x", bx).attr("y", y(d.name)).attr("width", w).attr("height", y.bandwidth())
@@ -288,7 +289,7 @@ function figAoa() {
      .attr("font-size", 11).attr("fill", INK).text("fraction inside AOA");
   if (d3.max(DATA.perdelta, d => d.aoa) < 0.01)
     svg.append("text").attr("x", bx + panelW / 2).attr("y", (m.t + H - m.b) / 2)
-       .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#777")
+       .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#9E9E9E")
        .text("all deltas ≈ 0%");
   save(dom, "fig_aoa");
 }
@@ -426,21 +427,21 @@ function figRegion() {
        .attr("cx", cx(d.continent) + cx.bandwidth() / 2 + jitter())
        .attr("cy", y(Math.max(-0.7, Math.min(0.7, d.pearson))))
        .attr("r", 3 + Math.sqrt(d.n) / 6).attr("fill", col(d.continent))
-       .attr("fill-opacity", 0.78).attr("stroke", "#222").attr("stroke-width", 0.4);
+       .attr("fill-opacity", 0.78).attr("stroke", INK).attr("stroke-width", 0.4);
   });
   // median marker per continent
   conts.forEach(c => {
     const v = DATA.region.filter(d => d.continent === c).map(d => d.pearson).sort(d3.ascending);
     const med = d3.median(v);
     svg.append("line").attr("x1", cx(c) + 4).attr("x2", cx(c) + cx.bandwidth() - 4)
-       .attr("y1", y(med)).attr("y2", y(med)).attr("stroke", "#000").attr("stroke-width", 1.6);
+       .attr("y1", y(med)).attr("y2", y(med)).attr("stroke", INK).attr("stroke-width", 1.6);
   });
   conts.forEach(c => svg.append("text").attr("x", cx(c) + cx.bandwidth() / 2)
     .attr("y", H - m.b + 16).attr("text-anchor", "middle").attr("font-size", 10)
     .attr("fill", INK).attr("transform", `rotate(12,${cx(c) + cx.bandwidth() / 2},${H - m.b + 16})`)
     .text(c));
   svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
-     .attr("font-size", 10).attr("fill", "#777")
+     .attr("font-size", 10).attr("fill", "#9E9E9E")
      .text("each point = one held-out region (size ∝ √n); black bar = continental median; "
          + "red band = 95% CI of overall median");
   save(dom, "fig_region");
@@ -487,27 +488,27 @@ function figBiomes() {
        .attr("height", y(b.ci[0]) - y(b.ci[1])).attr("fill", col).attr("fill-opacity", 0.15);
     b.regions.forEach(d => svg.append("circle").attr("cx", cx + jitter())
        .attr("cy", y(Math.max(-0.85, Math.min(1.05, d.r)))).attr("r", 2.6 + Math.sqrt(d.n) / 8)
-       .attr("fill", col).attr("fill-opacity", 0.55).attr("stroke", "#222").attr("stroke-width", 0.35));
+       .attr("fill", col).attr("fill-opacity", 0.55).attr("stroke", INK).attr("stroke-width", 0.35));
     svg.append("line").attr("x1", x(b.tag) + 3).attr("x2", x(b.tag) + x.bandwidth() - 3)
-       .attr("y1", y(b.median_r)).attr("y2", y(b.median_r)).attr("stroke", "#000").attr("stroke-width", 2);
+       .attr("y1", y(b.median_r)).attr("y2", y(b.median_r)).attr("stroke", INK).attr("stroke-width", 2);
     // ceiling: hollow diamond
     if (b.ceiling != null) {
       const cy = y(b.ceiling), s = 6;
       svg.append("path").attr("d", `M${cx},${cy - s}L${cx + s},${cy}L${cx},${cy + s}L${cx - s},${cy}Z`)
-         .attr("fill", "white").attr("stroke", "#000").attr("stroke-width", 1.2);
+         .attr("fill", "white").attr("stroke", INK).attr("stroke-width", 1.2);
       svg.append("line").attr("x1", cx).attr("x2", cx).attr("y1", y(b.median_r)).attr("y2", cy - s)
-         .attr("stroke", "#000").attr("stroke-width", 0.7).attr("stroke-dasharray", "2 2");
+         .attr("stroke", INK).attr("stroke-width", 0.7).attr("stroke-dasharray", "2 2");
     }
     // x label (two lines) + n
     const lab = (short[b.tag] || b.label).split("\n");
     lab.forEach((t, i) => svg.append("text").attr("x", cx).attr("y", H - m.b + 16 + i * 12)
        .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", INK).text(t));
     svg.append("text").attr("x", cx).attr("y", H - m.b + 16 + lab.length * 12)
-       .attr("text-anchor", "middle").attr("font-size", 9).attr("fill", "#777")
+       .attr("text-anchor", "middle").attr("font-size", 9).attr("fill", "#9E9E9E")
        .text(`n=${b.n.toLocaleString()}, ${b.n_regions} regions`);
   });
   svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
-     .attr("font-size", 10).attr("fill", "#777")
+     .attr("font-size", 10).attr("fill", "#9E9E9E")
      .text("points = held-out regions (size ∝ √n); bar = median, band = 95% CI; ◇ = replicate-core ceiling on attainable r");
   save(dom, "fig_biomes");
 }
@@ -534,7 +535,7 @@ function figProtocol() {
   svg.append("defs").append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9)
      .attr("refY", 5).attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto")
      .append("path").attr("d", "M0,0L10,5L0,10Z").attr("fill", INK);
-  const q = "#f4f6fb", v = { usable: "#dff3ea", level: "#fff3d6", local: "#fbe4da" };
+  const q = "#F5F5F5", v = { usable: "#E0F2F1", level: "#FFF8E1", local: "#FFEBEE" };
   const L = 16, QW = 340, QH = 50, RX = 392, RW = 296;
   // steps
   box(L, 50, QW, QH, ["1  Inside the AOA paired with random-validation skill?",
@@ -556,11 +557,11 @@ function figProtocol() {
   box(RX, 294, RW, 50, ["LEVEL ONLY / LOCAL CORES FOR PATTERN", "k cores from the few-shot curve"], v.level, INK, 11, true);
   arrow(L + QW, 319, RX, 319, "");
   // footer
-  svg.append("text").attr("x", 16).attr("y", 380).attr("font-size", 10.5).attr("fill", "#777")
+  svg.append("text").attr("x", 16).attr("y", 380).attr("font-size", 10.5).attr("fill", "#9E9E9E")
      .text("Every quantity comes from the model's own training table: two AOA thresholds (folds matched to the error each certifies),");
-  svg.append("text").attr("x", 16).attr("y", 396).attr("font-size", 10.5).attr("fill", "#777")
+  svg.append("text").attr("x", 16).attr("y", 396).attr("font-size", 10.5).attr("fill", "#9E9E9E")
      .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling √ICC and the few-shot calibration curve (open code).");
-  svg.append("text").attr("x", 16).attr("y", 416).attr("font-size", 10.5).attr("fill", "#777")
+  svg.append("text").attr("x", 16).attr("y", 416).attr("font-size", 10.5).attr("fill", "#9E9E9E")
      .text("Passing step 2 while failing step 3 is the mangrove, salt-marsh, seagrass and permafrost outcome; mineral upland soils pass step 3.");
   save(dom, "fig_protocol");
 }

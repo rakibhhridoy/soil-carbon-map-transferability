@@ -14,6 +14,7 @@ import json
 from pathlib import Path
 import numpy as np, pandas as pd
 import matplotlib
+from matplotlib.colors import LinearSegmentedColormap
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import geopandas as gpd
@@ -23,6 +24,13 @@ PROC = ROOT / "data/processed"
 FIG = ROOT / "manuscript/figures"; FIG.mkdir(parents=True, exist_ok=True)
 TAB = ROOT / "manuscript/tables"; TAB.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200})
+
+# One palette across every figure of this study: red carries what does not transfer,
+# teal what transfers or is attainable; blue and the greys carry secondary series.
+PAL = {"red": "#C62828", "teal": "#00838F", "blue": "#1565C0", "orange": "#E65100",
+       "amber": "#F9A825", "ink": "#212121", "grey": "#424242", "mid": "#9E9E9E"}
+TEAL_CMAP = LinearSegmentedColormap.from_list(
+    "mdbc_teal", ["#E0F2F1", "#4DB6AC", "#00838F", "#00494E"])
 
 CONT = {"sundarbans": "Asia", "mekong": "Asia", "musi_banyuasin": "Asia",
         "amazon_amapa": "S.America", "everglades": "N.America",
@@ -69,14 +77,14 @@ def fig_fewshot():
     rmse = [fc["summary"][str(k)]["median_rmse"] for k in ks]
     r = [fc["summary"][str(k)]["median_pearson"] for k in ks]
     fig, ax1 = plt.subplots(figsize=(5, 3.4))
-    ax1.plot(ks, rmse, "o-", color="#C44E52", label="RMSE")
+    ax1.plot(ks, rmse, "o-", color=PAL["red"], label="RMSE")
     ax1.set_xlabel("local calibration cores $k$")
-    ax1.set_ylabel("median RMSE (Mg ha$^{-1}$)", color="#C44E52")
-    ax1.tick_params(axis="y", labelcolor="#C44E52")
+    ax1.set_ylabel("median RMSE (Mg ha$^{-1}$)", color=PAL["red"])
+    ax1.tick_params(axis="y", labelcolor=PAL["red"])
     ax2 = ax1.twinx()
-    ax2.plot(ks, r, "s--", color="#4C72B0", label="within-delta $r$")
-    ax2.set_ylabel("median within-delta $r$", color="#4C72B0")
-    ax2.tick_params(axis="y", labelcolor="#4C72B0")
+    ax2.plot(ks, r, "s--", color=PAL["blue"], label="within-delta $r$")
+    ax2.set_ylabel("median within-delta $r$", color=PAL["blue"])
+    ax2.tick_params(axis="y", labelcolor=PAL["blue"])
     ax1.set_title("Few-shot calibration of an unsampled delta")
     fig.tight_layout(); fig.savefig(FIG / "fig_fewshot.pdf"); plt.close(fig)
 
@@ -396,7 +404,7 @@ def fig_map(reg, soc):
     fig, ax = plt.subplots(figsize=(9, 4.2))
     coast.plot(ax=ax, color="0.7", linewidth=0.3)
     sc = ax.scatter(cents.lon, cents.lat, s=np.sqrt(cents.mangrove_area_km2) * 3.5,
-                    c=cents.soc, cmap="viridis", edgecolor="k", linewidth=0.6,
+                    c=cents.soc, cmap=TEAL_CMAP, edgecolor="k", linewidth=0.6,
                     zorder=3, alpha=0.9)
     for d, r in cents.iterrows():
         ax.annotate(d.replace("_", " "), (r.lon, r.lat), fontsize=7,
@@ -414,7 +422,7 @@ def fig_tiers(lodo):
     tiers = ["t1_random_r2", "t2_spatialblock_r2", "t3_lodo_mean_r2"]
     labels = ["Random\n$k$-fold", "Spatial\nblock", "LODO\n(mean)"]
     x = np.arange(3); w = 0.38
-    for i, (m, c) in enumerate([("ridge", "#4C72B0"), ("histgb", "#C44E52")]):
+    for i, (m, c) in enumerate([("ridge", PAL["blue"]), ("histgb", PAL["red"])]):
         vals = [lodo["models"][m][t] for t in tiers]
         ax.bar(x + (i - 0.5) * w, vals, w, label=m, color=c)
     ax.axhline(0, color="k", lw=0.6)
@@ -427,9 +435,9 @@ def fig_tiers(lodo):
 def fig_aoa(lodo):
     pd_ = pd.DataFrame(lodo["models"]["histgb"]["per_delta"]).sort_values("rmse_Mgha")
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(9, 3.4))
-    a1.barh(pd_.delta.str.replace("_", " "), pd_.rmse_Mgha, color="#C44E52")
+    a1.barh(pd_.delta.str.replace("_", " "), pd_.rmse_Mgha, color=PAL["red"])
     a1.set_xlabel("LODO RMSE (Mg ha$^{-1}$)"); a1.set_title("Per-delta error")
-    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color="#55A868")
+    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color=PAL["teal"])
     a2.set_xlim(0, 1); a2.set_xlabel("fraction inside AOA")
     a2.set_title("Fraction inside AOA")
     fig.tight_layout(); fig.savefig(FIG / "fig_aoa.pdf"); plt.close(fig)
@@ -795,18 +803,18 @@ def settings_assets():
     bars = sorted([rows[c] for c in rows], key=lambda r: r["within_region_pearson"])
     labs = [f'{r["setting"]}\n(n={r["n"]})' for r in bars]
     vals = [r["within_region_pearson"] for r in bars]
-    cols = ["#D55E00" if v < 0.1 else "#009E73" for v in vals]
+    cols = [PAL["red"] if v < 0.1 else PAL["teal"] for v in vals]
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     ax.barh(labs, vals, color=cols, edgecolor="black", linewidth=0.5)
     ax.axvline(0, color="black", lw=0.8)
     ax.set_xlabel("Within-region pattern skill (Pearson r) under out-of-region transfer")
-    ax.set_title("Which coastal environmental settings transfer", fontweight="bold", color="#0B6FB8")
+    ax.set_title("Which coastal environmental settings transfer", fontweight="bold", color=PAL["ink"])
     for r in bars:
         v = r["within_region_pearson"]
         ax.text(v + (0.012 if v >= 0 else -0.012), f'{r["setting"]}\n(n={r["n"]})',
                 f'{v:+.2f}', va="center", ha="left" if v >= 0 else "right",
                 fontsize=9, fontweight="bold")
-    ax.set_xlim(-0.35, 0.5)
+    ax.set_xlim(-0.35, max(0.5, max(vals) + 0.12))  # the top bar ran off a fixed limit
     fig.tight_layout(); fig.savefig(FIG / "fig_settings.pdf"); plt.close(fig)
 
 
