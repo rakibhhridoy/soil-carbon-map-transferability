@@ -7,44 +7,52 @@
    "mtime": 1781916094.66,
    "path": "data/raw/ccn_library/CCN_cores.csv",
    "sha256_head": "491ab5747138911c",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_cores.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_cores.csv",
+   "sha256": "491ab5747138911cd20e4eddc8317b31e988f32b1c4293f35eec4814839ca78f"
   },
   "CCN_depthseries.csv": {
    "bytes": 30303567,
    "mtime": 1781916104.33,
    "path": "data/raw/ccn_library/CCN_depthseries.csv",
    "sha256_head": "cc37159d1bc21fd3",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_depthseries.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_depthseries.csv",
+   "sha256": "cc37159d1bc21fd366fd38d53c125aca3b9c74afe178bf8c2ceae384613ff719"
   },
   "CCN_sites.csv": {
    "bytes": 139788,
    "mtime": 1781916104.71,
    "path": "data/raw/ccn_library/CCN_sites.csv",
    "sha256_head": "1ecf47586dda4cb2",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_sites.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_sites.csv",
+   "sha256": "1ecf47586dda4cb27a73054302c99084849208646c5789ceb7725b11719ca784"
   },
   "CCN_methods.csv": {
    "bytes": 82613,
    "mtime": 1781916105.15,
    "path": "data/raw/ccn_library/CCN_methods.csv",
    "sha256_head": "169d446ed92f4c1e",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_methods.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_methods.csv",
+   "sha256": "169d446ed92f4c1eee2c8f9c360bec6b5f6d7f7a5207988f1fecb2b83f9b41ea"
   },
   "CCN_species.csv": {
    "bytes": 1011350,
    "mtime": 1781916107.24,
    "path": "data/raw/ccn_library/CCN_species.csv",
    "sha256_head": "c2a3cd8c344430c9",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_species.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_species.csv",
+   "sha256": "c2a3cd8c344430c98f99fab1463bdb8e02986266c7c1a0966d9ac0b75aaa6cf3"
   },
   "CCN_impacts.csv": {
    "bytes": 155120,
    "mtime": 1781916107.66,
    "path": "data/raw/ccn_library/CCN_impacts.csv",
    "sha256_head": "d14bda3d23b2d571",
-   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_impacts.csv"
+   "url": "https://raw.githubusercontent.com/Smithsonian/CCN-Data-Library/main/data/CCN_synthesis/CCN_impacts.csv",
+   "sha256": "d14bda3d23b2d5715cf83a938547f6c854bff874679d807e51f953190b9129ed"
   }
  },
  "doi": "10.25573/serc.21565671",
- "version": "v1.6.0"
+ "version": "v1.6.0",
+ "upstream_commit": "5972abd40cc29ffaec7f7221aafd1a1fb56e257b",
+ "upstream_commit_note": "CCN_cores.csv, CCN_depthseries.csv and CCN_sites.csv at this commit of Smithsonian/CCN-Data-Library (data/CCN_synthesis/) are byte-identical to the files used (SHA-256 checked 2026-09-15); release v1.6.0, doi:10.25573/serc.21565671; accessed 2026-06-20"
 }

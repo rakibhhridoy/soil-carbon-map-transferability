@@ -33,7 +33,8 @@ python3 src/features/build_elevation.py       # + elev_m, elev_src (FABDEM v1.2 
 python3 src/features/build_tsm.py             # + tsm_gm3/kd490 (CMEMS GlobColour 2002-2020, built per year; needs `copernicusmarine login`)
 
 echo "== Stage 2: SOC transferability experiment =="
-python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json
+python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json (+ soc_lodo_percore.json)
+python3 src/figure_data_extra.py               # -> data/processed/figure_data_extra.json (per-core layer for figures)
 python3 src/build_region_folds.py              # -> data/processed/region_folds.csv (DBSCAN regions)
 python3 src/models/region_lodo.py              # -> data/processed/region_lodo_results.json (scale test)
 python3 src/models/transfer_diagnostic.py      # -> data/processed/transfer_diagnostic.json
@@ -77,9 +78,13 @@ python3 src/models/biome_transfer.py marsh --target-cm 100
 python3 src/models/biome_transfer.py seagrass --target-cm 100
 python3 src/models/biome_transfer.py permafrost --target-cm 100   # Hugelius et al. 2013 pedons (data/external/ncscd_pedons)
 python3 src/models/biome_transfer.py terrestrial_conc --target-cm 30 --drop-gsoc
+python3 src/models/variance_partition.py       # -> data/processed/variance_partition.json (needs biome_* training tables)
+python3 src/models/biome_sensitivity.py        # -> data/processed/biome_sensitivity.json (150/500 km, climate-only, ridge)
+python3 src/models/power_mde.py                # -> data/processed/power_mde.json (needs region_lodo, noise_ceiling, biome runs)
 python3 src/models/tier1_inventory.py          # -> data/processed/tier1_inventory.json (IPCC Tier 1 vs national cores)
 
 echo "== Manuscript assets (figures + tables) =="
 python3 src/manuscript_assets.py               # -> manuscript/figures + manuscript/tables
+bash figures_d3/build.sh                       # -> manuscript/figures/*.pdf (journal figures; showcase set in figures/showcase)
 
 echo "== DONE. See data/processed/, docs/, and manuscript/ =="

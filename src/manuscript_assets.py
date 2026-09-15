@@ -615,6 +615,31 @@ def tab_variance():
         "\\end{tabular}\n")
 
 
+def tab_power():
+    d = _opt(PROC / "power_mde.json")
+    if d is None:
+        return
+    lab = {"terrestrial_conc": "Terr. mineral, conc.", "terrestrial_stock": "Terr. mineral, stock",
+           "mangrove": "Mangrove", "marsh": "Salt marsh", "seagrass": "Seagrass", "permafrost": "Permafrost"}
+    f2 = lambda v: "$>$0.60" if v is None else f"{v:.2f}"
+    lines = []
+    for b in ["terrestrial_conc", "terrestrial_stock", "mangrove", "marsh", "seagrass", "permafrost"]:
+        if b not in d:
+            continue
+        r = d[b]; z = r["tau0"]; loo = r["leave_one_region_out_tau"]
+        lines.append(f"{lab[b]} & {r['n_regions']} & {r['tau']:.2f} ({loo['min']:.2f}--{loo['max']:.2f}) & "
+                     f"{f2(r['mdc_80'])} & {r['half_ceiling']:.2f} & {r['power_at_half_ceiling']:.2f} & "
+                     f"{f2(z['mdc_80'])} & {z['power_at_half_ceiling']:.2f} \\\\")
+    (TAB / "tab_power.tex").write_text(
+        "\\begin{tabular}{lrlrrrrr}\n\\toprule\n"
+        " & & & \\multicolumn{3}{c}{Heterogeneity from data} & \\multicolumn{2}{c}{Sampling error only} \\\\\n"
+        "Biome & Regions & $\\tau$ (leave-one-out range) & MDC & Half ceiling & Power & MDC & Power \\\\\n\\midrule\n"
+        + "\n".join(lines) + "\n\\bottomrule\n"
+        "\\multicolumn{8}{l}{\\footnotesize MDC: smallest true within-region correlation detected with 80\\% probability (95\\% bootstrap CI of the median above zero).}\\\\\n"
+        "\\multicolumn{8}{l}{\\footnotesize Power: probability of detecting a correlation of half the replicate ceiling. $\\tau$: DerSimonian--Laird heterogeneity in Fisher-$z$.}\\\\\n"
+        "\\end{tabular}\n")
+
+
 def tab_sensitivity():
     d = _opt(PROC / "biome_sensitivity.json")
     if d is None:
@@ -794,7 +819,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
-    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1(); tab_variance(); tab_sensitivity()
+    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1(); tab_variance(); tab_sensitivity(); tab_power()
     tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
     settings_assets()
     tab_depth()
