@@ -52,3 +52,11 @@ docs/.ipynb_checkpoints/
 # journal-build directories: manuscript material, never committed
 RewriteNatureFinal/
 RewriteScienceFinal/
+
+# code-only repository: data, docs, manuscript, products and archives live outside git (Zenodo)
+data/
+docs/
+manuscript/
+products/
+zenodo_v1.1/
+MDBC_framework_design.md

@@ -1,6 +1,0 @@
-{
- "random_holdout": 0.811,
- "spatial_block_holdout": 0.0,
- "lodo_holdout": 0.0,
- "verdict": "AOA tracks genuine novelty: random-point holdout lands largely inside the AOA while whole held-out deltas do not, so AOA=0 under LODO reflects separated delta covariate space, not a small-training-set artifact."
-}
