@@ -56,11 +56,10 @@ The terrestrial specificity control additionally needs a harmonised WoSIS SOC ta
 the ISRIC WoSIS snapshot; the core mangrove results do not require it.
 
 ## Manuscript
-Two LaTeX versions share one body and one figure/table set:
-- `manuscript/Manuscript.tex` — single-column working draft (natbib + `references.bib`).
-- `manuscript/manuscript_natcomm.tex` — Nature Communications-style two-column submission
-  version, generated from the working draft by `python manuscript/build_natcomm.py`
-  (numeric `\cite`, inline `natcomm_refs.tex` bibliography). Build with `pdflatex` ×3.
+The manuscript, supplementary information and cover letters are not part of this repository.
+The data, results and tables they report are archived at Zenodo
+(https://doi.org/10.5281/zenodo.22769749); `src/manuscript_assets.py` and `figures_d3/build.sh`
+regenerate the tables and figures into a local `manuscript/` directory.
 
 ## Figures
 Manuscript figures are rendered as vector PDF by a server-side D3 pipeline (no browser):
