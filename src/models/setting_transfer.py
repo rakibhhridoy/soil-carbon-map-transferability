@@ -106,7 +106,7 @@ def region_lodo_percore(df, feats):
     """Leave-one-region-out; return per-core out-of-region prediction (log) + AoA-inside."""
     X = df[feats].to_numpy(); y = df["y"].to_numpy(); rid = df["region_id"].to_numpy()
     yp = np.full(len(df), np.nan); inside = np.full(len(df), np.nan)
-    for r in sorted(df.region_id.unique()):
+    for r in sorted(df.region_id.dropna().unique()):      # unclustered cores are never a test fold
         te = rid == r; tr = ~te
         if te.sum() == 0 or tr.sum() < 20:
             continue
@@ -132,14 +132,17 @@ def centred_pearson(obs, pred, region):
 
 def main():
     df, feats = S.load()
-    df = df.dropna(subset=["region_id"]).reset_index(drop=True)
+    df = df.reset_index(drop=True)
     df, n_ces, n_mo = assign_settings(df)
 
+    # all 2,489 cores train each fold (as in region_lodo.py and biome_transfer.py); only the
+    # 2,390 cores inside a region receive an out-of-region prediction and are reported
     yp, inside = region_lodo_percore(df, feats)
     df["pred_log"] = yp
     df["obs_soc"] = np.expm1(df["y"])
     df["pred_soc"] = np.expm1(yp)
     df["aoa_inside"] = inside
+    df = df[df.region_id.notna()].reset_index(drop=True)
     ok = df["pred_log"].notna()
 
     # ---- per-CES transfer skill (pooled per core) ----

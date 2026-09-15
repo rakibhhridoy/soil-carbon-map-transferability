@@ -29,8 +29,8 @@ echo "== Stage 1c: features =="
 python3 src/features/sample_covariates.py      # PEDOFLUX drivers -> soc_training.parquet
 python3 src/features/build_geomorphic.py       # + dist_coast/dist_river (Natural Earth)
 python3 src/features/build_tidal.py            # + tidal range/form (EOT20)
-python3 src/features/build_elevation.py       # + elev_m (Copernicus GLO-30, remote /vsis3/, no auth)
-python3 src/features/build_tsm.py             # + tsm_gm3/kd490 (CMEMS GlobColour 2016-2020; needs `copernicusmarine login`)
+python3 src/features/build_elevation.py       # + elev_m, elev_src (FABDEM v1.2 via Bristol repository; GLO-30 fallback per tile; no auth)
+python3 src/features/build_tsm.py             # + tsm_gm3/kd490 (CMEMS GlobColour 2002-2020, built per year; needs `copernicusmarine login`)
 
 echo "== Stage 2: SOC transferability experiment =="
 python3 src/models/soc_lodo.py                 # -> data/processed/soc_lodo_results.json

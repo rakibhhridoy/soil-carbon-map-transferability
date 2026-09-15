@@ -589,6 +589,60 @@ def tab_tier1():
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
+def tab_variance():
+    d = _opt(PROC / "variance_partition.json")
+    if d is None:
+        return
+    lab = {"terrestrial_conc": "Terrestrial mineral, conc.", "terrestrial_stock": "Terrestrial mineral, stock",
+           "mangrove": "Mangrove", "marsh": "Salt marsh", "seagrass": "Seagrass", "permafrost": "Permafrost"}
+    order = ["terrestrial_conc", "terrestrial_stock", "mangrove", "marsh", "seagrass", "permafrost"]
+    rows = {r["biome"]: r for r in d["rows"]}
+    lines = []
+    for b in order:
+        if b not in rows:
+            continue
+        r = rows[b]; w = r["r2_within_region_median"]
+        lines.append(f"{lab[b]} & {r['n_regions']} & {r['between_regions']*100:.0f} & "
+                     f"{r['between_sites_within']*100:.0f} & {r['replicate']*100:.0f} & "
+                     f"{r['r2_between_regions']:+.2f} & {('---' if w is None else f'{w:+.2f}')} \\\\")
+    (TAB / "tab_variance.tex").write_text(
+        "\\begin{tabular}{lrrrrrr}\n\\toprule\n"
+        "Biome & Regions & \\multicolumn{3}{c}{Share of variance (\\%)} & $R^2$ region means & $R^2$ within region \\\\\n"
+        " & & regions & sites & replicates & (held-out region) & (local model, site-grouped) \\\\\n\\midrule\n"
+        + "\n".join(lines) + "\n\\bottomrule\n"
+        "\\multicolumn{7}{l}{\\footnotesize Nested variance components of log stock. Region means predicted from region-mean covariates by leave-one-region-out ridge;}\\\\\n"
+        "\\multicolumn{7}{l}{\\footnotesize within-region $R^2$ is the median over regions of a gradient-boosting model fitted inside the region under site-grouped folds.}\\\\\n"
+        "\\end{tabular}\n")
+
+
+def tab_sensitivity():
+    d = _opt(PROC / "biome_sensitivity.json")
+    if d is None:
+        return
+    lab = {"terrestrial_conc": "Terr. mineral, conc.", "terrestrial_stock": "Terr. mineral, stock",
+           "mangrove": "Mangrove", "marsh": "Salt marsh", "seagrass": "Seagrass", "permafrost": "Permafrost"}
+    var = ["base", "r150", "r500", "climate", "ridge"]
+    byb = {}
+    for r in d["rows"]:
+        byb.setdefault(r["biome"], {})[r["variant"]] = r
+    lines = []
+    for b in ["terrestrial_conc", "terrestrial_stock", "mangrove", "marsh", "seagrass", "permafrost"]:
+        if b not in byb:
+            continue
+        cells = []
+        for v in var:
+            r = byb[b].get(v)
+            cells.append("---" if r is None else f"{r['r']:+.2f} ({r['regions']})")
+        lines.append(f"{lab[b]} & " + " & ".join(cells) + " \\\\")
+    (TAB / "tab_sensitivity.tex").write_text(
+        "\\begin{tabular}{lrrrrr}\n\\toprule\n"
+        "Biome & 250 km (base) & 150 km & 500 km & climate only & ridge \\\\\n\\midrule\n"
+        + "\n".join(lines) + "\n\\bottomrule\n"
+        "\\multicolumn{6}{l}{\\footnotesize Median out-of-region within-region $r$ (number of regions). Variants change the region radius,}\\\\\n"
+        "\\multicolumn{6}{l}{\\footnotesize restrict covariates to CHELSA bioclimate, or replace gradient boosting with ridge regression.}\\\\\n"
+        "\\end{tabular}\n")
+
+
 def tab_biomes():
     rows = biome_rows()
     if not rows:
@@ -740,7 +794,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
-    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1()
+    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1(); tab_variance(); tab_sensitivity()
     tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
     settings_assets()
     tab_depth()

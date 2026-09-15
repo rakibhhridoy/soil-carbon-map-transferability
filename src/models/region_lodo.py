@@ -2,10 +2,16 @@
 the ~29 data-driven mangrove regions, not just the eight named deltas?
 
 Leave-one-region-out reusing the exact soc_lodo machinery (same model, same three-tier
-logic, same AOA). For every region with enough cores we train on all other regions and
+logic, same AOA). For every region with enough cores we train on all cores outside it and
 evaluate on the held-out region, reporting global R2, within-region Pearson r, RMSE, and
 AOA-inside fraction. The headline is the distribution over ~29 regions, which the eight
 named deltas cannot supply.
+
+Training pool: every usable core outside the held-out region, including the cores that
+DBSCAN leaves in no region (99 of 2,489). This is standard leave-one-region-out and is the
+pool biome_transfer.py uses for every other biome, so the mangrove row of the cross-biome
+table is like-for-like (reconciled 2026-09-15; the earlier version trained on in-region
+cores only, 2,390, giving median r -0.094 instead of -0.000).
 
 Output: data/processed/region_lodo_results.json + console summary.
 """
@@ -26,7 +32,7 @@ def load():
     df = pd.read_parquet(ROOT / "data/processed/soc_training.parquet")
     feats = [c for c in df.columns if c.startswith(
         ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_"))]
-    df = df.dropna(subset=["soc_0_100_Mgha", "lat", "lon", "region_id"]).copy()
+    df = df.dropna(subset=["soc_0_100_Mgha", "lat", "lon"]).copy()   # unclustered cores stay in training
     df["y"] = np.log1p(df["soc_0_100_Mgha"])
     return df, feats
 
@@ -35,7 +41,7 @@ def main():
     df, feats = load()
     reg = pd.read_csv(ROOT / "data/processed/region_registry.csv")
     cont = dict(zip(reg.region_id, reg.continent))
-    regions = sorted(df.region_id.unique())
+    regions = sorted(df.region_id.dropna().unique())
     X = df[feats].to_numpy(); y = df["y"].to_numpy()
     rid = df["region_id"].to_numpy()
 
@@ -58,10 +64,10 @@ def main():
                          aoa_inside_randomcv=round(inside_rand, 2)))
 
     rdf = pd.DataFrame(rows)
-    # random-CV baseline over the same pooled data for the gap
-    from sklearn.model_selection import cross_val_predict
-    yp_cv = cross_val_predict(S.models()["histgb"], X, y, cv=5)
-    t1 = r2_score(y, yp_cv)
+    # random-CV baseline over the same pooled data for the gap: the canonical shuffled k-fold
+    # (soc_lodo.t1_random). The earlier unshuffled cross_val_predict(cv=5) used contiguous
+    # blocks of the file order and was not a random CV (0.095 / 0.067 instead of ~0.65).
+    t1 = S.t1_random(df, feats, "histgb")
 
     def boot_med_ci(a, B=20000, seed=0):
         rng = np.random.default_rng(seed); a = np.asarray(a, float); a = a[~np.isnan(a)]

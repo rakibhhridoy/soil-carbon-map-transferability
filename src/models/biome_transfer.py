@@ -148,9 +148,9 @@ EXTERNAL = {"permafrost", "terrestrial_stock", "terrestrial_conc", "peat"}
 SUBSAMPLE = 25000
 
 
-def build_regions(df):
+def build_regions(df, eps_km=EPS_KM):
     xy = np.radians(df[["lat", "lon"]].to_numpy())
-    lab = DBSCAN(eps=EPS_KM / 6371.0, min_samples=MIN_SAMPLES, metric="haversine").fit(xy).labels_
+    lab = DBSCAN(eps=eps_km / 6371.0, min_samples=MIN_SAMPLES, metric="haversine").fit(xy).labels_
     sizes = pd.Series(lab[lab >= 0]).value_counts()
     keep = sizes[sizes >= MIN_CORES].index.tolist()
     rid = np.full(len(df), None, dtype=object)
@@ -168,20 +168,30 @@ def main():
     ap.add_argument("--target-cm", type=float, default=100.0)
     ap.add_argument("--max-regions", type=int, default=40, help="keep the N largest regions")
     ap.add_argument("--drop-gsoc", action="store_true", help="omit the GSOCmap prior covariate")
+    ap.add_argument("--eps-km", type=float, default=EPS_KM, help="DBSCAN region radius (km)")
+    ap.add_argument("--covariates", choices=["full", "climate"], default="full",
+                    help="'climate' keeps only the CHELSA bioclimate layers")
+    ap.add_argument("--model", choices=["histgb", "ridge"], default="histgb")
+    ap.add_argument("--tag", default="", help="suffix for output files")
     a = ap.parse_args()
-    tag = f"{a.habitat.lower()}_d{int(a.target_cm)}" + ("_nogsoc" if a.drop_gsoc else "")
+    tag = f"{a.habitat.lower()}_d{int(a.target_cm)}" + ("_nogsoc" if a.drop_gsoc else "") + a.tag
 
-    lab = (load_external(a.habitat.lower(), a.target_cm) if a.habitat.lower() in EXTERNAL
-           else build_labels(a.habitat, a.target_cm))
-    print(f"{tag}: usable cores {len(lab)} (median {lab.soc_0_100_Mgha.median():.0f} Mg/ha, "
-          f"countries {lab.country.nunique()})", flush=True)
-    feats, cover = sample_points(lab)
-    n_ok = sum(1 for v in cover.values() if isinstance(v, float))
-    if n_ok < 20:
-        sys.exit(f"only {n_ok} covariate layers sampled; is the covariate lake (MDBC_LAKE) mounted?")
-    df = pd.concat([lab.reset_index(drop=True), feats.reset_index(drop=True)], axis=1)
-    df = add_geomorphic(df); df = add_tidal(df)
-    df = build_regions(df)
+    base = PROC / f"biome_{a.habitat.lower()}_d{int(a.target_cm)}_training.parquet"
+    if a.tag and base.exists():                      # sensitivity variant: reuse the sampled covariates
+        df = pd.read_parquet(base).drop(columns=["region_id", "continent", "y"], errors="ignore")
+        print(f"{tag}: reusing covariates from {base.name} ({len(df)} cores)", flush=True)
+    else:
+        lab = (load_external(a.habitat.lower(), a.target_cm) if a.habitat.lower() in EXTERNAL
+               else build_labels(a.habitat, a.target_cm))
+        print(f"{tag}: usable cores {len(lab)} (median {lab.soc_0_100_Mgha.median():.0f} Mg/ha, "
+              f"countries {lab.country.nunique()})", flush=True)
+        feats, cover = sample_points(lab)
+        n_ok = sum(1 for v in cover.values() if isinstance(v, float))
+        if n_ok < 20:
+            sys.exit(f"only {n_ok} covariate layers sampled; is the covariate lake (MDBC_LAKE) mounted?")
+        df = pd.concat([lab.reset_index(drop=True), feats.reset_index(drop=True)], axis=1)
+        df = add_geomorphic(df); df = add_tidal(df)
+    df = build_regions(df, a.eps_km)
     df["y"] = np.log1p(df.soc_0_100_Mgha)
     df.to_parquet(PROC / f"biome_{tag}_training.parquet", index=False)
 
@@ -190,13 +200,16 @@ def main():
     feat_cols = [c for c in mang.columns if c.startswith(("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_"))]
     if a.drop_gsoc:
         feat_cols = [c for c in feat_cols if not c.startswith("gsoc_")]
+    if a.covariates == "climate":
+        feat_cols = [c for c in feat_cols if c.startswith("chelsa_")]
+    MODEL = a.model
     missing = [c for c in feat_cols if c not in df.columns]
     if missing:
         sys.exit(f"biome table lacks mangrove covariates: {missing}")
     X, y = df[feat_cols].to_numpy(), df.y.to_numpy()
     site = S.site_groups(df)
-    t1 = S.t1_random(df, feat_cols, "histgb"); t1g = S.t1b_grouped(df, feat_cols, "histgb")
-    t2 = S.t2_spatial_block(df, feat_cols, "histgb")
+    t1 = S.t1_random(df, feat_cols, MODEL); t1g = S.t1b_grouped(df, feat_cols, MODEL)
+    t2 = S.t2_spatial_block(df, feat_cols, MODEL)
 
     rid = df.region_id.to_numpy()
     regions = sorted(r for r in set(rid) if r)
@@ -205,7 +218,7 @@ def main():
     rows = []; pred = np.full(len(y), np.nan)
     for r in regions:
         te = rid == r; tr = ~te
-        m = S.models()["histgb"]; m.fit(X[tr], y[tr]); yp = m.predict(X[te]); yt = y[te]; pred[te] = yp
+        m = S.models()[MODEL]; m.fit(X[tr], y[tr]); yp = m.predict(X[te]); yt = y[te]; pred[te] = yp
         imp = S.model_importance(m, X[tr], y[tr])
         aoa = S.aoa_full(X[tr], X[te], imp, groups=site[tr])
         aoa_r = S.aoa_full(X[tr], X[te], imp, groups=np.arange(int(tr.sum())))
@@ -243,7 +256,8 @@ def main():
                 noise_ceiling=dict(n_regions_with_ceiling=int(R.r_max.notna().sum()),
                                    median_icc=(round(float(R.icc.dropna().median()), 3) if R.icc.notna().any() else None),
                                    median_r_max=(round(float(R.r_max.dropna().median()), 3) if R.r_max.notna().any() else None)),
-                params=dict(target_cm=a.target_cm, eps_km=EPS_KM, min_cores=MIN_CORES, n_features=len(feat_cols)))
+                params=dict(target_cm=a.target_cm, eps_km=a.eps_km, min_cores=MIN_CORES, n_features=len(feat_cols),
+                            covariates=a.covariates, model=MODEL, drop_gsoc=a.drop_gsoc))
     (PROC / f"biome_{tag}_results.json").write_text(json.dumps({"summary": summ, "per_region": rows}, indent=1))
     pd.set_option("display.width", 220)
     print(R[["region", "continent", "n", "r2", "pearson", "aoa_inside", "aoa_inside_randomcv", "icc", "r_max"]].to_string(index=False))

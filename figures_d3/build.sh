@@ -6,10 +6,20 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 node build_figures.mjs
+node build_journal_figures.mjs
 mkdir -p ../manuscript/figures
 for f in svg/*.svg; do
   name=$(basename "$f" .svg)
   rsvg-convert -f pdf -o "../manuscript/figures/${name}.pdf" "$f"
   echo "  pdf -> manuscript/figures/${name}.pdf"
+done
+# showcase finish (talks, cover letter, press): same data, stronger vector depth; PDF + PNG
+FIG_STYLE=showcase node build_journal_figures.mjs
+mkdir -p ../manuscript/figures/showcase
+for f in svg/showcase/*.svg; do
+  name=$(basename "$f" .svg)
+  rsvg-convert -f pdf -o "../manuscript/figures/showcase/${name}.pdf" "$f"
+  rsvg-convert -f png -z 8 -b white -o "../manuscript/figures/showcase/${name}.png" "$f"
+  echo "  showcase -> manuscript/figures/showcase/${name}.{pdf,png}"
 done
 echo "figures built."

@@ -6,7 +6,7 @@ Sets (cumulative):
   climate      CHELSA bio1-19 + soil context (SoilGrids BD, CEC), GSOCmap prior, land cover
   +geomorphic  distance to coast and to river
   +tidal       EOT20 mean/spring range and form factor        (= the v1 28-covariate stack)
-  +elevation   Copernicus GLO-30 elevation
+  +elevation   FABDEM v1.2 elevation (elev_m; elev_src is a text label and is never a feature)
   +tsm         GlobColour SPM and KD490 (nearest water pixel within 10 km)
   +elev+tsm    both
 
@@ -30,9 +30,9 @@ SETS = [
     ("climate", ("chelsa_", "sg_", "gsoc_", "lulc_")),
     ("+geomorphic", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_")),
     ("+tidal", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_")),
-    ("+elevation", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_", "elev_")),
+    ("+elevation", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_", "elev_m")),
     ("+tsm", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_", "tsm_gm3", "kd490")),
-    ("+elev+tsm", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_", "elev_", "tsm_gm3", "kd490")),
+    ("+elev+tsm", ("chelsa_", "sg_", "gsoc_", "lulc_", "dist_", "tidal_", "elev_m", "tsm_gm3", "kd490")),
 ]
 
 

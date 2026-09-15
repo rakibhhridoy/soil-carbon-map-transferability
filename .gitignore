@@ -47,3 +47,8 @@ outreach/
 # Docs build artifacts (regenerable)
 docs/technical_guide.pdf
 docs/.ipynb_checkpoints/
+.cifor_token
+
+# journal-build directories: manuscript material, never committed
+RewriteNatureFinal/
+RewriteScienceFinal/

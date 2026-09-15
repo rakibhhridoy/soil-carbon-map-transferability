@@ -15,7 +15,7 @@ MDBC_DEM=glo30 to use GLO-30 throughout.
 
 Output: adds `elev_m` and `elev_src` to data/processed/soc_training.parquet.
 """
-import os, sys
+import os, sys, time
 from pathlib import Path
 import numpy as np, pandas as pd
 
@@ -24,6 +24,11 @@ os.environ.setdefault("AWS_NO_SIGN_REQUEST", "YES")
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
 os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "5")
 os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "5")
+# a stalled connection (e.g. after the host sleeps) must fail rather than block forever:
+# abort below 512 B/s for 120 s, and give up connecting after 30 s
+os.environ.setdefault("GDAL_HTTP_CONNECTTIMEOUT", "30")
+os.environ.setdefault("GDAL_HTTP_LOW_SPEED_TIME", "120")
+os.environ.setdefault("GDAL_HTTP_LOW_SPEED_LIMIT", "512")
 ROOT = Path(__file__).resolve().parents[2]
 BUCKET = os.environ.get("MDBC_DEM_BUCKET", "copernicus-dem-30m")
 RES = "10" if BUCKET.endswith("30m") else "30"
@@ -55,8 +60,10 @@ def _fab_tile(lat0, lon0):
     with rasterio.open(url) as src:
         prof = src.profile; prof.update(driver="GTiff", compress="deflate", tiled=True)
         data = src.read()
-    with rasterio.open(local, "w", **prof) as dst:
+    part = local.with_name(local.name + ".part")      # write-then-rename: never cache a truncated tile
+    with rasterio.open(part, "w", **prof) as dst:
         dst.write(data)
+    part.replace(local)
     return local
 
 
@@ -71,11 +78,15 @@ def add_elevation(df, lon="lon", lat="lat", verbose=False):
         rows = [i for i, kk in enumerate(key) if kk == k]
         path, src_name = _glo_url(*k), "glo30"
         if DEM == "fabdem":
-            try:
-                path, src_name = str(_fab_tile(*k)), "fabdem"
-            except Exception as e:
-                if verbose:
-                    print(f"  FABDEM tile {k} unavailable ({type(e).__name__}); GLO-30 fallback", flush=True)
+            for attempt in range(3):                  # transient network errors retry before falling back
+                try:
+                    path, src_name = str(_fab_tile(*k)), "fabdem"
+                    break
+                except Exception as e:
+                    if attempt < 2:
+                        time.sleep(20 * (attempt + 1))
+                    elif verbose:
+                        print(f"  FABDEM tile {k} unavailable after 3 attempts ({type(e).__name__}); GLO-30 fallback", flush=True)
         try:
             with rasterio.open(path) as ds:
                 vals = np.array([v[0] for v in ds.sample(zip(qlon[rows], qlat[rows]))], float)

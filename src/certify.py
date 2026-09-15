@@ -156,7 +156,7 @@ def demo():
     """Reproduce the paper's mangrove verdicts for the seven prediction-only deltas."""
     sys.path.insert(0, str(ROOT / "src" / "models"))
     import soc_lodo as S
-    df, feats = S.load(); df = df.dropna(subset=["region_id"]).reset_index(drop=True)
+    df, feats = S.load(); df = df.reset_index(drop=True)   # unclustered cores train; Protocol skips them as folds
     fs = json.loads((ROOT / "data/processed/fewshot_calibration.json").read_text())["summary"]
     p = Protocol(lambda: S.models()["histgb"], df[feats].to_numpy(), df.y.to_numpy(),
                  S.site_groups(df), df.region_id.to_numpy(),

@@ -516,26 +516,26 @@ function figBiomes() {
 // Certification decision tree (four steps -> four verdicts), with the mangrove
 // benchmark's own numbers annotated at each step.
 function figProtocol() {
-  const W = 700, H = 420, { dom, svg } = svgRoot(W, H);
+  const W = 700, H = 440, { dom, svg } = svgRoot(W, H);
   title(svg, 16, 22, "Certifying a spatial prediction before it is used at an unsampled location");
-  const box = (x, y, w, h, lines, fill, stroke = INK, size = 10.5, bold = false) => {
+  const box = (x, y, w, h, lines, fill, stroke = INK, size = 12, bold = false) => {
     svg.append("rect").attr("x", x).attr("y", y).attr("width", w).attr("height", h).attr("rx", 6)
        .attr("fill", fill).attr("stroke", stroke).attr("stroke-width", 1);
     lines.forEach((t, i) => svg.append("text").attr("x", x + w / 2)
-       .attr("y", y + h / 2 - (lines.length - 1) * 6.5 + i * 13).attr("text-anchor", "middle")
+       .attr("y", y + h / 2 - (lines.length - 1) * 7.5 + i * 15).attr("text-anchor", "middle")
        .attr("font-size", size).attr("font-weight", bold ? "bold" : "normal").attr("fill", INK).text(t));
   };
   const arrow = (x1, y1, x2, y2, label) => {
     svg.append("line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
        .attr("stroke", INK).attr("stroke-width", 1).attr("marker-end", "url(#arr)");
     if (label) svg.append("text").attr("x", (x1 + x2) / 2 + 5).attr("y", (y1 + y2) / 2 - 3)
-       .attr("font-size", 9.5).attr("font-style", "italic").attr("fill", AXIS).text(label);
+       .attr("font-size", 11).attr("font-style", "italic").attr("fill", AXIS).text(label);
   };
   svg.append("defs").append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9)
      .attr("refY", 5).attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto")
      .append("path").attr("d", "M0,0L10,5L0,10Z").attr("fill", INK);
   const q = "#f4f6fb", v = { usable: "#dff3ea", level: "#fff3d6", local: "#fbe4da" };
-  const L = 24, QW = 300, QH = 46, RX = 420, RW = 258;
+  const L = 16, QW = 340, QH = 50, RX = 392, RW = 296;
   // steps
   box(L, 50, QW, QH, ["1  Inside the AOA paired with random-validation skill?",
                       "mangroves: threshold 0.001; 0% of any unsampled delta"], q);
@@ -545,27 +545,61 @@ function figProtocol() {
                        "r = −0.09 [−0.20, 0.03] against a ceiling of 0.74"], q);
   box(L, 296, QW, QH, ["4  How many local cores close the gap?",
                        "few-shot curve: 10 cores reach half the ceiling"], q);
-  arrow(L + QW / 2, 96, L + QW / 2, 132, "no: reported R² does not apply here (expected)");
-  arrow(L + QW / 2, 178, L + QW / 2, 214, "yes");
-  arrow(L + QW / 2, 260, L + QW / 2, 296, "no");
+  arrow(L + QW / 2, 100, L + QW / 2, 132, "no: reported R² does not apply here (expected)");
+  arrow(L + QW / 2, 182, L + QW / 2, 214, "yes");
+  arrow(L + QW / 2, 264, L + QW / 2, 296, "no");
   // verdicts
-  box(RX, 132, RW, 46, ["LOCAL CORES REQUIRED", "extrapolation: no error estimate applies"], v.local, INK, 10.5, true);
+  box(RX, 130, RW, 50, ["LOCAL CORES REQUIRED", "extrapolation: no error estimate applies"], v.local, INK, 12, true);
   arrow(L + QW, 155, RX, 155, "no");
-  box(RX, 214, RW, 46, ["USABLE", "out-of-region error applies; pattern recovered"], v.usable, INK, 10.5, true);
+  box(RX, 212, RW, 50, ["USABLE", "out-of-region error applies; pattern recovered"], v.usable, INK, 12, true);
   arrow(L + QW, 237, RX, 237, "yes");
-  box(RX, 296, RW, 46, ["LEVEL ONLY / LOCAL CORES FOR PATTERN", "k cores from the few-shot curve"], v.level, INK, 10, true);
+  box(RX, 294, RW, 50, ["LEVEL ONLY / LOCAL CORES FOR PATTERN", "k cores from the few-shot curve"], v.level, INK, 11, true);
   arrow(L + QW, 319, RX, 319, "");
   // footer
-  svg.append("text").attr("x", 16).attr("y", 372).attr("font-size", 9.5).attr("fill", "#777")
-     .text("Every quantity is computed from the model's own training table: two AOA thresholds (folds matched to the error each certifies),");
-  svg.append("text").attr("x", 16).attr("y", 386).attr("font-size", 9.5).attr("fill", "#777")
-     .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling √ICC, and the few-shot calibration curve. Open-source: src/certify.py.");
-  svg.append("text").attr("x", 16).attr("y", 404).attr("font-size", 9.5).attr("fill", "#777")
+  svg.append("text").attr("x", 16).attr("y", 380).attr("font-size", 10.5).attr("fill", "#777")
+     .text("Every quantity comes from the model's own training table: two AOA thresholds (folds matched to the error each certifies),");
+  svg.append("text").attr("x", 16).attr("y", 396).attr("font-size", 10.5).attr("fill", "#777")
+     .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling √ICC and the few-shot calibration curve (open code).");
+  svg.append("text").attr("x", 16).attr("y", 416).attr("font-size", 10.5).attr("fill", "#777")
      .text("Passing step 2 while failing step 3 is the mangrove, salt-marsh, seagrass and permafrost outcome; mineral upland soils pass step 3.");
   save(dom, "fig_protocol");
 }
 
+// ================================================================== composites
+// Multi-panel figures for the journal builds: each panel is a previously saved SVG,
+// nested with its own viewBox so typography is identical to the single figures.
+function compose(name, panels, { gap = 18, pad = 10 } = {}) {
+  // panels: [{file, x, y, w, h, label}] in outer units
+  const W = Math.max(...panels.map(p => p.x + p.w)) + pad, H = Math.max(...panels.map(p => p.y + p.h)) + pad;
+  const { dom, svg } = svgRoot(W, H);
+  for (const p of panels) {
+    const src = readFileSync(`${OUT}/${p.file}.svg`, "utf8");
+    const inner = new JSDOM(src).window.document.querySelector("svg");
+    const vb = inner.getAttribute("viewBox");
+    const g = svg.append("svg").attr("x", p.x).attr("y", p.y).attr("width", p.w).attr("height", p.h)
+                 .attr("viewBox", vb).attr("preserveAspectRatio", "xMinYMin meet");
+    g.node().innerHTML = inner.innerHTML;
+    svg.append("text").attr("x", p.lx ?? p.x + 4).attr("y", p.y + 16).attr("font-size", 16)
+       .attr("font-weight", "bold").attr("fill", INK).text(p.label);
+  }
+  save(dom, name);
+}
+function figComposites() {
+  // Fig 1: map (920x430) over tiers (520x360)
+  compose("fig1_benchmark", [
+    { file: "fig_map",   x: 10, y: 10,  w: 920, h: 430, label: "a" },
+    { file: "fig_tiers", x: 10, y: 456, w: 920, h: 637, label: "b" }]);
+  // Fig 2: AoA per delta (860x330) over 29 regions (620x320 -> scaled to 860 wide)
+  compose("fig2_aoa_regions", [
+    { file: "fig_aoa",    x: 10, y: 10,  w: 860, h: 330, label: "a" },
+    { file: "fig_region", x: 10, y: 356, w: 860, h: 444, label: "b" }]);
+  // Fig 4: few-shot (520x360 -> 700 wide) over protocol (700x420)
+  compose("fig4_fix", [
+    { file: "fig_fewshot",  x: 100, y: 10,  w: 520, h: 360, label: "a", lx: 14 },
+    { file: "fig_protocol", x: 10,  y: 386, w: 700, h: 440, label: "b" }]);
+}
+
 import { mkdirSync } from "fs";
 mkdirSync(OUT, { recursive: true });
-figMap(); figTiers(); figAoa(); figFewshot(); figRegion(); figBiomes(); figProtocol();
+figMap(); figTiers(); figAoa(); figFewshot(); figRegion(); figBiomes(); figProtocol(); // figComposites();  // journal figures now come from build_journal_figures.mjs
 console.log("done.");

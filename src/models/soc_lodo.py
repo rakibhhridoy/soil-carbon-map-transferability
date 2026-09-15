@@ -196,6 +196,9 @@ def conformal_interval(resid_cal, alpha=0.1):
     return q
 
 
+PERCORE = {}
+
+
 def t3_lodo(df, feats, m, alpha=0.1):
     core = df[df["delta_id"].notna()].copy()
     core_deltas = sorted(core.delta_id.unique())
@@ -243,6 +246,15 @@ def t3_lodo(df, feats, m, alpha=0.1):
             pear, r2_centered = float("nan"), float("nan")
         from scipy.stats import spearmanr as _sp
         spear = float(_sp(yte, yp)[0]) if yte.std() > 0 else float("nan")
+        # per-core layer behind the row (journal figures draw it): observed and predicted
+        # stock, both dissimilarity indices and thresholds
+        PERCORE.setdefault(m, {})[d] = dict(
+            n=int(te.sum()),
+            obs=[round(float(v), 1) for v in np.expm1(yte)],
+            pred=[round(float(v), 1) for v in np.expm1(yp)],
+            di_grouped=[round(float(v), 4) for v in aoa["di"]],
+            di_random=[round(float(v), 5) for v in aoa_rand["di"]],
+            thr_grouped=round(aoa["threshold"], 4), thr_random=round(aoa_rand["threshold"], 5))
         rows.append(dict(delta=d, n=int(te.sum()), r2_lodo=round(r2, 3),
                          r2_centered=round(r2_centered, 3),
                          pearson=round(pear, 3), spearman=round(spear, 3),
@@ -294,6 +306,9 @@ def main():
     p = ROOT / "data/processed/soc_lodo_results.json"
     p.write_text(json.dumps(out, indent=1))
     print(f"\nwrote {p}")
+    q = ROOT / "data/processed/soc_lodo_percore.json"
+    q.write_text(json.dumps(PERCORE))
+    print(f"wrote {q}")
 
 
 if __name__ == "__main__":
