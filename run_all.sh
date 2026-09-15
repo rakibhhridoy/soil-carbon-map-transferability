@@ -81,6 +81,7 @@ python3 src/models/biome_transfer.py terrestrial_conc --target-cm 30 --drop-gsoc
 python3 src/models/variance_partition.py       # -> data/processed/variance_partition.json (needs biome_* training tables)
 python3 src/models/biome_sensitivity.py        # -> data/processed/biome_sensitivity.json (150/500 km, climate-only, ridge)
 python3 src/models/power_mde.py                # -> data/processed/power_mde.json (needs region_lodo, noise_ceiling, biome runs)
+python3 src/models/om_factor_sensitivity.py    # -> data/processed/om_factor_sensitivity.json (OM-to-carbon factor 0.41/0.427/0.46)
 python3 src/models/tier1_inventory.py          # -> data/processed/tier1_inventory.json (IPCC Tier 1 vs national cores)
 
 echo "== Manuscript assets (figures + tables) =="
