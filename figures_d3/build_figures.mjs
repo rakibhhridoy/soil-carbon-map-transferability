@@ -15,10 +15,10 @@ const OUT = "svg";
 const FONT = "Times, 'Times New Roman', serif";
 const INK = "#212121", GRID = "#E0E0E0", AXIS = "#424242";
 // Okabe-Ito colorblind-safe palette
-// Same palette as the journal figures: red = does not transfer, blue = transfers.
-// (Key names are historical; the hues are the groundwater-paper palette.)
-const OI = { green: "#1565C0", vermillion: "#C62828", blue: "#7B1FA2",
-             orange: "#E65100", sky: "#90CAF9", purple: "#6A1B9A", grey: "#9E9E9E" };
+// Same palette as the journal figures: red = does not transfer, charcoal = transfers.
+// No blue and no teal. (Key names are historical; only the hues matter.)
+const OI = { green: "#37474F", vermillion: "#C62828", blue: "#5D4037",
+             orange: "#E65100", sky: "#F9A825", purple: "#607D63", grey: "#9E9E9E" };
 const SEQ = d3.interpolateRgbBasis(["#FFF7BC", "#FEC44F", "#E65100", "#B71C1C"]);
 
 function svgRoot(w, h) {
@@ -536,7 +536,7 @@ function figProtocol() {
   svg.append("defs").append("marker").attr("id", "arr").attr("viewBox", "0 0 10 10").attr("refX", 9)
      .attr("refY", 5).attr("markerWidth", 7).attr("markerHeight", 7).attr("orient", "auto")
      .append("path").attr("d", "M0,0L10,5L0,10Z").attr("fill", INK);
-  const q = "#F5F5F5", v = { usable: "#E3F2FD", level: "#FFF8E1", local: "#FFEBEE" };
+  const q = "#F5F5F5", v = { usable: "#ECEFF1", level: "#FFF8E1", local: "#FFEBEE" };
   const L = 16, QW = 340, QH = 50, RX = 392, RW = 296;
   // steps
   box(L, 50, QW, QH, ["1  Inside the AOA paired with random-validation skill?",

@@ -31,13 +31,13 @@ const FX = STYLE === "showcase"
 const OUT = STYLE === "showcase" ? "svg/showcase" : "svg";
 
 const FONT = "Helvetica, Arial, sans-serif";
-// One palette for every figure, sampled from the groundwater papers: red and blue lead,
-// with orange, amber and purple for secondary series and the greys for context.
-const PAL = { red: "#C62828", blue: "#1565C0", orange: "#E65100", amber: "#F9A825",
-              purple: "#7B1FA2", lightblue: "#90CAF9", green: "#2E7D32",
+// One palette for every figure: red against charcoal, with amber, brown and the greys for
+// secondary series. No blue and no teal anywhere, and no red/green pairing.
+const PAL = { red: "#C62828", charcoal: "#37474F", amber: "#F9A825", orange: "#E65100",
+              brown: "#5D4037", greygreen: "#607D63",
               ink: "#212121", grey: "#424242", mid: "#9E9E9E", light: "#E0E0E0" };
-// Red carries what does not transfer, blue what transfers or is attainable.
-const FAIL = PAL.red, HOLD = PAL.blue;
+// Red carries what does not transfer, charcoal what transfers or is attainable.
+const FAIL = PAL.red, HOLD = PAL.charcoal;
 const INK = PAL.ink, AXIS = PAL.ink, MUTE = PAL.grey, LIGHT = PAL.light;
 const FS_T = 7, FS_S = 6, FS_L = 8;     // text, small, panel letter
 const TW = 454;                          // text width in pt
@@ -171,7 +171,7 @@ function fig1() {
   // one path for all cells keeps the PDF small
   let dm = "";
   X.gmw.forEach(([lon, lat]) => { const p = proj([lon, lat]); if (p) dm += `M${(p[0] - 0.3).toFixed(2)},${(p[1] - 0.3).toFixed(2)}h0.6v0.6h-0.6Z`; });
-  g.append("path").attr("d", dm).attr("fill", HOLD).attr("opacity", 0.5);
+  g.append("path").attr("d", dm).attr("fill", PAL.greygreen).attr("opacity", 0.62);
   // region hulls
   const byRegion = d3.group(X.cores.filter(c => c.region), c => c.region);
   const deltaRegionColor = PAL.mid;
@@ -209,7 +209,7 @@ function fig1() {
   });
   // legend
   const lg = svg.append("g").attr("transform", `translate(6,${mh - 30})`);
-  lg.append("rect").attr("x", 0).attr("y", -1).attr("width", 6).attr("height", 3).attr("fill", HOLD).attr("opacity", 0.7);
+  lg.append("rect").attr("x", 0).attr("y", -1).attr("width", 6).attr("height", 3).attr("fill", PAL.greygreen).attr("opacity", 0.85);
   txt(lg, 9, 2, "mangrove extent (GMW v3)", { size: FS_S });
   lg.append("circle").attr("cx", 3).attr("cy", 9).attr("r", 1).attr("fill", INK);
   txt(lg, 9, 11, "soil core (n = 2,489)", { size: FS_S });
@@ -293,7 +293,7 @@ function fig1() {
     if (r.map !== null) {
       const sq = d3.symbol(d3.symbolSquare, 10)(), st = `translate(${xc(r.map)},${y})`;
       dropShadow(gc2, s => s.append("path").attr("d", sq).attr("transform", st), 0.5);
-      gc2.append("path").attr("d", sq).attr("transform", st).attr("fill", "white").attr("stroke", PAL.purple).attr("stroke-width", 0.8);
+      gc2.append("path").attr("d", sq).attr("transform", st).attr("fill", "white").attr("stroke", PAL.brown).attr("stroke-width", 0.8);
     }
     dropShadow(gc2, s => s.append("circle").attr("cx", xc(r.r)).attr("cy", y).attr("r", 2.1), 0.55);
     gc2.append("circle").attr("cx", xc(r.r)).attr("cy", y).attr("r", 2.1).attr("fill", FAIL).attr("stroke", "white").attr("stroke-width", 0.4);
@@ -301,7 +301,7 @@ function fig1() {
   const lc = gc2.append("g").attr("transform", `translate(${xc(-0.78)},${pc.t - 3})`);
   lc.append("circle").attr("cx", 3).attr("cy", 0).attr("r", 2).attr("fill", FAIL);
   txt(lc, 8, 2.2, "this study (95% CI)", { size: FS_S });
-  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 10)()).attr("transform", "translate(70,0)").attr("fill", "white").attr("stroke", PAL.purple).attr("stroke-width", 0.8);
+  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 10)()).attr("transform", "translate(70,0)").attr("fill", "white").attr("stroke", PAL.brown).attr("stroke-width", 0.8);
   txt(lc, 75, 2.2, "published 30 m map", { size: FS_S });
   save(dom, "fig1_benchmark");
 }
@@ -443,7 +443,7 @@ function fig3() {
   const xb = d3.scaleLinear().domain([0, 1]).range([pb.l, bw - pb.r]);
   axis(gb.append("g").attr("transform", `translate(0,${bh - pb.b})`), d3.axisBottom(xb).ticks(5, "%").tickSize(2.5).tickPadding(2));
   txt(gb, (xb.range()[0] + xb.range()[1]) / 2, bh - pb.b + 17, "share of variance of log stock", { anchor: "middle" });
-  const comps = [["between_regions", FAIL, "between regions"], ["between_sites_within", PAL.blue, "between sites within region"], ["replicate", PAL.mid, "replicate cores"]];
+  const comps = [["between_regions", FAIL, "between regions"], ["between_sites_within", PAL.amber, "between sites within region"], ["replicate", PAL.mid, "replicate cores"]];
   vp.forEach(r => {
     let x = 0; const y = yb(r.biome);
     const tot = r.between_regions + r.between_sites_within + r.replicate;
@@ -478,7 +478,7 @@ function fig3() {
     gc.append("line").attr("x1", xc(a)).attr("x2", xc(b)).attr("y1", y).attr("y2", y).attr("stroke", LIGHT).attr("stroke-width", 0.6);
     const sq = d3.symbol(d3.symbolSquare, 14)(), st = `translate(${xc(b)},${y})`;
     dropShadow(gc, s => s.append("path").attr("d", sq).attr("transform", st), 0.55);
-    gc.append("path").attr("d", sq).attr("transform", st).attr("fill", PAL.blue).attr("stroke", "white").attr("stroke-width", 0.35);
+    gc.append("path").attr("d", sq).attr("transform", st).attr("fill", PAL.charcoal).attr("stroke", "white").attr("stroke-width", 0.35);
     dropShadow(gc, s => s.append("circle").attr("cx", xc(a)).attr("cy", y).attr("r", 2.4), 0.55);
     gc.append("circle").attr("cx", xc(a)).attr("cy", y).attr("r", 2.4).attr("fill", FAIL).attr("stroke", "white").attr("stroke-width", 0.35);
     if (r.r2_between_regions < xc.domain()[0]) txt(gc, xc(a) + 4, y + 2, `${d3.format("+.2f")(r.r2_between_regions)}`, { size: 5.5, color: MUTE });
@@ -486,7 +486,7 @@ function fig3() {
   const lc = gc.append("g").attr("transform", `translate(${pc.l},${pc.t - 6})`);
   lc.append("circle").attr("cx", 3).attr("cy", -1.5).attr("r", 2.4).attr("fill", FAIL);
   txt(lc, 8, 0.5, "regional mean (held out)", { size: 5.5 });
-  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 14)()).attr("transform", "translate(84,-1.5)").attr("fill", PAL.blue);
+  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 14)()).attr("transform", "translate(84,-1.5)").attr("fill", PAL.charcoal);
   txt(lc, 89, 0.5, "within-region pattern (local fit)", { size: 5.5 });
   save(dom, "fig_biomes");
 }
@@ -526,16 +526,16 @@ function fig4() {
     dropShadow(ga, s => s.append("circle").attr("cx", xa(d[0])).attr("cy", ya(d[1])).attr("r", 2.1), 0.5);
     ga.append("circle").attr("cx", xa(d[0])).attr("cy", ya(d[1])).attr("r", 2.1).attr("fill", HOLD).attr("stroke", "white").attr("stroke-width", 0.5);
   });
-  ga.append("path").attr("d", locD).attr("fill", "none").attr("stroke", PAL.orange).attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
+  ga.append("path").attr("d", locD).attr("fill", "none").attr("stroke", PAL.amber).attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
   loc.forEach(d => {
     const sq = d3.symbol(d3.symbolSquare, 12)(), st = `translate(${xa(d[0])},${ya(d[1])})`;
     dropShadow(ga, s => s.append("path").attr("d", sq).attr("transform", st), 0.5);
-    ga.append("path").attr("d", sq).attr("transform", st).attr("fill", PAL.orange).attr("stroke", "white").attr("stroke-width", 0.4);
+    ga.append("path").attr("d", sq).attr("transform", st).attr("fill", PAL.amber).attr("stroke", "white").attr("stroke-width", 0.4);
   });
   const la = ga.append("g").attr("transform", `translate(${xa(9)},${ya(0) + 6})`);
   la.append("line").attr("x1", 0).attr("x2", 8).attr("y1", 2).attr("y2", 2).attr("stroke", HOLD).attr("stroke-width", 1.4);
   txt(la, 11, 4, "global model + k local cores (median)", { size: FS_S });
-  la.append("line").attr("x1", 0).attr("x2", 8).attr("y1", 10).attr("y2", 10).attr("stroke", PAL.orange).attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
+  la.append("line").attr("x1", 0).attr("x2", 8).attr("y1", 10).attr("y2", 10).attr("stroke", PAL.amber).attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
   txt(la, 11, 12, "ridge on the k local cores alone", { size: FS_S });
   la.append("line").attr("x1", 0).attr("x2", 8).attr("y1", 18).attr("y2", 18).attr("stroke", HOLD).attr("stroke-width", 0.5).attr("opacity", 0.5);
   txt(la, 11, 20, "single delta", { size: FS_S });

@@ -24,11 +24,11 @@ FIG = ROOT / "manuscript/figures"; FIG.mkdir(parents=True, exist_ok=True)
 TAB = ROOT / "manuscript/tables"; TAB.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200})
 
-# One palette across every figure of this study, sampled from the groundwater papers:
-# red carries what does not transfer, blue what transfers or is attainable; orange,
-# amber and purple carry secondary series and the greys carry context.
-PAL = {"red": "#C62828", "blue": "#1565C0", "orange": "#E65100", "amber": "#F9A825",
-       "purple": "#7B1FA2", "ink": "#212121", "grey": "#424242", "mid": "#9E9E9E"}
+# One palette across every figure of this study: red carries what does not transfer,
+# charcoal what transfers or is attainable; amber and brown carry secondary series and
+# the greys carry context. No blue and no teal, and no red/green pairing.
+PAL = {"red": "#C62828", "charcoal": "#37474F", "amber": "#F9A825", "orange": "#E65100",
+       "brown": "#5D4037", "ink": "#212121", "grey": "#424242", "mid": "#9E9E9E"}
 WARM_CMAP = "YlOrRd"
 
 CONT = {"sundarbans": "Asia", "mekong": "Asia", "musi_banyuasin": "Asia",
@@ -81,9 +81,9 @@ def fig_fewshot():
     ax1.set_ylabel("median RMSE (Mg ha$^{-1}$)", color=PAL["red"])
     ax1.tick_params(axis="y", labelcolor=PAL["red"])
     ax2 = ax1.twinx()
-    ax2.plot(ks, r, "s--", color=PAL["blue"], label="within-delta $r$")
-    ax2.set_ylabel("median within-delta $r$", color=PAL["blue"])
-    ax2.tick_params(axis="y", labelcolor=PAL["blue"])
+    ax2.plot(ks, r, "s--", color=PAL["charcoal"], label="within-delta $r$")
+    ax2.set_ylabel("median within-delta $r$", color=PAL["charcoal"])
+    ax2.tick_params(axis="y", labelcolor=PAL["charcoal"])
     ax1.set_title("Few-shot calibration of an unsampled delta")
     fig.tight_layout(); fig.savefig(FIG / "fig_fewshot.pdf"); plt.close(fig)
 
@@ -421,7 +421,7 @@ def fig_tiers(lodo):
     tiers = ["t1_random_r2", "t2_spatialblock_r2", "t3_lodo_mean_r2"]
     labels = ["Random\n$k$-fold", "Spatial\nblock", "LODO\n(mean)"]
     x = np.arange(3); w = 0.38
-    for i, (m, c) in enumerate([("ridge", PAL["blue"]), ("histgb", PAL["red"])]):
+    for i, (m, c) in enumerate([("ridge", PAL["charcoal"]), ("histgb", PAL["red"])]):
         vals = [lodo["models"][m][t] for t in tiers]
         ax.bar(x + (i - 0.5) * w, vals, w, label=m, color=c)
     ax.axhline(0, color="k", lw=0.6)
@@ -436,7 +436,7 @@ def fig_aoa(lodo):
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(9, 3.4))
     a1.barh(pd_.delta.str.replace("_", " "), pd_.rmse_Mgha, color=PAL["red"])
     a1.set_xlabel("LODO RMSE (Mg ha$^{-1}$)"); a1.set_title("Per-delta error")
-    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color=PAL["blue"])
+    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color=PAL["charcoal"])
     a2.set_xlim(0, 1); a2.set_xlabel("fraction inside AOA")
     a2.set_title("Fraction inside AOA")
     fig.tight_layout(); fig.savefig(FIG / "fig_aoa.pdf"); plt.close(fig)
@@ -802,7 +802,7 @@ def settings_assets():
     bars = sorted([rows[c] for c in rows], key=lambda r: r["within_region_pearson"])
     labs = [f'{r["setting"]}\n(n={r["n"]})' for r in bars]
     vals = [r["within_region_pearson"] for r in bars]
-    cols = [PAL["red"] if v < 0.1 else PAL["blue"] for v in vals]
+    cols = [PAL["red"] if v < 0.1 else PAL["charcoal"] for v in vals]
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     ax.barh(labs, vals, color=cols, edgecolor="black", linewidth=0.5)
     ax.axvline(0, color="black", lw=0.8)
