@@ -14,7 +14,6 @@ import json
 from pathlib import Path
 import numpy as np, pandas as pd
 import matplotlib
-from matplotlib.colors import LinearSegmentedColormap
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import geopandas as gpd
@@ -25,12 +24,12 @@ FIG = ROOT / "manuscript/figures"; FIG.mkdir(parents=True, exist_ok=True)
 TAB = ROOT / "manuscript/tables"; TAB.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200})
 
-# One palette across every figure of this study: red carries what does not transfer,
-# teal what transfers or is attainable; blue and the greys carry secondary series.
-PAL = {"red": "#C62828", "teal": "#00838F", "blue": "#1565C0", "orange": "#E65100",
-       "amber": "#F9A825", "ink": "#212121", "grey": "#424242", "mid": "#9E9E9E"}
-TEAL_CMAP = LinearSegmentedColormap.from_list(
-    "mdbc_teal", ["#E0F2F1", "#4DB6AC", "#00838F", "#00494E"])
+# One palette across every figure of this study, sampled from the groundwater papers:
+# red carries what does not transfer, blue what transfers or is attainable; orange,
+# amber and purple carry secondary series and the greys carry context.
+PAL = {"red": "#C62828", "blue": "#1565C0", "orange": "#E65100", "amber": "#F9A825",
+       "purple": "#7B1FA2", "ink": "#212121", "grey": "#424242", "mid": "#9E9E9E"}
+WARM_CMAP = "YlOrRd"
 
 CONT = {"sundarbans": "Asia", "mekong": "Asia", "musi_banyuasin": "Asia",
         "amazon_amapa": "S.America", "everglades": "N.America",
@@ -404,7 +403,7 @@ def fig_map(reg, soc):
     fig, ax = plt.subplots(figsize=(9, 4.2))
     coast.plot(ax=ax, color="0.7", linewidth=0.3)
     sc = ax.scatter(cents.lon, cents.lat, s=np.sqrt(cents.mangrove_area_km2) * 3.5,
-                    c=cents.soc, cmap=TEAL_CMAP, edgecolor="k", linewidth=0.6,
+                    c=cents.soc, cmap=WARM_CMAP, edgecolor="k", linewidth=0.6,
                     zorder=3, alpha=0.9)
     for d, r in cents.iterrows():
         ax.annotate(d.replace("_", " "), (r.lon, r.lat), fontsize=7,
@@ -437,7 +436,7 @@ def fig_aoa(lodo):
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(9, 3.4))
     a1.barh(pd_.delta.str.replace("_", " "), pd_.rmse_Mgha, color=PAL["red"])
     a1.set_xlabel("LODO RMSE (Mg ha$^{-1}$)"); a1.set_title("Per-delta error")
-    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color=PAL["teal"])
+    a2.barh(pd_.delta.str.replace("_", " "), pd_.aoa_inside, color=PAL["blue"])
     a2.set_xlim(0, 1); a2.set_xlabel("fraction inside AOA")
     a2.set_title("Fraction inside AOA")
     fig.tight_layout(); fig.savefig(FIG / "fig_aoa.pdf"); plt.close(fig)
@@ -803,7 +802,7 @@ def settings_assets():
     bars = sorted([rows[c] for c in rows], key=lambda r: r["within_region_pearson"])
     labs = [f'{r["setting"]}\n(n={r["n"]})' for r in bars]
     vals = [r["within_region_pearson"] for r in bars]
-    cols = [PAL["red"] if v < 0.1 else PAL["teal"] for v in vals]
+    cols = [PAL["red"] if v < 0.1 else PAL["blue"] for v in vals]
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     ax.barh(labs, vals, color=cols, edgecolor="black", linewidth=0.5)
     ax.axvline(0, color="black", lw=0.8)
