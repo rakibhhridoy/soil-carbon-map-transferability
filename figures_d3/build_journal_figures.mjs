@@ -20,6 +20,9 @@ const VP = JSON.parse(readFileSync("../data/processed/variance_partition.json", 
 const T1 = JSON.parse(readFileSync("../data/processed/tier1_inventory.json", "utf8"));
 const FS = JSON.parse(readFileSync("../data/processed/fewshot_calibration.json", "utf8"));
 const PM = JSON.parse(readFileSync("../data/processed/published_map_test.json", "utf8"));
+const PW = JSON.parse(readFileSync("../data/processed/power_mde.json", "utf8"));
+const BS = JSON.parse(readFileSync("../data/processed/biome_sensitivity.json", "utf8"));
+const ST = JSON.parse(readFileSync("../data/processed/setting_transfer.json", "utf8"));
 // Two finishes from one code path: FIG_STYLE=subtle (submission, default) or showcase
 // (talks, cover letter, press). Every effect is pure vector: shadows are stacked offset
 // translucent copies, fades are stacked translucent bands (rsvg-convert rasterises SVG
@@ -612,5 +615,208 @@ function fig4() {
   save(dom, "fig4_fix");
 }
 
+
+// ============================================================ Supplementary figures
+// Same width, palette, type sizes and conventions as the main figures.
+const BIOME_LABEL = { terrestrial_conc: "Mineral (conc.)", terrestrial_stock: "Mineral (stock)",
+                      mangrove: "Mangrove", marsh: "Salt marsh", seagrass: "Seagrass", permafrost: "Permafrost" };
+
+// bootstrap interval of the RMSE of one delta, over its cores
+function bootRMSE(obs, pred, B = 2000) {
+  const n = obs.length, out = [];
+  let seed = 7;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let b = 0; b < B; b++) {
+    let ss = 0;
+    for (let i = 0; i < n; i++) { const j = Math.floor(rnd() * n); const e = obs[j] - pred[j]; ss += e * e; }
+    out.push(Math.sqrt(ss / n));
+  }
+  out.sort(d3.ascending);
+  return [d3.quantile(out, 0.025), d3.quantile(out, 0.975)];
+}
+
+// S1: per-delta error and applicability
+function figS1() {
+  const W = TW, H = 210, { dom, svg } = svgRoot(W, H);
+  const rows = DATA.perdelta.slice().sort((a, b) => a.rmse - b.rmse)
+    .map(d => { const L = X.lodo[d.delta]; return { ...d, ci: L ? bootRMSE(L.obs, L.pred) : null }; });
+  const y = d3.scaleBand().domain(rows.map(r => r.name)).range([16, H - 30]).padding(0.35);
+
+  // a: RMSE with bootstrap interval
+  const aw = 232, pa = { l: 74, r: 10 };
+  letter(svg, 2, 9, "a");
+  const ga = svg.append("g");
+  const xa = d3.scaleLinear().domain([0, d3.max(rows, r => r.ci ? r.ci[1] : r.rmse) * 1.02]).nice().range([pa.l, aw - pa.r]);
+  axis(ga.append("g").attr("transform", `translate(0,${H - 30})`), d3.axisBottom(xa).ticks(5).tickSize(2.5).tickPadding(2));
+  txt(ga, (pa.l + aw - pa.r) / 2, H - 13, "out-of-delta RMSE (Mg per ha)", { anchor: "middle", size: FS_S });
+  rows.forEach(r => {
+    const yy = y(r.name);
+    dropShadow(ga, s => s.append("rect").attr("x", pa.l).attr("y", yy).attr("width", xa(r.rmse) - pa.l).attr("height", y.bandwidth()), 0.7);
+    ga.append("rect").attr("x", pa.l).attr("y", yy).attr("width", xa(r.rmse) - pa.l).attr("height", y.bandwidth()).attr("fill", FAIL);
+    topHighlight(ga, pa.l, yy, xa(r.rmse) - pa.l);
+    if (r.ci) {
+      const yc = yy + y.bandwidth() / 2;
+      ga.append("line").attr("x1", xa(r.ci[0])).attr("x2", xa(r.ci[1])).attr("y1", yc).attr("y2", yc).attr("stroke", INK).attr("stroke-width", 0.6);
+      [r.ci[0], r.ci[1]].forEach(v => ga.append("line").attr("x1", xa(v)).attr("x2", xa(v)).attr("y1", yc - 1.6).attr("y2", yc + 1.6).attr("stroke", INK).attr("stroke-width", 0.6));
+    }
+    txt(ga, pa.l - 4, yc0(yy, y), `${r.name} (${r.n})`, { anchor: "end", size: FS_S });
+  });
+
+  // b: fraction inside each area of applicability
+  const bx = aw + 16, bw = W - bx, pb = { l: 8, r: 46 };
+  letter(svg, bx - 8, 9, "b");
+  const gb = svg.append("g").attr("transform", `translate(${bx},0)`);
+  const xb = d3.scaleLinear().domain([0, 1]).range([pb.l, bw - pb.r]);
+  axis(gb.append("g").attr("transform", `translate(0,${H - 30})`), d3.axisBottom(xb).ticks(5, "%").tickSize(2.5).tickPadding(2));
+  txt(gb, (pb.l + bw - pb.r) / 2, H - 13, "cores of the held-out delta inside the area", { anchor: "middle", size: FS_S });
+  rows.forEach(r => {
+    const yc = yc0(y(r.name), y) - 2.2;
+    gb.append("line").attr("x1", xb(0)).attr("x2", xb(r.aoa)).attr("y1", yc).attr("y2", yc).attr("stroke", LIGHT).attr("stroke-width", 0.6);
+    gb.append("circle").attr("cx", xb(r.aoa_randomcv)).attr("cy", yc).attr("r", 2.1).attr("fill", "white").attr("stroke", FAIL).attr("stroke-width", 0.8);
+    gb.append("circle").attr("cx", xb(r.aoa)).attr("cy", yc).attr("r", 2.4).attr("fill", HOLD).attr("stroke", "white").attr("stroke-width", 0.4);
+    txt(gb, bw - pb.r + 4, yc + 2.2, `${Math.round(r.aoa * 100)}%`, { size: FS_S, color: HOLD });
+  });
+  const lb = gb.append("g").attr("transform", `translate(${pb.l + 2},10)`);
+  lb.append("circle").attr("cx", 3).attr("cy", -1.5).attr("r", 2.4).attr("fill", HOLD);
+  txt(lb, 8, 0.5, "paired with the out-of-region error", { size: FS_S });
+  lb.append("circle").attr("cx", 3).attr("cy", 6.5).attr("r", 2.1).attr("fill", "white").attr("stroke", FAIL).attr("stroke-width", 0.8);
+  txt(lb, 8, 8.5, "paired with random cross-validation", { size: FS_S });
+  save(dom, "figS1_perdelta");
+}
+function yc0(yy, y) { return yy + y.bandwidth() / 2 + 2.2; }
+
+// S2: transfer skill by coastal environmental setting
+function figS2() {
+  const W = TW, H = 190, { dom, svg } = svgRoot(W, H);
+  const rows = ST.per_ces.filter(r => r.ces !== "unassigned")
+    .slice().sort((a, b) => d3.ascending(a.within_region_pearson, b.within_region_pearson));
+  const p = { l: 96, r: 96, t: 22, b: 34 };
+  const y = d3.scaleBand().domain(rows.map(r => r.ces)).range([p.t, H - p.b]).padding(0.4);
+  const x = d3.scaleLinear().domain([-0.2, 0.7]).range([p.l, W - p.r]);
+  const g = svg.append("g");
+  axis(g.append("g").attr("transform", `translate(0,${H - p.b})`), d3.axisBottom(x).ticks(6).tickSize(2.5).tickPadding(2).tickFormat(d3.format("+.1f")));
+  txt(g, (p.l + W - p.r) / 2, H - p.b + 17, "correlation between predicted and observed stock, out of region", { anchor: "middle", size: FS_S });
+  g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", p.t - 4).attr("y2", H - p.b).attr("stroke", AXIS).attr("stroke-width", 0.6);
+  rows.forEach(r => {
+    const yy = y(r.ces), h = y.bandwidth(), yc = yy + h / 2, v = r.within_region_pearson;
+    const x0 = Math.min(x(0), x(v)), w = Math.abs(x(v) - x(0));
+    dropShadow(g, s => s.append("rect").attr("x", x0).attr("y", yy).attr("width", w).attr("height", h), 0.7);
+    g.append("rect").attr("x", x0).attr("y", yy).attr("width", w).attr("height", h).attr("fill", v < 0.1 ? FAIL : PAL.charcoal);
+    topHighlight(g, x0, yy, w);
+    g.append("path").attr("d", d3.symbol(d3.symbolDiamond, 14)()).attr("transform", `translate(${x(r.pooled_pearson)},${yc})`)
+      .attr("fill", "white").attr("stroke", INK).attr("stroke-width", 0.7);
+    txt(g, p.l - 6, yc + 2.2, `${r.setting} (${r.ces})`, { anchor: "end", size: FS_S });
+    txt(g, W - p.r + 5, yc + 2.2, `${fmt2(v)}  n = ${d3.format(",")(r.n)}`, { size: FS_S, color: MUTE });
+  });
+  const lg = svg.append("g").attr("transform", `translate(${p.l},14)`);
+  lg.append("rect").attr("x", 0).attr("y", -4).attr("width", 7).attr("height", 5).attr("fill", PAL.charcoal);
+  txt(lg, 10, 0.5, "within-region pattern", { size: FS_S });
+  lg.append("path").attr("d", d3.symbol(d3.symbolDiamond, 14)()).attr("transform", "translate(96,-1.5)").attr("fill", "white").attr("stroke", INK).attr("stroke-width", 0.7);
+  txt(lg, 102, 0.5, "pooled, level included", { size: FS_S });
+  save(dom, "figS2_settings");
+}
+
+// S3: what the replicate cores allow against what the model attains, by region
+function figS3() {
+  const W = TW, H = 250, { dom, svg } = svgRoot(W, H);
+  const regs = Object.values(X.ceiling).filter(r => r.r_max != null && r.r_obs != null);
+  const p = { l: 44, r: 10, t: 14, b: 34 };
+  const x = d3.scaleLinear().domain([0, 1]).range([p.l, W - p.r]);
+  const y = d3.scaleLinear().domain([-0.75, 1]).range([H - p.b, p.t]);
+  const rs = d3.scaleSqrt().domain(d3.extent(regs, r => r.n)).range([1.6, 5.5]);
+  const g = svg.append("g");
+  axis(g.append("g").attr("transform", `translate(0,${H - p.b})`), d3.axisBottom(x).ticks(6).tickSize(2.5).tickPadding(2));
+  axis(g.append("g").attr("transform", `translate(${p.l},0)`), d3.axisLeft(y).ticks(7).tickSize(2.5).tickPadding(2).tickFormat(d3.format("+.1f")));
+  txt(g, (p.l + W - p.r) / 2, H - p.b + 17, "replicate-core ceiling of the region", { anchor: "middle" });
+  ylabel(g, 12, (y.range()[0] + y.range()[1]) / 2, "within-region r (held out)");
+  // the ceiling itself, and half of it
+  g.append("path").attr("d", d3.line()([[x(0), y(0)], [x(1), y(1)]])).attr("fill", "none").attr("stroke", MUTE).attr("stroke-width", 0.6).attr("stroke-dasharray", "2,1.5");
+  g.append("path").attr("d", d3.line()([[x(0), y(0)], [x(1), y(0.5)]])).attr("fill", "none").attr("stroke", HOLD).attr("stroke-width", 0.8);
+  hline(g, p.l, W - p.r, y(0), AXIS, null, 0.5);
+  txt(g, x(0.97), y(0.97) - 3, "ceiling", { anchor: "end", size: FS_S, color: MUTE });
+  txt(g, x(0.97), y(0.485) - 3, "half the ceiling", { anchor: "end", size: FS_S, color: HOLD });
+  regs.forEach(r => {
+    const reach = r.r_obs >= 0.5 * r.r_max;
+    dropShadow(g, s => s.append("circle").attr("cx", x(r.r_max)).attr("cy", y(r.r_obs)).attr("r", rs(r.n)), 0.5);
+    g.append("circle").attr("cx", x(r.r_max)).attr("cy", y(r.r_obs)).attr("r", rs(r.n))
+      .attr("fill", reach ? HOLD : FAIL).attr("opacity", 0.8).attr("stroke", "white").attr("stroke-width", 0.4);
+  });
+  const n = regs.length, reached = regs.filter(r => r.r_obs >= 0.5 * r.r_max).length;
+  txt(g, p.l + 6, p.t + 4, `${reached} of ${n} mangrove regions reach half their ceiling`, { size: FS_S });
+  txt(g, p.l + 6, p.t + 12, "circle area, cores in the region", { size: FS_S, color: MUTE });
+  save(dom, "figS3_ceiling");
+}
+
+// S4: power of the cross-biome design
+function figS4() {
+  const W = TW, H = 250, { dom, svg } = svgRoot(W, H);
+  const keys = ["terrestrial_conc", "mangrove", "marsh", "seagrass", "permafrost"];
+  const p = { l: 44, r: 116, t: 14, b: 34 };
+  const x = d3.scaleLinear().domain([0, 0.6]).range([p.l, W - p.r]);
+  const y = d3.scaleLinear().domain([0, 1]).range([H - p.b, p.t]);
+  const g = svg.append("g");
+  axis(g.append("g").attr("transform", `translate(0,${H - p.b})`), d3.axisBottom(x).ticks(7).tickSize(2.5).tickPadding(2).tickFormat(d3.format(".1f")));
+  axis(g.append("g").attr("transform", `translate(${p.l},0)`), d3.axisLeft(y).ticks(6, "%").tickSize(2.5).tickPadding(2));
+  txt(g, (p.l + W - p.r) / 2, H - p.b + 17, "true within-region correlation simulated", { anchor: "middle" });
+  ylabel(g, 12, (y.range()[0] + y.range()[1]) / 2, "probability of detecting it");
+  hline(g, p.l, W - p.r, y(0.8), MUTE, "2,1.5", 0.5);
+  txt(g, p.l + 3, y(0.8) - 3, "80%", { size: FS_S, color: MUTE });
+  const col = { terrestrial_conc: PAL.charcoal, mangrove: FAIL, marsh: PAL.amber, seagrass: PAL.brown, permafrost: PAL.mid };
+  keys.forEach((k, i) => {
+    const d = PW[k]; if (!d) return;
+    const pts = Object.entries(d.power_curve).map(([r, pw]) => [+r, pw]).sort((a, b) => a[0] - b[0]);
+    g.append("path").attr("d", d3.line().x(d => x(d[0])).y(d => y(d[1]))(pts))
+      .attr("fill", "none").attr("stroke", col[k]).attr("stroke-width", k === "mangrove" ? 1.4 : 1).attr("stroke-linecap", "round");
+    if (d.half_ceiling != null && d.power_at_half_ceiling != null) {
+      g.append("circle").attr("cx", x(d.half_ceiling)).attr("cy", y(d.power_at_half_ceiling)).attr("r", 2.2)
+        .attr("fill", col[k]).attr("stroke", "white").attr("stroke-width", 0.5);
+    }
+    const yy = p.t + 4 + i * 15;
+    g.append("line").attr("x1", W - p.r + 8).attr("x2", W - p.r + 18).attr("y1", yy - 2).attr("y2", yy - 2).attr("stroke", col[k]).attr("stroke-width", k === "mangrove" ? 1.4 : 1);
+    txt(g, W - p.r + 21, yy, BIOME_LABEL[k], { size: FS_S });
+    txt(g, W - p.r + 21, yy + 7, `half ceiling ${d3.format(".2f")(d.half_ceiling)}: ${Math.round(d.power_at_half_ceiling * 100)}%`, { size: FS_S, color: MUTE });
+  });
+  txt(g, p.l + 6, H - p.b - 6, "filled point: power at half that biome's replicate ceiling", { size: FS_S, color: MUTE });
+  save(dom, "figS4_power");
+}
+
+// S5: the cross-biome ranking under four variants of the design
+function figS5() {
+  const W = TW, H = 260, { dom, svg } = svgRoot(W, H);
+  const order = ["terrestrial_conc", "terrestrial_stock", "mangrove", "marsh", "seagrass", "permafrost"];
+  const variants = [["base", "base design"], ["r150", "150 km regions"], ["r500", "500 km regions"],
+                    ["climate", "climate covariates only"], ["ridge", "ridge regression"]];
+  const p = { l: 96, r: 10, t: 24, b: 34 };
+  const yB = d3.scaleBand().domain(order).range([p.t, H - p.b]).padding(0.25);
+  const yV = d3.scaleBand().domain(variants.map(v => v[0])).range([0, yB.bandwidth()]).padding(0.25);
+  const x = d3.scaleLinear().domain([-0.6, 0.8]).range([p.l, W - p.r]);
+  const g = svg.append("g");
+  axis(g.append("g").attr("transform", `translate(0,${H - p.b})`), d3.axisBottom(x).ticks(8).tickSize(2.5).tickPadding(2).tickFormat(d3.format("+.1f")));
+  txt(g, (p.l + W - p.r) / 2, H - p.b + 17, "within-region correlation, held out (95% CI)", { anchor: "middle" });
+  g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", p.t - 6).attr("y2", H - p.b).attr("stroke", AXIS).attr("stroke-width", 0.6);
+  order.forEach((b, bi) => {
+    if (bi % 2 === 0) g.append("rect").attr("x", p.l).attr("y", yB(b) - 2).attr("width", W - p.r - p.l).attr("height", yB.bandwidth() + 4).attr("fill", "#F5F5F5");
+    txt(g, p.l - 12, yB(b) + yB.bandwidth() / 2 + 2.2, BIOME_LABEL[b], { anchor: "end", size: FS_S });
+    variants.forEach(([v]) => {
+      const row = BS.rows.find(r => r.biome === b && r.variant === v);
+      if (!row) return;
+      const yy = yB(b) + yV(v) + yV.bandwidth() / 2;
+      const col = row.ci[0] > 0 ? PAL.charcoal : FAIL;
+      g.append("line").attr("x1", x(Math.max(row.ci[0], x.domain()[0]))).attr("x2", x(Math.min(row.ci[1], x.domain()[1])))
+        .attr("y1", yy).attr("y2", yy).attr("stroke", col).attr("stroke-width", 0.7);
+      g.append("circle").attr("cx", x(row.r)).attr("cy", yy).attr("r", 1.9).attr("fill", col).attr("stroke", "white").attr("stroke-width", 0.35);
+    });
+  });
+  const lg = svg.append("g").attr("transform", `translate(${p.l},12)`);
+  variants.forEach(([v, lab], i) => {
+    const xo = [0, 58, 128, 198, 288][i];
+    txt(lg, xo, 0.5, `${i + 1} ${lab}`, { size: FS_S, color: MUTE });
+  });
+  order.forEach(b => variants.forEach(([v], i) =>
+    txt(g, p.l - 3, yB(b) + yV(v) + yV.bandwidth() / 2 + 2.2, `${i + 1}`, { anchor: "end", size: FS_S, color: MUTE })));
+  save(dom, "figS5_sensitivity");
+}
+
 fig1(); fig2(); fig3(); fig4();
+figS1(); figS2(); figS3(); figS4(); figS5();
 console.log("done.");
