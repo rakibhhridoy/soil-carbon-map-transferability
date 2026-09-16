@@ -22,7 +22,14 @@ ROOT = Path(__file__).resolve().parents[1]
 PROC = ROOT / "data/processed"
 FIG = ROOT / "manuscript/figures"; FIG.mkdir(parents=True, exist_ok=True)
 TAB = ROOT / "manuscript/tables"; TAB.mkdir(parents=True, exist_ok=True)
-plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200})
+plt.rcParams.update({"font.size": 9, "savefig.bbox": "tight", "figure.dpi": 200,
+                     # journals reject Type 3 text; 42 embeds TrueType instead, and the
+                     # family matches the Helvetica of the D3 figures
+                     "pdf.fonttype": 42, "ps.fonttype": 42,
+                     "font.family": "sans-serif",
+                     "font.sans-serif": ["Helvetica", "Arial", "DejaVu Sans"],
+                     "axes.linewidth": 0.8, "xtick.major.width": 0.8, "ytick.major.width": 0.8,
+                     "axes.spines.top": False, "axes.spines.right": False})
 
 # One palette across every figure of this study: red carries what does not transfer,
 # charcoal what transfers or is attainable; amber and brown carry secondary series and

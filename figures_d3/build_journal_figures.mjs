@@ -39,7 +39,8 @@ const PAL = { red: "#C62828", charcoal: "#37474F", amber: "#F9A825", orange: "#E
 // Red carries what does not transfer, charcoal what transfers or is attainable.
 const FAIL = PAL.red, HOLD = PAL.charcoal;
 const INK = PAL.ink, AXIS = PAL.ink, MUTE = PAL.grey, LIGHT = PAL.light;
-const FS_T = 7, FS_S = 6, FS_L = 8;     // text, small, panel letter
+const FS_T = 7, FS_S = 6, FS_L = 8;
+d3.formatDefaultLocale({ decimal: ".", thousands: ",", grouping: [3], currency: ["", ""], minus: "\u2013" });     // text, small, panel letter
 const TW = 454;                          // text width in pt
 
 function svgRoot(w, h) {
@@ -123,7 +124,7 @@ function areaFade(svg, g, d, yTop, yBot, x0, x1, color, alpha, n = 18) {
 }
 const fmt2 = d3.format("+.2f"), fmt1 = d3.format(".1f");
 // signed two-decimal value with a true minus and no "+" (protocol text); -0.00 prints as 0.00
-const fmtS = v => { const t = d3.format(".2f")(Math.abs(v) < 0.005 ? 0 : v); return t.replace("-", "−"); };
+const fmtS = v => { const t = d3.format(".2f")(Math.abs(v) < 0.005 ? 0 : v); return t.replace("-", "\u2013"); };
 const rng = d3.randomLcg(7);
 function pearson(a, b) {
   const n = a.length, ma = d3.mean(a), mb = d3.mean(b);
@@ -143,7 +144,7 @@ function bootCI(a, b, B = 2000) {
 }
 const DELTA_NAME = Object.fromEntries(DATA.deltas.map(d => [d.id, d.name]));
 const CONT_ORDER = ["N.America", "S.America", "Africa", "Asia", "Oceania", "other"];
-const CONT_LABEL = { "N.America": "N. America", "S.America": "S. America", Africa: "Africa", Asia: "Asia", Oceania: "Oceania", other: "Other" };
+const CONT_LABEL = { "N.America": "N. Am.", "S.America": "S. Am.", Africa: "Africa", Asia: "Asia", Oceania: "Oceania", other: "Other" };
 
 // ===================================================================== Fig. 1
 // a  cores, regions and deltas on a world map; b validation tiers; c per-delta r with CI
@@ -322,7 +323,7 @@ function fig2() {
   txt(ga, (xa.range()[0] + xa.range()[1]) / 2, H - pa.b + 17, "dissimilarity index of held-out cores", { anchor: "middle" });
   // random-CV AoA threshold sits at the origin; the out-of-region threshold is per delta
   ga.append("line").attr("x1", xa(thrR)).attr("x2", xa(thrR)).attr("y1", pa.t - 2).attr("y2", H - pa.b).attr("stroke", FAIL).attr("stroke-width", 0.9);
-  txt(ga, xa(thrR) + 2, pa.t - 15, `random-CV AoA: DI ≤ ${d3.format(".3f")(thrR)} (0% inside)`, { anchor: "start", size: FS_S, color: FAIL });
+  txt(ga, xa(thrR) + 2, pa.t - 15, `random-CV AoA: DI up to ${d3.format(".3f")(thrR)} (0% inside)`, { anchor: "start", size: FS_S, color: FAIL });
   ids.forEach(id => {
     const L = X.lodo[id], y = ya(id) + ya.bandwidth() / 2, d = L.di_grouped.filter(v => v > 0).sort(d3.ascending);
     const q = [0.05, 0.25, 0.5, 0.75, 0.95].map(p => d3.quantileSorted(d, p));
@@ -341,7 +342,7 @@ function fig2() {
   const l2 = ga.append("g").attr("transform", `translate(${xa(thrR) + 2},${pa.t - 5})`);
   l2.append("rect").attr("x", 0).attr("y", -4).attr("width", 8).attr("height", 5).attr("fill", HOLD).attr("opacity", 0.2);
   l2.append("line").attr("x1", 8).attr("x2", 8).attr("y1", -5).attr("y2", 2).attr("stroke", HOLD).attr("stroke-width", 0.9);
-  txt(l2, 11, 0.5, "out-of-region AoA (threshold per delta)", { size: 5.5, color: HOLD });
+  txt(l2, 11, 0.5, "out-of-region AoA (threshold per delta)", { size: FS_S, color: HOLD });
   txt(ga, aw - pa.r, pa.t - 15, "inside", { anchor: "end", size: FS_S, color: HOLD });
 
   // ---- b: 29 regions
@@ -426,7 +427,9 @@ function fig3() {
     txt(ga, xc + 5, ya(b.ceiling) + 2.2, d3.format(".2f")(b.ceiling), { size: FS_S, color: MUTE, halo: true });
     txt(ga, x0 + w - 4, ya(Math.max(b.ci[1], b.median_r)) - 2.5, fmt2(b.median_r), { anchor: "end", size: FS_S, weight: "bold", halo: true });
     short[b.key].split("\n").forEach((s, i) => txt(ga, xc, ah - pa.b + 9 + i * 7.5, s, { anchor: "middle", size: FS_S }));
-    txt(ga, xc, ah - pa.b + 9 + short[b.key].split("\n").length * 7.5, `${d3.format(",")(b.n)} cores, ${b.n_regions} regions`, { anchor: "middle", size: 5.5, color: MUTE });
+    const nLines = short[b.key].split("\n").length;
+    txt(ga, xc, ah - pa.b + 9 + nLines * 7.5, `${d3.format(",")(b.n)} cores`, { anchor: "middle", size: FS_S, color: MUTE });
+    txt(ga, xc, ah - pa.b + 16 + nLines * 7.5, `${b.n_regions} regions`, { anchor: "middle", size: FS_S, color: MUTE });
   });
   const la = ga.append("g").attr("transform", `translate(${pa.l + 6},${ah - pa.b - 14})`);
   la.append("path").attr("d", d3.symbol(d3.symbolDiamond, 16)()).attr("transform", "translate(3,2)").attr("fill", "white").attr("stroke", INK).attr("stroke-width", 0.7);
@@ -460,7 +463,7 @@ function fig3() {
   comps.forEach(([k, col, lab], i) => {
     const xo = [0, 60, 150][i];
     lb.append("rect").attr("x", xo).attr("y", -4).attr("width", 6).attr("height", 5).attr("fill", col);
-    txt(lb, xo + 8, 0.5, lab, { size: 5.5 });
+    txt(lb, xo + 8, 0.5, lab, { size: FS_S });
   });
 
   // ---- c: level vs pattern predictability
@@ -481,13 +484,13 @@ function fig3() {
     gc.append("path").attr("d", sq).attr("transform", st).attr("fill", PAL.charcoal).attr("stroke", "white").attr("stroke-width", 0.35);
     dropShadow(gc, s => s.append("circle").attr("cx", xc(a)).attr("cy", y).attr("r", 2.4), 0.55);
     gc.append("circle").attr("cx", xc(a)).attr("cy", y).attr("r", 2.4).attr("fill", FAIL).attr("stroke", "white").attr("stroke-width", 0.35);
-    if (r.r2_between_regions < xc.domain()[0]) txt(gc, xc(a) + 4, y + 2, `${d3.format("+.2f")(r.r2_between_regions)}`, { size: 5.5, color: MUTE });
+    if (r.r2_between_regions < xc.domain()[0]) txt(gc, xc(a) + 4, y + 2, `${d3.format("+.2f")(r.r2_between_regions)}`, { size: FS_S, color: MUTE });
   });
   const lc = gc.append("g").attr("transform", `translate(${pc.l},${pc.t - 6})`);
   lc.append("circle").attr("cx", 3).attr("cy", -1.5).attr("r", 2.4).attr("fill", FAIL);
-  txt(lc, 8, 0.5, "regional mean (held out)", { size: 5.5 });
-  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 14)()).attr("transform", "translate(84,-1.5)").attr("fill", PAL.charcoal);
-  txt(lc, 89, 0.5, "within-region pattern (local fit)", { size: 5.5 });
+  txt(lc, 8, 0.5, "regional mean (held out)", { size: FS_S });
+  lc.append("path").attr("d", d3.symbol(d3.symbolSquare, 14)()).attr("transform", "translate(78,-1.5)").attr("fill", PAL.charcoal);
+  txt(lc, 83, 0.5, "within-region pattern", { size: FS_S });
   save(dom, "fig_biomes");
 }
 
@@ -548,12 +551,12 @@ function fig4() {
   const xb = d3.scaleLog().domain([0.1, 2]).range([pb.l, lw - pb.r]);
   const yb = d3.scaleBand().domain(pc.map(c => c.iso3)).range([pb.t, bh - pb.b]).padding(0.2);
   axis(gb.append("g").attr("transform", `translate(0,${bh - pb.b})`), d3.axisBottom(xb).tickValues([0.1, 0.2, 0.5, 1, 2]).tickFormat(d3.format(".1~f")).tickSize(2.5).tickPadding(2));
-  txt(gb, (xb.range()[0] + xb.range()[1]) / 2, bh - pb.b + 17, "national median core stock / IPCC Tier 1 default (386 t C ha⁻¹)", { anchor: "middle", size: FS_S });
+  txt(gb, (xb.range()[0] + xb.range()[1]) / 2, bh - pb.b + 17, "national median core stock / IPCC Tier 1 default (386 t C per ha)", { anchor: "middle", size: FS_S });
   gb.append("line").attr("x1", xb(1)).attr("x2", xb(1)).attr("y1", pb.t).attr("y2", bh - pb.b).attr("stroke", AXIS).attr("stroke-width", 0.6);
   const rs = d3.scaleSqrt().domain([0, d3.max(pc, c => c.mangrove_km2)]).range([0.8, 4.5]);
   pc.forEach(c => {
     const y = yb(c.iso3) + yb.bandwidth() / 2, t1 = T1.summary.tier1_Mgha;
-    txt(gb, pb.l - 3, y + 2, c.country.replace("United Republic of Tanzania", "Tanzania").replace("Federated States of Micronesia", "Micronesia").replace("United States of America", "USA"), { anchor: "end", size: 5.5 });
+    txt(gb, pb.l - 3, y + 2, c.country.replace("United Republic of Tanzania", "Tanzania").replace("Federated States of Micronesia", "Micronesia").replace("United States of America", "USA"), { anchor: "end", size: FS_S });
     gb.append("line").attr("x1", xb(c.stock_ci_Mgha[0] / t1)).attr("x2", xb(c.stock_ci_Mgha[1] / t1)).attr("y1", y).attr("y2", y).attr("stroke", INK).attr("stroke-width", 0.5);
     dropShadow(gb, s => s.append("circle").attr("cx", xb(c.ratio_obs_to_tier1)).attr("cy", y).attr("r", rs(c.mangrove_km2)), 0.55);
     gb.append("circle").attr("cx", xb(c.ratio_obs_to_tier1)).attr("cy", y).attr("r", rs(c.mangrove_km2))
@@ -561,7 +564,7 @@ function fig4() {
   });
   const lb = gb.append("g").attr("transform", `translate(${xb(0.105)},${pb.t + 4})`);
   [1000, 10000, 30000].forEach((v, i) => { lb.append("circle").attr("cx", 4).attr("cy", i * 9).attr("r", rs(v)).attr("fill", "none").attr("stroke", INK).attr("stroke-width", 0.5);
-    txt(lb, 11, i * 9 + 2, `${d3.format(",")(v)} km²`, { size: 5.5, color: MUTE }); });
+    txt(lb, 11, i * 9 + 2, `${d3.format(",")(v)} sq km`, { size: FS_S, color: MUTE }); });
 
   // ---- c: protocol
   const cx0 = lw + 16, cw = W - cx0;
@@ -585,22 +588,22 @@ function fig4() {
     gc.append("circle").attr("cx", x0 + 7.9).attr("cy", y + sh / 2 - 1.6).attr("r", 3.2).attr("fill", "white").attr("opacity", 0.16);
     txt(gc, x0 + 9, y + sh / 2 + 2.3, `${i + 1}`, { anchor: "middle", size: FS_S, color: "white", weight: "bold" });
     txt(gc, x0 + 19, y + 11, s[0], { size: FS_S, weight: "bold" });
-    txt(gc, x0 + 19, y + 21, s[1], { size: 5.5, color: MUTE });
+    txt(gc, x0 + 19, y + 21, s[1], { size: FS_S, color: MUTE });
     // verdict chip on the exit of the step
-    const chipW = s[3].length * 3.5 + 10, chipX = x0 + sw - chipW, chipY = y + sh + 7;
+    const chipW = s[3].length * 3.9 + 12, chipX = x0 + sw - chipW, chipY = y + sh + 7;
     dropShadow(gc, s2 => s2.append("rect").attr("x", chipX).attr("y", chipY).attr("width", chipW).attr("height", 11).attr("rx", 5.5), 0.9);
     gc.append("rect").attr("x", chipX).attr("y", chipY).attr("width", chipW).attr("height", 11).attr("rx", 5.5).attr("fill", s[4]);
     topHighlight(gc, chipX + 4, chipY + 0.4, chipW - 8, 0.45);
-    txt(gc, chipX + chipW / 2, chipY + 7.8, s[3], { anchor: "middle", size: 5.5, color: s[5], weight: "bold" });
+    txt(gc, chipX + chipW / 2, chipY + 7.8, s[3], { anchor: "middle", size: FS_S, color: s[5], weight: "bold" });
     gc.append("line").attr("x1", x0 + sw - 12).attr("x2", x0 + sw - 12).attr("y1", y + sh).attr("y2", chipY).attr("stroke", s[4] === PAL.light ? MUTE : s[4]).attr("stroke-width", 0.6);
     if (i < steps.length - 1) {
       gc.append("line").attr("x1", x0 + 9).attr("x2", x0 + 9).attr("y1", y + sh).attr("y2", y + sh + gap - 1).attr("stroke", INK).attr("stroke-width", 0.6);
       gc.append("path").attr("d", `M${x0 + 6.5},${y + sh + gap - 4}L${x0 + 9},${y + sh + gap - 0.5}L${x0 + 11.5},${y + sh + gap - 4}Z`).attr("fill", INK);
-      txt(gc, x0 + 13, y + sh + gap / 2 + 2, s[2], { size: 5.5, color: MUTE, style: "italic" });
+      txt(gc, x0 + 13, y + sh + gap / 2 + 2, s[2], { size: FS_S, color: MUTE, style: "italic" });
     }
   });
-  txt(gc, x0, y0 + steps.length * (sh + gap) - 6, "arrows follow the mangrove benchmark;", { size: 5.5, color: MUTE });
-  txt(gc, x0, y0 + steps.length * (sh + gap) + 1, "every quantity comes from the model's own training table", { size: 5.5, color: MUTE });
+  txt(gc, x0, y0 + steps.length * (sh + gap) - 6, "arrows follow the mangrove benchmark;", { size: FS_S, color: MUTE });
+  txt(gc, x0, y0 + steps.length * (sh + gap) + 1, "every quantity comes from the model's own training table", { size: FS_S, color: MUTE });
   save(dom, "fig4_fix");
 }
 

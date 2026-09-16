@@ -12,7 +12,8 @@ const DATA = JSON.parse(readFileSync("../data/processed/figure_data.json", "utf8
 const OUT = "svg";
 
 // ---- journal-print style tokens ----
-const FONT = "Times, 'Times New Roman', serif";
+const FONT = "Helvetica, Arial, sans-serif";
+d3.formatDefaultLocale({ decimal: ".", thousands: ",", grouping: [3], currency: ["", ""], minus: "\u2013" });
 const INK = "#212121", GRID = "#E0E0E0", AXIS = "#424242";
 // Okabe-Ito colorblind-safe palette
 // Same palette as the journal figures: red = does not transfer, charcoal = transfers.
@@ -132,7 +133,7 @@ function figMap() {
   svg.append("rect").attr("x", gx).attr("y", gy).attr("width", gw).attr("height", 10)
      .attr("fill", "none").attr("stroke", AXIS).attr("stroke-width", 0.5);
   svg.append("text").attr("x", gx).attr("y", gy - 5).attr("font-size", 10).attr("fill", AXIS)
-     .text("median SOC₀₋₁₀₀ (Mg ha⁻¹)");
+     .text("median SOC0-100 (Mg ha-1)");
   [cext[0], cext[1]].forEach((v, i) =>
     svg.append("text").attr("x", gx + i * gw).attr("y", gy + 22)
        .attr("text-anchor", i ? "end" : "start").attr("font-size", 9).attr("fill", AXIS)
@@ -152,7 +153,7 @@ function figTiers() {
   const defs = svg.append("defs");
   title(svg, m.l - 36, 22, "Apparent skill collapses out-of-distribution");
   svg.append("text").attr("x", m.l - 36).attr("y", 38).attr("font-size", 10.5)
-     .attr("fill", AXIS).text("gradient-boosting R² under progressively honest validation");
+     .attr("fill", AXIS).text("gradient-boosting R2 under progressively honest validation");
 
   const tiers = [["t1", "Random", "k-fold"], ["t1g", "Site-grouped", "k-fold"],
                  ["t2", "Spatial", "block"], ["t3", "Leave-one-", "delta-out"]];
@@ -177,7 +178,7 @@ function figTiers() {
      .attr("stroke", INK).attr("stroke-width", 1);
   svg.append("text").attr("x", 14).attr("y", (m.t + H - m.b) / 2)
      .attr("transform", `rotate(-90,14,${(m.t + H - m.b) / 2})`)
-     .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", INK).text("R²");
+     .attr("text-anchor", "middle").attr("font-size", 12).attr("fill", INK).text("R2");
 
   // gradient-boosting bars with value labels
   tiers.forEach(([t, l1, l2]) => {
@@ -227,7 +228,7 @@ function figTiers() {
      .text("conventional validation");
   svg.append("text").attr("x", cxText).attr("y", y(-1.0) + 13).attr("text-anchor", "middle")
      .attr("font-size", 10).attr("font-style", "italic").attr("fill", INK)
-     .text("inflates skill 0.65 → −1.71");
+     .text("inflates skill 0.65 to –1.71");
   svg.append("path")
      .attr("d", `M${cxText + 70},${y(-1.05)} C${x0("t3") - 6},${y(-1.05)} ${x0("t3") - 6},${y(-1.5)} ${x0("t3") + 6},${y(-1.6)}`)
      .attr("fill", "none").attr("stroke", INK).attr("stroke-width", 1).attr("marker-end", "url(#arr)");
@@ -270,7 +271,7 @@ function figAoa() {
   svg.append("g").attr("transform", `translate(${ax},0)`).call(d3.axisLeft(y)).call(axisStyle)
      .select(".domain").remove();
   svg.append("text").attr("x", ax + panelW / 2).attr("y", H - 8).attr("text-anchor", "middle")
-     .attr("font-size", 11).attr("fill", INK).text("LODO RMSE (Mg ha⁻¹)");
+     .attr("font-size", 11).attr("fill", INK).text("LODO RMSE (Mg ha-1)");
 
   // panel b: AOA inside
   const bx = ax + panelW + 60;
@@ -291,7 +292,7 @@ function figAoa() {
   if (d3.max(DATA.perdelta, d => d.aoa) < 0.01)
     svg.append("text").attr("x", bx + panelW / 2).attr("y", (m.t + H - m.b) / 2)
        .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", "#9E9E9E")
-       .text("all deltas ≈ 0%");
+       .text("all deltas about  0%");
   save(dom, "fig_aoa");
 }
 
@@ -333,7 +334,7 @@ function figFewshot() {
   svg.append("text").attr("x", 15).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,15,${(m.t + H - m.b) / 2})`)
      .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.blue).text("within-delta r");
   svg.append("text").attr("x", W - 13).attr("y", (m.t + H - m.b) / 2).attr("transform", `rotate(-90,${W - 13},${(m.t + H - m.b) / 2})`)
-     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.vermillion).text("RMSE (Mg ha⁻¹)");
+     .attr("text-anchor", "middle").attr("font-size", 11).attr("fill", OI.vermillion).text("RMSE (Mg ha-1)");
 
   const loc = fs.filter(d => d.pearson_local != null && !Number.isNaN(d.pearson_local));
   const lineP = d3.line().x(d => x(d.k)).y(d => yP(d.pearson));
@@ -443,7 +444,7 @@ function figRegion() {
     .text(c));
   svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
      .attr("font-size", 10).attr("fill", "#9E9E9E")
-     .text("each point = one held-out region (size ∝ √n); black bar = continental median; "
+     .text("each point = one held-out region (size proportional to sqrtn); black bar = continental median; "
          + "red band = 95% CI of overall median");
   save(dom, "fig_region");
 }
@@ -510,7 +511,7 @@ function figBiomes() {
   });
   svg.append("text").attr("x", (m.l + W - m.r) / 2).attr("y", H - 6).attr("text-anchor", "middle")
      .attr("font-size", 10).attr("fill", "#9E9E9E")
-     .text("points = held-out regions (size ∝ √n); bar = median, band = 95% CI; ◇ = replicate-core ceiling on attainable r");
+     .text("points = held-out regions (size proportional to sqrtn); bar = median, band = 95% CI; diamond = replicate-core ceiling on attainable r");
   save(dom, "fig_biomes");
 }
 
@@ -543,11 +544,11 @@ function figProtocol() {
                       "mangroves: threshold 0.001; 0% of any unsampled delta"], q);
   box(L, 132, QW, QH, ["2  Inside the AOA paired with the out-of-region error?",
                        "threshold 0.26; median 94% of a held-out delta"], q);
-  box(L, 214, QW, QH, ["3  Out-of-region skill ≥ half the replicate ceiling?",
-                       "r = −0.09 [−0.20, 0.03] against a ceiling of 0.74"], q);
+  box(L, 214, QW, QH, ["3  Out-of-region skill at least  half the replicate ceiling?",
+                       "r = –0.09 [–0.20, 0.03] against a ceiling of 0.74"], q);
   box(L, 296, QW, QH, ["4  How many local cores close the gap?",
                        "few-shot curve: 10 cores reach half the ceiling"], q);
-  arrow(L + QW / 2, 100, L + QW / 2, 132, "no: reported R² does not apply here (expected)");
+  arrow(L + QW / 2, 100, L + QW / 2, 132, "no: reported R2 does not apply here (expected)");
   arrow(L + QW / 2, 182, L + QW / 2, 214, "yes");
   arrow(L + QW / 2, 264, L + QW / 2, 296, "no");
   // verdicts
@@ -561,7 +562,7 @@ function figProtocol() {
   svg.append("text").attr("x", 16).attr("y", 380).attr("font-size", 10.5).attr("fill", "#9E9E9E")
      .text("Every quantity comes from the model's own training table: two AOA thresholds (folds matched to the error each certifies),");
   svg.append("text").attr("x", 16).attr("y", 396).attr("font-size", 10.5).attr("fill", "#9E9E9E")
-     .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling √ICC and the few-shot calibration curve (open code).");
+     .text("leave-one-region-out skill with a bootstrap CI, the replicate-core ceiling sqrtICC and the few-shot calibration curve (open code).");
   svg.append("text").attr("x", 16).attr("y", 416).attr("font-size", 10.5).attr("fill", "#9E9E9E")
      .text("Passing step 2 while failing step 3 is the mangrove, salt-marsh, seagrass and permafrost outcome; mineral upland soils pass step 3.");
   save(dom, "fig_protocol");
