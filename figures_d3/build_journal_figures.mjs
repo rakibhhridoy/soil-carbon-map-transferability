@@ -674,7 +674,7 @@ function figS1() {
     gb.append("line").attr("x1", xb(0)).attr("x2", xb(r.aoa)).attr("y1", yc).attr("y2", yc).attr("stroke", LIGHT).attr("stroke-width", 0.6);
     gb.append("circle").attr("cx", xb(r.aoa_randomcv)).attr("cy", yc).attr("r", 2.1).attr("fill", "white").attr("stroke", FAIL).attr("stroke-width", 0.8);
     gb.append("circle").attr("cx", xb(r.aoa)).attr("cy", yc).attr("r", 2.4).attr("fill", HOLD).attr("stroke", "white").attr("stroke-width", 0.4);
-    txt(gb, bw - pb.r + 4, yc + 2.2, `${Math.round(r.aoa * 100)}%`, { size: FS_S, color: HOLD });
+    txt(gb, bw - pb.r + 4, yc + 2.2, `${Math.round(r.aoa * 100)}%`, { size: FS_S });
   });
   const lb = gb.append("g").attr("transform", `translate(${pb.l + 2},10)`);
   lb.append("circle").attr("cx", 3).attr("cy", -1.5).attr("r", 2.4).attr("fill", HOLD);
@@ -734,7 +734,7 @@ function figS3() {
   g.append("path").attr("d", d3.line()([[x(0), y(0)], [x(1), y(0.5)]])).attr("fill", "none").attr("stroke", HOLD).attr("stroke-width", 0.8);
   hline(g, p.l, W - p.r, y(0), AXIS, null, 0.5);
   txt(g, x(0.97), y(0.97) - 3, "ceiling", { anchor: "end", size: FS_S, color: MUTE });
-  txt(g, x(0.97), y(0.485) - 3, "half the ceiling", { anchor: "end", size: FS_S, color: HOLD });
+  txt(g, x(0.97), y(0.485) - 3, "half the ceiling", { anchor: "end", size: FS_S });
   regs.forEach(r => {
     const reach = r.r_obs >= 0.5 * r.r_max;
     dropShadow(g, s => s.append("circle").attr("cx", x(r.r_max)).attr("cy", y(r.r_obs)).attr("r", rs(r.n)), 0.5);
