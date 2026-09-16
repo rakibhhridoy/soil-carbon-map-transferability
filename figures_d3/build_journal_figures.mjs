@@ -391,11 +391,11 @@ function fig2() {
 // ===================================================================== Fig. 3
 // a  cross-biome r vs ceiling; b variance partition; c predictability of level and pattern
 function fig3() {
-  const W = TW, H = 300, { dom, svg } = svgRoot(W, H);
+  const W = TW, H = 324, { dom, svg } = svgRoot(W, H);
   const biomes = DATA.biomes.filter(b => !b.underpowered).map(b => ({ ...b, key: b.tag.replace(/_d\d+$/, "") }));
   const short = { terrestrial_conc: "Mineral\n(conc.)", terrestrial_stock: "Mineral\n(stock)", mangrove: "Mangrove", marsh: "Salt marsh", seagrass: "Seagrass", permafrost: "Permafrost" };
   // ---- a
-  const ah = 160, pa = { l: 34, r: 6, t: 12, b: 30 };
+  const ah = 184, pa = { l: 34, r: 6, t: 10, b: 30 };
   letter(svg, 2, 9, "a");
   const ga = svg.append("g");
   const xa = d3.scaleBand().domain(biomes.map(b => b.key)).range([pa.l, W - pa.r]).padding(0.25);
@@ -502,10 +502,10 @@ function fig3() {
 // ===================================================================== Fig. 4
 // a  few-shot calibration; b Tier-1 default vs national cores; c certification protocol
 function fig4() {
-  const W = TW, H = 310, { dom, svg } = svgRoot(W, H);
+  const W = TW, H = 340, { dom, svg } = svgRoot(W, H);
   const lw = 224;
   // ---- a
-  const ah = 120, pa = { l: 34, r: 8, t: 10, b: 24 };
+  const ah = 148, pa = { l: 34, r: 8, t: 10, b: 24 };
   letter(svg, 2, 9, "a");
   const ga = svg.append("g");
   const ks = FS.ks, xa = d3.scaleLinear().domain([0, 25]).range([pa.l, lw - pa.r]);
@@ -581,7 +581,7 @@ function fig4() {
     ["Out-of-region skill at least half the replicate ceiling?", `benchmark: r = ${fmtS(RL.summary.lodo_median_pearson)} [${fmtS(RL.summary.lodo_median_pearson_ci[0])}, ${fmtS(RL.summary.lodo_median_pearson_ci[1])}] against a ceiling of ${d3.format(".2f")(DATA.biomes.find(b => b.tag === "mangrove").ceiling)}`, "no", "yes: USABLE, out-of-region error applies", HOLD, "white"],
     ["How many local cores close the gap?", "benchmark: 10 cores reach half the ceiling", "", "LEVEL ONLY until k local cores are added", PAL.amber, INK],
   ];
-  const sw = cw - 4, sh = 30, gap = 30, x0 = 2, y0 = 16;
+  const sw = cw - 4, sh = 32, gap = 34, x0 = 2, y0 = 16;
   steps.forEach((s, i) => {
     const y = y0 + i * (sh + gap);
     dropShadow(gc, s => s.append("rect").attr("x", x0).attr("y", y).attr("width", sw).attr("height", sh).attr("rx", 2.5), FX.card);
