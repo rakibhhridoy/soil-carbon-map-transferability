@@ -26,8 +26,8 @@ const PM = JSON.parse(readFileSync("../data/processed/published_map_test.json", 
 // filters and its gradient shadings do not survive \includegraphics).
 const STYLE = process.env.FIG_STYLE === "showcase" ? "showcase" : "subtle";
 const FX = STYLE === "showcase"
-  ? { layers: 8, step: 0.62, alpha: 0.06, halo: 2.0, hi: 0.6, ocean: "#EAF0F2", land: "#ECECEC", landEdge: 0.7, extrude: 7, card: 1.7 }
-  : { layers: 3, step: 0.34, alpha: 0.055, halo: 1.6, hi: 0.4, ocean: "#F5F8F9", land: "#ECECEC", landEdge: 0.5, extrude: 0, card: 1.5 };
+  ? { layers: 8, step: 0.62, alpha: 0.06, halo: 2.0, hi: 0.6, ocean: "#EEF3F5", land: "#E3E3E3", landEdge: 0.7, extrude: 7, card: 1.7 }
+  : { layers: 3, step: 0.34, alpha: 0.055, halo: 1.6, hi: 0.4, ocean: "#F1F5F7", land: "#E3E3E3", landEdge: 0.5, extrude: 0, card: 1.5 };
 const OUT = STYLE === "showcase" ? "svg/showcase" : "svg";
 
 const FONT = "Helvetica, Arial, sans-serif";
@@ -151,14 +151,19 @@ const CONT_LABEL = { "N.America": "N. Am.", "S.America": "S. Am.", Africa: "Afri
 function fig1() {
   const W = TW, H = 372, { dom, svg } = svgRoot(W, H);
   // ---- a: map
-  const mh = 214, m = { t: 12, l: 0, r: 0, b: 4 };
+  // every core, region and delta lies between 48 N and 48 S, so the map is cropped to that
+  // band: full width, no polar space, and the freed height goes to panels b and c
+  const LAT = 48, m = { t: 10, l: 0, r: 0, b: 4 };
+  const s0 = (TW - m.l - m.r) / (2 * Math.PI);
+  const beltH = 2 * LAT * Math.PI / 180 * s0;
+  const mh = m.t + beltH + m.b;
   letter(svg, 2, 9, "a");
   const topo = require("world-atlas/land-110m.json");
   const land = feature(topo, topo.objects.land);
-  const proj = d3.geoNaturalEarth1().fitExtent([[m.l, m.t], [W - m.r, mh - m.b]], { type: "Sphere" });
+  const proj = d3.geoEquirectangular().scale(s0).translate([m.l + (W - m.l - m.r) / 2, m.t + beltH / 2]);
   const path = d3.geoPath(proj);
   const g = svg.append("g");
-  const sphereD = path({ type: "Sphere" }), landD = path(land);
+  const sphereD = `M${m.l},${m.t}h${W - m.l - m.r}v${beltH}h${-(W - m.l - m.r)}Z`, landD = path(land);
   if (STYLE === "showcase") dropShadow(g, s => s.append("path").attr("d", sphereD), 1.6);
   g.append("path").attr("d", sphereD).attr("fill", FX.ocean).attr("stroke", LIGHT).attr("stroke-width", 0.4);
   const sid = `sphere${STYLE}`;
@@ -310,7 +315,7 @@ function fig1() {
 // ===================================================================== Fig. 2
 // a  dissimilarity index of held-out cores against both thresholds; b 29-region r with ceilings
 function fig2() {
-  const W = TW, H = 190, { dom, svg } = svgRoot(W, H);
+  const W = TW, H = 236, { dom, svg } = svgRoot(W, H);
   // ---- a
   const aw = 218, pa = { l: 62, r: 6, t: 24, b: 24 };
   letter(svg, 2, 9, "a");
@@ -352,14 +357,14 @@ function fig2() {
   const regs = RL.per_region.map(r => ({ ...r, ceiling: X.ceiling[r.region] ? X.ceiling[r.region].r_max : null }));
   const conts = CONT_ORDER.filter(c => regs.some(r => r.continent === c));
   const xb = d3.scaleBand().domain(conts).range([pb.l, bw - pb.r]).padding(0.15);
-  const yb = d3.scaleLinear().domain([-0.6, 1]).range([H - pb.b, pb.t]);
+  const yb = d3.scaleLinear().domain([-0.75, 1]).range([H - pb.b, pb.t]);
   axis(gb.append("g").attr("transform", `translate(${pb.l},0)`), d3.axisLeft(yb).ticks(6).tickSize(2.5).tickPadding(2).tickFormat(d3.format("+.1f")));
   ylabel(gb, 10, (yb.range()[0] + yb.range()[1]) / 2, "within-region r (held out)");
   hline(gb, pb.l, bw - pb.r, yb(0), AXIS, null, 0.5);
   const s = RL.summary;
   nestedBand(gb, pb.l, bw - pb.r - pb.l, yb(s.lodo_median_pearson_ci[1]), yb(s.lodo_median_pearson_ci[0]), yb(s.lodo_median_pearson), FAIL, 0.2);
   hline(gb, pb.l, bw - pb.r, yb(s.lodo_median_pearson), FAIL, "2,1.5", 0.8);
-  txt(gb, xb("S.America") + 2, yb(s.lodo_median_pearson) + 8, `median ${fmt2(s.lodo_median_pearson)} (95% CI)`, { anchor: "start", size: FS_S, color: FAIL, halo: true });
+  txt(gb, pb.l + 3, yb(s.lodo_median_pearson_ci[0]) + 7.5, `median ${fmt2(s.lodo_median_pearson)} (95% CI)`, { anchor: "start", size: FS_S, color: FAIL, halo: true });
   const rs = d3.scaleSqrt().domain([10, d3.max(regs, r => r.n)]).range([1.3, 4]);
   conts.forEach(c => {
     const cr = regs.filter(r => r.continent === c), x0 = xb(c), w = xb.bandwidth();
