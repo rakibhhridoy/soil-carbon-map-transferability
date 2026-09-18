@@ -172,6 +172,10 @@ def main():
                 sum_observed_TgC=round(float(R.observed_TgC.sum()), 1),
                 sum_abs_diff_TgCO2e=round(float(R.diff_TgCO2e.abs().sum()), 1),
                 net_diff_TgCO2e=round(float(R.diff_TgCO2e.sum()), 1),
+                tier1_base_TgCO2e=round(float(R.tier1_TgC.sum()) * CO2, 1),
+                net_diff_share_of_base=round(float(abs(R.diff_TgCO2e.sum()) / (R.tier1_TgC.sum() * CO2)), 3),
+                n_countries_off_25pct=int(((R.ratio_obs_to_tier1 < 0.75) | (R.ratio_obs_to_tier1 > 1.25)).sum()),
+                n_countries_off_50pct=int(((R.ratio_obs_to_tier1 < 0.5) | (R.ratio_obs_to_tier1 > 1.5)).sum()),
                 **uncertainty(soc, area),
                 note="observed = national median core stock x GMW national area; scaling a median to "
                      "national extent is itself a transfer assumption, so differences bound the question "
