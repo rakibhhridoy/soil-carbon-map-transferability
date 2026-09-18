@@ -91,6 +91,20 @@ def load_external(habitat, target_cm):
                                  country=prof.cont, soc_0_100_Mgha=val.loc[prof.index].astype(float),
                                  max_depth_cm=30.0, n_layers=np.nan, extrapolated=False,
                                  fc_from_om=False)).reset_index(drop=True)
+    if habitat in ("terrestrial_ph", "terrestrial_clay"):
+        # generality control: the identical protocol on a non-carbon soil property of the
+        # same profiles, to separate "carbon does not transfer" from "nothing transfers"
+        sys.path.insert(0, str(ROOT / "src" / "models"))
+        import terrestrial_test as T
+        col, lo, hi = {"terrestrial_ph": ("ph", 2.0, 11.0),
+                       "terrestrial_clay": ("clay", 0.0, 100.0)}[habitat]
+        prof = T.wosis_property(col, lo, hi)
+        prof = prof.sample(min(len(prof), SUBSAMPLE), random_state=0)
+        return pd.DataFrame(dict(core_id=prof.profile_id.astype(str), study_id="WoSIS",
+                                 lat=prof.lat.astype(float), lon=prof.lon.astype(float),
+                                 country=prof.cont, soc_0_100_Mgha=prof.val.astype(float),
+                                 max_depth_cm=30.0, n_layers=np.nan, extrapolated=False,
+                                 fc_from_om=False)).reset_index(drop=True)
     if habitat == "peat":
         P = pd.read_csv(ROOT / "data/external/cpeat/peat_cores.csv")
         col = {30: "soc_0_30_Mgha", 100: "soc_0_100_Mgha"}[int(target_cm)]
@@ -144,7 +158,8 @@ def palmtag_pedons(target_cm):
                              fc_from_om=False))
 
 
-EXTERNAL = {"permafrost", "terrestrial_stock", "terrestrial_conc", "peat"}
+EXTERNAL = {"permafrost", "terrestrial_stock", "terrestrial_conc", "terrestrial_ph",
+            "terrestrial_clay", "peat"}
 SUBSAMPLE = 25000
 
 

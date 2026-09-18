@@ -73,6 +73,25 @@ def wosis_conc():
     return g[g.cont != "other"]
 
 
+def wosis_property(col, lo, hi):
+    """0-30 cm thickness-weighted mean of a non-carbon soil property (pH, clay %).
+
+    Same profiles, same depth rule and same filters as wosis_conc(); only the measured
+    column changes, so a transfer result for pH or clay is comparable with the SOC one.
+    """
+    df = pd.read_parquet(WOSIS)
+    h = df[(df.depth_top_cm < 30) & df[col].notna()].copy()
+    h["thick"] = (np.minimum(h.depth_bot_cm, 30) - h.depth_top_cm).clip(lower=0)
+    h = h[h.thick > 0]
+    h["w"] = h[col] * h.thick
+    g = h.groupby("profile_id").agg(w=("w", "sum"), thick=("thick", "sum"),
+                                    lat=("lat", "first"), lon=("lon", "first")).reset_index()
+    g["val"] = g.w / g.thick
+    g = g[(g.val > lo) & (g.val < hi)].dropna(subset=["lat", "lon"])
+    g["cont"] = [continent(a, o) for a, o in zip(g.lat, g.lon)]
+    return g[g.cont != "other"]
+
+
 def per_region(obs, pred, region):
     rows = []
     d = pd.DataFrame({"o": obs, "p": pred, "r": region}).dropna()

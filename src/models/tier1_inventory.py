@@ -18,6 +18,16 @@ assumption, which the paper shows fails between regions; the differences are the
 reported as the size of the question a default value leaves open, not as corrected
 inventories. Countries whose cores lie in one delta are flagged.
 
+The aggregate difference carries two kinds of uncertainty and only the first is
+quantifiable here. Core sampling error is propagated by resampling each country's cores
+and summing the national medians, treating countries as independent, which gives the
+interval on sum_observed_TgC and net_diff_TgCO2e. Structural choices - the median rather
+than the mean, the minimum core count, cores whose profile was extrapolated to 1 m or
+whose carbon came from loss-on-ignition - are varied one at a time in the sensitivity
+grid instead. National extent enters multiplicatively and is treated as exact, so a
+systematic error of x% in mangrove area moves every national difference, and the total,
+by the same x%.
+
 Output: data/processed/tier1_inventory.json + console table.
 """
 import json, sys
@@ -53,6 +63,72 @@ def national_mangrove_area():
         near = near[~near.index.duplicated(keep="first")]
         j.loc[near.index, "ADMIN"] = near["ADMIN"]; j.loc[near.index, "ISO_A3"] = near["ISO_A3"]
     return j.groupby(["ADMIN", "ISO_A3"]).area_km2.sum().reset_index()
+
+
+B_AGG = 5000             # bootstrap replicates for the aggregate difference
+
+
+def national_table(soc, area, min_cores=MIN_CORES, stat="median"):
+    """Country rows for one design choice: (name, area ha, national stock, core values)."""
+    f = np.median if stat == "median" else np.mean
+    out = []
+    for c, g in soc.dropna(subset=["admin"]).groupby("admin"):
+        if len(g) < min_cores:
+            continue
+        a = area[area.ADMIN == c]
+        if a.empty:
+            continue
+        v = g.soc_0_100_Mgha.to_numpy()
+        out.append((c, float(a.area_km2.sum()) * 100, float(f(v)), v))
+    return out
+
+
+def aggregate(tab):
+    """Tier 1 and observed totals (Tg C) and their difference (Tg CO2e) for one table."""
+    t1 = sum(ha * TIER1 for _, ha, _, _ in tab) / 1e6
+    obs = sum(ha * s for _, ha, s, _ in tab) / 1e6
+    return dict(n_countries=len(tab), sum_tier1_TgC=round(t1, 1), sum_observed_TgC=round(obs, 1),
+                net_diff_TgCO2e=round((obs - t1) * CO2, 1))
+
+
+def bootstrap_total(tab, stat="median", seed=1, B=B_AGG):
+    """Resample each country's cores and sum, so the interval carries core sampling error
+    across all countries at once. Countries are resampled independently."""
+    f = np.median if stat == "median" else np.mean
+    rng = np.random.default_rng(seed)
+    tot = np.zeros(B)
+    for _, ha, _, v in tab:
+        draws = np.array([f(rng.choice(v, len(v))) for _ in range(B)])
+        tot += ha * draws / 1e6
+    return tot
+
+
+def uncertainty(soc, area):
+    """Bootstrap interval on the aggregate, plus the one-at-a-time sensitivity grid."""
+    base = national_table(soc, area)
+    t1 = sum(ha * TIER1 for _, ha, _, _ in base) / 1e6
+    tot = bootstrap_total(base)
+    diff = (tot - t1) * CO2
+    lo, hi = np.quantile(tot, [0.025, 0.975])
+    dlo, dhi = np.quantile(diff, [0.025, 0.975])
+    grid = {
+        "median, >=12 cores (as reported)": aggregate(base),
+        "mean instead of median": aggregate(national_table(soc, area, stat="mean")),
+        ">=20 cores": aggregate(national_table(soc, area, min_cores=20)),
+        ">=30 cores": aggregate(national_table(soc, area, min_cores=30)),
+        "cores reaching 1 m only": aggregate(national_table(soc[~soc.extrapolated], area)),
+        "carbon measured, not from organic matter": aggregate(national_table(soc[~soc.fc_from_om], area)),
+    }
+    nd = [v["net_diff_TgCO2e"] for v in grid.values()]
+    return dict(
+        sum_observed_ci_TgC=[round(lo, 1), round(hi, 1)],
+        net_diff_ci_TgCO2e=[round(dlo, 1), round(dhi, 1)],
+        net_diff_sensitivity_range_TgCO2e=[round(min(nd), 1), round(max(nd), 1)],
+        sensitivity=grid,
+        uncertainty_note="the interval propagates core sampling error only, by resampling each "
+                         "country's cores and summing (countries independent, B=5000); design "
+                         "choices are varied one at a time in 'sensitivity'; national extent is "
+                         "treated as exact and enters multiplicatively")
 
 
 def main():
@@ -96,6 +172,7 @@ def main():
                 sum_observed_TgC=round(float(R.observed_TgC.sum()), 1),
                 sum_abs_diff_TgCO2e=round(float(R.diff_TgCO2e.abs().sum()), 1),
                 net_diff_TgCO2e=round(float(R.diff_TgCO2e.sum()), 1),
+                **uncertainty(soc, area),
                 note="observed = national median core stock x GMW national area; scaling a median to "
                      "national extent is itself a transfer assumption, so differences bound the question "
                      "a default leaves open rather than correct an inventory")

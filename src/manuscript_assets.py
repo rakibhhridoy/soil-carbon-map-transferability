@@ -596,10 +596,28 @@ def tab_tier1():
                     f"{r['ratio_obs_to_tier1']:.2f} & {r['tier1_TgC']:.0f} & {r['observed_TgC']:.0f} \\\\")
     s = d["summary"]
     rows.append("\\midrule")
-    rows.append(f"\\textbf{{Total}} & & {s['countries_area_km2']:,.0f} & & & {s['sum_tier1_TgC']:.0f} & {s['sum_observed_TgC']:.0f} \\\\")
+    ci = s.get("sum_observed_ci_TgC")
+    tot_obs = (f"{s['sum_observed_TgC']:.0f} [{ci[0]:.0f}, {ci[1]:.0f}]" if ci else f"{s['sum_observed_TgC']:.0f}")
+    rows.append(f"\\textbf{{Total}} & & {s['countries_area_km2']:,.0f} & & & {s['sum_tier1_TgC']:.0f} & {tot_obs} \\\\")
     (TAB / "tab_tier1.tex").write_text(
         "\\begin{tabular}{lrrlrrr}\n\\toprule\n"
         "Country & Cores & Mangrove km$^2$ & Median stock [95\\% CI] (t\\,C\\,ha$^{-1}$) & Ratio to Tier 1 & Tier-1 Tg\\,C & Cores Tg\\,C \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
+
+
+def tab_tier1_sens():
+    """One-at-a-time sensitivity of the national-inventory difference (SI)."""
+    d = _opt(PROC / "tier1_inventory.json")
+    if d is None or "sensitivity" not in d["summary"]:
+        return
+    rows = []
+    for name, v in d["summary"]["sensitivity"].items():
+        name = (name[0].upper() + name[1:]).replace(">=", "$\\geq$")
+        rows.append(f"{name} & {v['n_countries']} & {v['sum_tier1_TgC']:.0f} & "
+                    f"{v['sum_observed_TgC']:.0f} & {abs(v['net_diff_TgCO2e']) / 1000:.1f} \\\\")
+    (TAB / "tab_tier1_sens.tex").write_text(
+        "\\begin{tabular}{lrrrr}\n\\toprule\n"
+        "Design choice & Countries & Tier-1 Tg\\,C & Cores Tg\\,C & Difference Pg\\,CO$_2$e \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n")
 
 
@@ -695,12 +713,61 @@ def tab_biomes():
         lines.append(f"{b['label']}{note} & {b['n']:,} & {b['n_regions']} & {b['n_continents']} & "
                      f"{b['random_r2']:+.2f} & {b['grouped_r2']:+.2f} & {b['median_r']:+.2f} {ci} & "
                      f"{ceil} & {ratio} \\\\")
+    lines += control_rows()
     (TAB / "tab_biomes.tex").write_text(
         "\\begin{tabular}{lrrrrrlrr}\n\\toprule\n"
-        "Biome & Cores & Regions & Cont. & Random $R^2$ & Site-grouped $R^2$ & Out-of-region $r$ [95\\% CI] & Ceiling $r_{\\max}$ & $r/r_{\\max}$ \\\\\n\\midrule\n"
+        "Target & Cores & Regions & Cont. & Random $R^2$ & Site-grouped $R^2$ & Out-of-region $r$ [95\\% CI] & Ceiling $r_{\\max}$ & $r/r_{\\max}$ \\\\\n\\midrule\n"
         + "\n".join(lines) + "\n\\bottomrule\n"
         "\\multicolumn{9}{l}{\\footnotesize Identical protocol in every row: 28 covariates, gradient boosting, 250 km regions, site-grouped folds, replicate-core ceiling.}\\\\\n"
         "\\multicolumn{9}{l}{\\footnotesize $^{\\dagger}$fewer than five regions reach twelve cores; reported for completeness, not as a result.}\\\\\n"
+        "\\multicolumn{9}{l}{\\footnotesize Controls: two non-carbon properties of the WoSIS profiles, run to separate a carbon-specific failure from a protocol artefact.}\\\\\n"
+        "\\end{tabular}\n")
+
+
+CONTROLS = [("terrestrial_ph_d30", "Soil pH (0–30 cm)"),
+            ("terrestrial_clay_d30", "Clay content (0–30 cm)")]
+
+
+def control_rows():
+    """Table 1's non-carbon control block, formatted exactly like the biome rows."""
+    out = []
+    for tag, label in CONTROLS:
+        d = _opt(PROC / f"biome_{tag}_results.json")
+        if d is None:
+            continue
+        s = d["summary"]; ceil = s["noise_ceiling"]["median_r_max"]; ci = s["loro_median_pearson_ci"]
+        out.append(f"{label} & {s['n_cores']:,} & {s['n_regions']} & {s['n_continents']} & "
+                   f"{s['t1_random_r2']:+.2f} & {s['t1_grouped_r2']:+.2f} & "
+                   f"{s['loro_median_pearson']:+.2f} [{ci[0]:+.2f}, {ci[1]:+.2f}] & "
+                   f"{ceil:.2f} & {s['loro_median_pearson']/ceil:+.2f} \\\\")
+    if out:
+        out = ["\\midrule",
+               "\\multicolumn{9}{l}{\\textit{Non-carbon controls, same profiles and protocol}}\\\\"] + out
+    return out
+
+
+def tab_controls():
+    """Non-carbon control targets: the identical protocol on pH and clay of the same
+    WoSIS profiles, which separates a carbon-specific failure from a protocol artefact."""
+    lines = []
+    for tag, label in CONTROLS:
+        d = _opt(PROC / f"biome_{tag}_results.json")
+        if d is None:
+            continue
+        s = d["summary"]; ceil = s["noise_ceiling"]["median_r_max"]
+        ci = s["loro_median_pearson_ci"]
+        lines.append(f"{label} & {s['n_cores']:,} & {s['n_regions']} & {s['n_continents']} & "
+                     f"{s['t1_random_r2']:+.2f} & {s['t1_grouped_r2']:+.2f} & "
+                     f"{s['loro_median_pearson']:+.2f} [{ci[0]:+.2f}, {ci[1]:+.2f}] & "
+                     f"{ceil:.2f} & {s['loro_median_pearson']/ceil:+.2f} \\\\")
+    if not lines:
+        return
+    (TAB / "tab_controls.tex").write_text(
+        "\\begin{tabular}{lrrrrrlrr}\n\\toprule\n"
+        "Target & Profiles & Regions & Cont. & Random $R^2$ & Site-grouped $R^2$ & "
+        "Out-of-region $r$ [95\\% CI] & Ceiling $r_{\\max}$ & $r/r_{\\max}$ \\\\\n\\midrule\n"
+        + "\n".join(lines) + "\n\\bottomrule\n"
+        "\\multicolumn{9}{l}{\\footnotesize Same profiles, covariates, 250~km regions, folds, model and ceiling as the carbon targets; only the measured property changes.}\\\\\n"
         "\\end{tabular}\n")
 
 
@@ -833,7 +900,7 @@ def main():
     tab_totalcarbon(); tab_pooltransfer()
     tab_registry_full(reg); tab_gsoc_ablation()
     tab_fewshot(); tab_publishedmap(); tab_aoavalidity(); tab_aoasens(); tab_conceptshift()
-    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1(); tab_variance(); tab_sensitivity(); tab_power()
+    tab_noiseceiling(); tab_ablation(); tab_biomes(); tab_tier1(); tab_tier1_sens(); tab_controls(); tab_variance(); tab_sensitivity(); tab_power()
     tab_crediting(); tab_terrestrial(); tab_region(); tab_fmparity(); tab_structtransfer()
     settings_assets()
     tab_depth()
